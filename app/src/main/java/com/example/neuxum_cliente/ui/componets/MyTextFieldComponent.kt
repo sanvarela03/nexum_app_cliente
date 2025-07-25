@@ -28,8 +28,12 @@ import com.example.neuxum_cliente.ui.theme.componentShapes
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyTextFieldComponent(
+    modifier: Modifier = Modifier
+        .fillMaxWidth()
+        .clip(componentShapes.small),
     labelValue: String,
-    icon: ImageVector,
+    icon: ImageVector? = null,
+    trailingIcon: ImageVector? = null,
     onTextSelected: (String) -> Unit,
     errorStatus: Boolean = false
 ) {
@@ -45,14 +49,12 @@ fun MyTextFieldComponent(
             unfocusedLeadingIconColor = Color(0xFFE6E6E6)
         ),
         shape = RoundedCornerShape(8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(57.dp),
+        modifier = modifier,
         label = { Text(
             text = labelValue,
             fontWeight = FontWeight.Medium
         )
-                },
+        },
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         singleLine = true,
         maxLines = 1,
@@ -60,8 +62,11 @@ fun MyTextFieldComponent(
             textValue.value = it
             onTextSelected(it)
         },
-        leadingIcon = {
-            Icon(icon, contentDescription = "")
+        leadingIcon = icon?.let { nonNullIcon ->
+            { Icon(nonNullIcon, contentDescription = null) }
+        },
+        trailingIcon = trailingIcon?.let { nonNullIcon ->
+            { Icon(nonNullIcon, contentDescription = null) }
         },
         isError = !errorStatus
     )

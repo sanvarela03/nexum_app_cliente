@@ -17,6 +17,6 @@ import com.example.neuxum_cliente.ui.screens.SignUpScreen
 fun NavGraphBuilder.initialGraph(go: (Any) -> Unit) {
     navigation<Graph.InitialGraph>(startDestination = Routes.SignInScreen) {
         composable<Routes.SignInScreen> { SignInScreen(go = go) }
-        composable<Routes.SignUpScreen> { SignUpScreen() }
+        composable<Routes.SignUpScreen> { SignUpScreen(go = go) }
     }
 }
