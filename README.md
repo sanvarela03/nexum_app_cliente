@@ -1,1 +1,1 @@
-# nexum_app_cliente
+# Aplicación para los clientes de Neuxm
