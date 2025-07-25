@@ -32,13 +32,13 @@ fun ButtonComponent(
         onClick = { onButtonClicked() },
         contentPadding = PaddingValues(),
         colors = ButtonDefaults.buttonColors(Color.Transparent),
-        shape = RoundedCornerShape(5.dp),
+        shape = RoundedCornerShape(8.dp),
         enabled = isEnabled
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(48.dp)
+                .heightIn(57.dp)
                 .background(
                     color = Color.Black
 //                    brush = Brush.horizontalGradient(
@@ -53,9 +53,9 @@ fun ButtonComponent(
         ) {
             Text(
                 text = value,
-                fontSize = 18.sp,
+                fontSize = 20.sp,
                 color = Color.White,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Medium
             )
         }
     }
