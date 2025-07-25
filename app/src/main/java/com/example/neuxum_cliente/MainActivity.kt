@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.neuxum_cliente.ui.theme.Neuxum_clienteTheme
 import dagger.hilt.android.AndroidEntryPoint
+import com.example.neuxum_cliente.ui.screens.SignUpCellphoneScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -22,9 +23,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             Neuxum_clienteTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                    SignUpCellphoneScreen(
                     )
                 }
             }
