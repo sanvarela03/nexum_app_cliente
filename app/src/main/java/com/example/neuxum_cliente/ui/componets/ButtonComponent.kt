@@ -1,4 +1,4 @@
-package com.example.protapptest.ui.components
+package com.example.neuxum_cliente.ui.componets
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

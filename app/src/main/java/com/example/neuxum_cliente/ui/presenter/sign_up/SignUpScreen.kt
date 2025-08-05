@@ -1,4 +1,4 @@
-package com.example.neuxum_cliente.ui.screens
+package com.example.neuxum_cliente.ui.presenter.sign_up
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text

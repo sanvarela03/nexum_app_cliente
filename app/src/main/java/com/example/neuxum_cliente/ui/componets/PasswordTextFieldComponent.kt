@@ -35,14 +35,14 @@ fun PasswordTextFieldComponent(
     labelValue: String,
     icon: ImageVector,
     onTextSelected: (String) -> Unit,
-    errorStatus: Boolean = false
+    errorStatus: Boolean = false,
+    password : String = ""
 ) {
     val localFocusManager = LocalFocusManager.current
-    val password = rememberSaveable { mutableStateOf("") }
     val passwordVisible = rememberSaveable { mutableStateOf(false) }
 
     OutlinedTextField(
-        value = password.value,
+        value = password,
         modifier = Modifier
             .fillMaxWidth(),
         label = { Text(text = labelValue) },
@@ -62,7 +62,6 @@ fun PasswordTextFieldComponent(
         keyboardActions = KeyboardActions { localFocusManager.clearFocus() },
         maxLines = 1,
         onValueChange = {
-            password.value = it
             onTextSelected(it)
         },
         leadingIcon = {  if (!passwordVisible.value) Icon(icon, contentDescription = "") else Icon(Icons.Outlined.LockOpen, contentDescription = "") },

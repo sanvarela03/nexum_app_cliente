@@ -1,4 +1,4 @@
-package com.example.protapptest.ui.components
+package com.example.neuxum_cliente.ui.componets
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,33 +31,33 @@ fun MyTextFieldComponent(
     labelValue: String,
     icon: ImageVector,
     onTextSelected: (String) -> Unit,
-    errorStatus: Boolean = false
+    textValue: String = "",
+    errorStatus: Boolean = true
 ) {
-    val textValue = rememberSaveable { mutableStateOf("") }
 
     OutlinedTextField(
-        value = textValue.value,
+        value = textValue,
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color.Blue,        // cuando está enfocado
             unfocusedBorderColor = Color(0xFFE6E6E6), // cuando no está enfocado
             errorBorderColor = Color.Red,
-            unfocusedLabelColor =  Color(0xFFE6E6E6),
-            unfocusedLeadingIconColor = Color(0xFFE6E6E6)
+            unfocusedLabelColor = Color(0xFFE6E6E6),
+            unfocusedLeadingIconColor = Color(0xFFE6E6E6),
         ),
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(57.dp),
-        label = { Text(
-            text = labelValue,
-            fontWeight = FontWeight.Medium
-        )
-                },
+        label = {
+            Text(
+                text = labelValue,
+                fontWeight = FontWeight.Medium
+            )
+        },
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         singleLine = true,
         maxLines = 1,
         onValueChange = {
-            textValue.value = it
             onTextSelected(it)
         },
         leadingIcon = {
