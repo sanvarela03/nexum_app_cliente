@@ -27,7 +27,7 @@ import androidx.compose.ui.graphics.Color
  * @version 1.0
  */
 @Composable
-fun PagerNavigation(
+fun PagerNavigationComponent(
     onBack: () -> Unit,
     onNext: () -> Unit
 ) {

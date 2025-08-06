@@ -20,12 +20,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.neuxum_cliente.ui.componets.PagerNavigation
+import com.example.neuxum_cliente.ui.componets.PagerNavigationComponent
 import com.example.neuxum_cliente.ui.theme.Neuxum_clienteTheme
 import com.example.protapptest.ui.components.MyTextFieldComponent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Lock
+import com.example.neuxum_cliente.ui.componets.MyNumberFieldComponent
+import com.example.neuxum_cliente.ui.navigation.rutes.Routes
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -36,7 +37,9 @@ import androidx.compose.material.icons.filled.Lock
  */
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
-fun SignUpCellphoneScreen() {
+fun SignUpCellphoneScreen(
+    go: (Any) -> Unit = {}
+) {
     val textValue = rememberSaveable { mutableStateOf("") }
     Neuxum_clienteTheme {
         Column(
@@ -84,20 +87,26 @@ fun SignUpCellphoneScreen() {
                         )
                     }
                     Column(modifier = Modifier.weight(1f)) {
-                        MyTextFieldComponent(
+                        MyNumberFieldComponent(
                             modifier = Modifier
                                 .width(150.dp)
                                 .height(56.dp),
                             labelValue = "No. celular",
                             onTextSelected = {},
-                            errorStatus = true
+                            errorStatus = true,
+                            focusHops = 2
                         )
                     }
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                PagerNavigation(
-                    onBack = { /* nothing yet */ },
-                    onNext = { /* nothing yet */ }
+                PagerNavigationComponent(
+                    onBack = {
+                        //TODO Navegar al registro
+                        go(Routes.SignUpScreen)
+                             },
+                    onNext = {
+                        go(Routes.SignUpBirthdayScreen)
+                    }
                 )
             }
         }

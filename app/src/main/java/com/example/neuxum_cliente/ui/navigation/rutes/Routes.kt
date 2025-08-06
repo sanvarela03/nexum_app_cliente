@@ -19,4 +19,7 @@ sealed class Routes {
 
     @Serializable
     object SignUpCellphoneScreen : Routes()
+
+    @Serializable
+    object SignUpBirthdayScreen : Routes()
 }

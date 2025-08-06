@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.neuxum_cliente.ui.componets.PagerNavigation
+import com.example.neuxum_cliente.ui.componets.PagerNavigationComponent
 import com.example.neuxum_cliente.ui.navigation.rutes.Routes
 import com.example.neuxum_cliente.ui.theme.Neuxum_clienteTheme
 import com.example.protapptest.ui.components.MyTextFieldComponent
@@ -77,7 +77,7 @@ fun SignUpScreen(
                     errorStatus = true
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                PagerNavigation(
+                PagerNavigationComponent(
                     onBack = { go (Routes.SignInScreen) },
                     onNext = { go (Routes.SignUpCellphoneScreen) }
                 )

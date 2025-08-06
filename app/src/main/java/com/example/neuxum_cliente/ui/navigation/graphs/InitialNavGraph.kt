@@ -5,6 +5,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.example.neuxum_cliente.ui.navigation.rutes.Routes
 import com.example.neuxum_cliente.ui.screens.SignInScreen
+import com.example.neuxum_cliente.ui.screens.SignUpBirthdayScreen
+import com.example.neuxum_cliente.ui.screens.SignUpCellphoneScreen
 import com.example.neuxum_cliente.ui.screens.SignUpScreen
 
 /**
@@ -18,5 +20,7 @@ fun NavGraphBuilder.initialGraph(go: (Any) -> Unit) {
     navigation<Graph.InitialGraph>(startDestination = Routes.SignInScreen) {
         composable<Routes.SignInScreen> { SignInScreen(go = go) }
         composable<Routes.SignUpScreen> { SignUpScreen(go = go) }
+        composable<Routes.SignUpCellphoneScreen> { SignUpCellphoneScreen(go = go) }
+        composable<Routes.SignUpBirthdayScreen> { SignUpBirthdayScreen() }
     }
 }
