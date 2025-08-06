@@ -1,15 +1,9 @@
-package com.example.neuxum_cliente.ui.screens
+package com.example.neuxum_cliente.ui.presenter.sign_up
 
-import android.text.Layout.Alignment
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.example.neuxum_cliente.ui.theme.Neuxum_clienteTheme
 
 /**
  * @author Ernesto Bastidas Pulido

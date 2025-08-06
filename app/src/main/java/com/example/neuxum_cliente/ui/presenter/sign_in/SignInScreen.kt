@@ -1,4 +1,4 @@
-package com.example.neuxum_cliente.ui.screens
+package com.example.neuxum_cliente.ui.presenter.sign_in
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -31,19 +31,25 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.neuxum_cliente.R
 import com.example.neuxum_cliente.ui.componets.DividerTextComponent
 import com.example.neuxum_cliente.ui.componets.PasswordTextFieldComponent
-import com.example.neuxum_cliente.ui.navigation.rutes.Routes
-import com.example.protapptest.ui.components.ButtonComponent
-import com.example.protapptest.ui.components.MyTextFieldComponent
+import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
+import com.example.neuxum_cliente.ui.componets.ButtonComponent
+import com.example.neuxum_cliente.ui.componets.MyTextFieldComponent
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun SignInScreen(
     modifier: Modifier = Modifier,
-    go: (Any) -> Unit = {}
+    viewModel: SignInViewModel = hiltViewModel(),
+    go: (Any) -> Unit = {},
 ) {
+
+    val state = viewModel.state
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -75,15 +81,21 @@ fun SignInScreen(
 
             MyTextFieldComponent(
                 labelValue = "Ingrese su correo",
+                textValue = state.email,
                 icon = Icons.Default.Email,
-                onTextSelected = {},
-                errorStatus = true
+                onTextSelected = {
+                    viewModel.onEvent(SignInEvent.UsernameChanged(it))
+                },
+                errorStatus = state.emailError
             )
             PasswordTextFieldComponent(
                 labelValue = "Ingrese su contraseña",
+                password = state.password,
                 icon = Icons.Default.Lock,
-                onTextSelected = {},
-                errorStatus = true
+                onTextSelected = {
+                    viewModel.onEvent(SignInEvent.PasswordChanged(it))
+                },
+                errorStatus = state.passwordError
             )
 
             ClickableText(
@@ -98,14 +110,14 @@ fun SignInScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 5.dp),
                 onClick = {
-
+                    viewModel.onEvent(SignInEvent.ForgotPasswordButtonClicked)
                 }
             )
             ButtonComponent(
                 value = "Ingresar",
                 isEnabled = true,
             ) {
-
+                viewModel.onEvent(SignInEvent.LoginButtonClicked)
             }
             DividerTextComponent()
 
@@ -136,7 +148,7 @@ fun SignInScreen(
                         ?.also { span ->
                             if ((span.item == signUpTxt)) {
                                 //TODO Navegar al registro
-                                go(Routes.SignUpScreen)
+                                go(AuthRoutes.SignUpScreen)
                             }
                         }
                 }

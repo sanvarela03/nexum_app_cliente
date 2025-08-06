@@ -1,4 +1,4 @@
-package com.example.neuxum_cliente.ui.screens
+package com.example.neuxum_cliente.ui.presenter.sign_up
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,10 +16,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.neuxum_cliente.ui.componets.MyTextFieldComponent
 import com.example.neuxum_cliente.ui.componets.PagerNavigationComponent
-import com.example.neuxum_cliente.ui.navigation.rutes.Routes
+import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
 import com.example.neuxum_cliente.ui.theme.Neuxum_clienteTheme
-import com.example.protapptest.ui.components.MyTextFieldComponent
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
@@ -78,8 +78,8 @@ fun SignUpScreen(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 PagerNavigationComponent(
-                    onBack = { go (Routes.SignInScreen) },
-                    onNext = { go (Routes.SignUpCellphoneScreen) }
+                    onBack = { go (AuthRoutes.SignInScreen) },
+                    onNext = { go (AuthRoutes.SignUpCellphoneScreen) }
                 )
             }
         }

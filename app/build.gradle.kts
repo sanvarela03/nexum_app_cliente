@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.googleServices)
 }
 
 android {
@@ -42,7 +43,7 @@ android {
 }
 
 dependencies {
-
+    // Base
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -59,11 +60,56 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+
+    // Hilt Nav
+    implementation(libs.androidx.hilt.navigation.compose)
+
+    // Navigation
     implementation(libs.androidx.navigation)
     implementation(libs.kotlinx.serialization.json)
+
+    // Icons
     implementation(libs.androidx.material.icons.extended)
+
+    // OKhttp
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+
+    // Ktor
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.logging)
+    implementation(libs.sandwich.ktor)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.slf4j.simple)
+
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+
+    // Datastore
+    implementation(libs.androidx.datastore.preferences)
+
+    // Splash
+    implementation(libs.androidx.core.splashscreen)
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
+
+    //Room
+    kapt(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.runtime)
+    annotationProcessor(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+
+    //Glide
+    implementation(libs.glide.compose)
 }
 kapt {
     correctErrorTypes = true

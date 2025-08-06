@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">neuxum_cliente</string>
+    <string name="navigation_header">Header sin datos</string>
 </resources>

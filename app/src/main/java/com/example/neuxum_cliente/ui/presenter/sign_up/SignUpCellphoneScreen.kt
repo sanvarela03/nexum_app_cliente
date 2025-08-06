@@ -1,4 +1,4 @@
-package com.example.neuxum_cliente.ui.screens
+package com.example.neuxum_cliente.ui.presenter.sign_up
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,11 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.neuxum_cliente.ui.componets.PagerNavigationComponent
 import com.example.neuxum_cliente.ui.theme.Neuxum_clienteTheme
-import com.example.protapptest.ui.components.MyTextFieldComponent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import com.example.neuxum_cliente.ui.componets.MyNumberFieldComponent
-import com.example.neuxum_cliente.ui.navigation.rutes.Routes
+import com.example.neuxum_cliente.ui.componets.MyTextFieldComponent
+import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -102,10 +102,10 @@ fun SignUpCellphoneScreen(
                 PagerNavigationComponent(
                     onBack = {
                         //TODO Navegar al registro
-                        go(Routes.SignUpScreen)
+                        go(AuthRoutes.SignUpScreen)
                              },
                     onNext = {
-                        go(Routes.SignUpBirthdayScreen)
+                        go(AuthRoutes.SignUpBirthdayScreen)
                     }
                 )
             }
