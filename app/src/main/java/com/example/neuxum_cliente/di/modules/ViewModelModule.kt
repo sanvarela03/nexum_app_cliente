@@ -1,7 +1,9 @@
 package com.example.neuxum_cliente.di.modules
 
 import com.example.neuxum_cliente.domain.use_cases.auth.AuthUseCases
+import com.example.neuxum_cliente.domain.use_cases.category.CategoryUseCases
 import com.example.neuxum_cliente.ui.global_viewmodels.AuthViewModel
+import com.example.neuxum_cliente.ui.presenter.categories.CategoriesViewModel
 import com.example.neuxum_cliente.ui.presenter.sign_in.SignInViewModel
 import com.example.protapptest.security.TokenManager
 
@@ -29,6 +31,14 @@ object ViewModelModule {
     ): SignInViewModel {
         return SignInViewModel(authUseCases, tokenManager, authViewModel)
     }
+
+    @Provides
+    @Singleton
+    fun providesCategoriesViewModel(
+        categoryUseCases: CategoryUseCases,
+    ) = CategoriesViewModel(
+        categoryUseCases = categoryUseCases
+    )
 
 //    @Provides
 //    @Singleton

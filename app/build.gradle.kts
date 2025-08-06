@@ -110,6 +110,9 @@ dependencies {
 
     //Glide
     implementation(libs.glide.compose)
+
+    // Swipe
+    implementation(libs.accompanist.swiperefresh)
 }
 kapt {
     correctErrorTypes = true

@@ -28,4 +28,6 @@ object ClientParser {
         lastLogin = res.user.lastLogin,
         imgUrl = res.user.imgUrl,
     )
+
+    fun toEntity(res: List<ClientRes>): List<ClientEntity> = res.map { toEntity(it) }
 }

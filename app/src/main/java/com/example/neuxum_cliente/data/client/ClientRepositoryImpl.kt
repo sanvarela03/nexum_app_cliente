@@ -64,7 +64,9 @@ class ClientRepositoryImpl @Inject constructor(
         apiRequestFlow { clientApi.getClient() }
             .collect { apiRes ->
                 when (apiRes) {
-                    is ApiResponse.Loading -> {}
+                    is ApiResponse.Loading -> {
+                        emit(ApiResponse.Loading)
+                    }
 
                     is ApiResponse.Failure -> {
                         emit(ApiResponse.Failure(apiRes.errorMessage, apiRes.code))

@@ -2,10 +2,14 @@ package com.example.neuxum_cliente.di.modules
 
 import com.example.neuxum_cliente.data.auth.AuthRepositoryImpl
 import com.example.neuxum_cliente.data.auth.remote.AuthApi
+import com.example.neuxum_cliente.data.category.CategoryRepositoryImpl
+import com.example.neuxum_cliente.data.category.local.CategoryDao
+import com.example.neuxum_cliente.data.category.remote.CategoryApi
 import com.example.neuxum_cliente.data.client.ClientRepositoryImpl
 import com.example.neuxum_cliente.data.client.local.ClientDao
 import com.example.neuxum_cliente.data.client.remote.ClientApi
 import com.example.neuxum_cliente.domain.repository.AuthRepository
+import com.example.neuxum_cliente.domain.repository.CategoryRepository
 import com.example.neuxum_cliente.domain.repository.ClientRepository
 import com.example.protapptest.security.TokenManager
 import dagger.Module
@@ -46,4 +50,17 @@ object RepositoryModule {
         tokenManager = tokenManager,
         dispatcher = dispatcher
     )
+
+    @Provides
+    @Singleton
+    fun provideCategoryRepository(
+        categoryApi: CategoryApi,
+        categoryDao: CategoryDao,
+        @IoDispatcher dispatcher: CoroutineDispatcher
+    ): CategoryRepository = CategoryRepositoryImpl(
+        categoryApi = categoryApi,
+        categoryDao = categoryDao,
+        dispatcher = dispatcher
+    )
+
 }

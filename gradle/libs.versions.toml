@@ -1,4 +1,5 @@
 [versions]
+accompanistSwiperefresh = "0.24.2-alpha"
 agp = "8.7.3"
 composeVersion = "1.0.0-beta01"
 kotlin = "2.0.0"
@@ -27,6 +28,7 @@ firebaseBom = "32.8.1"
 google = "4.4.1"
 googleServices = "4.4.1"
 roomRuntime = "2.6.1"
+composeMaterial = "1.4.1"
 
 
 [libraries]
@@ -99,6 +101,8 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRunt
 # Glide
 glide-compose = { module = "com.github.bumptech.glide:compose", version.ref = "composeVersion" }
 
+# Swipe
+accompanist-swiperefresh = { module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanistSwiperefresh" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

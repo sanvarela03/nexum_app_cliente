@@ -101,7 +101,7 @@ fun HomeScreen(
             topBar = {
                 if (showTopBar) {
                     AppToolBar(
-                        toolbarTitle = "Bienvenido a nexum",
+                        toolbarTitle = "Bienvenido a Nexum",
                         signOutButtonClicked = {
                             homeViewModel.onEvent(HomeEvent.SignOutBtnClicked)
                         },
