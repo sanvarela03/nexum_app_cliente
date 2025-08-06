@@ -16,6 +16,4 @@ sealed class DrawerRoutes {
 
     @Serializable
     object SettingsScreen : DrawerRoutes()
-
-
 }
