@@ -97,22 +97,7 @@ fun SignInScreen(
                 },
                 errorStatus = state.passwordError
             )
-
-            ClickableText(
-                text = buildAnnotatedString { append("¿Olvidaste tu contraseña?") },
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Right,
-                    textDecoration = TextDecoration.Underline,
-                    color = Color(0xFF828282)
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 5.dp),
-                onClick = {
-                    viewModel.onEvent(SignInEvent.ForgotPasswordButtonClicked)
-                }
-            )
+            ForgotPasswordText(viewModel)
             ButtonComponent(
                 value = "Ingresar",
                 isEnabled = true,
@@ -122,38 +107,62 @@ fun SignInScreen(
             DividerTextComponent()
 
 
-            val initTxt = "¿No tienes una cuenta?  "
-            val signUpTxt = "Registrarse"
-
-            val annotatedString = buildAnnotatedString {
-                append(initTxt)
-                withStyle(style = SpanStyle(color = Color(0xFF828282))) {
-                    pushStringAnnotation(tag = signUpTxt, annotation = signUpTxt)
-                    append(signUpTxt)
-                }
-            }
-
-            ClickableText(
-                text = annotatedString,
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center,
-                    color = Color(0xFF000000)
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 5.dp),
-                onClick = { offset ->
-                    annotatedString.getStringAnnotations(offset, offset).firstOrNull()
-                        ?.also { span ->
-                            if ((span.item == signUpTxt)) {
-                                //TODO Navegar al registro
-                                go(AuthRoutes.SignUpScreen)
-                            }
-                        }
-                }
-            )
+            SignUpText(go)
         }
     }
 
+}
+
+@Composable
+private fun ForgotPasswordText(viewModel: SignInViewModel) {
+    ClickableText(
+        text = buildAnnotatedString { append("¿Olvidaste tu contraseña?") },
+        style = TextStyle(
+            fontSize = 14.sp,
+            textAlign = TextAlign.Right,
+            textDecoration = TextDecoration.Underline,
+            color = Color(0xFF828282)
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 5.dp),
+        onClick = {
+            viewModel.onEvent(SignInEvent.ForgotPasswordButtonClicked)
+        }
+    )
+}
+
+@Composable
+private fun SignUpText(go: (Any) -> Unit) {
+    val initTxt = "¿No tienes una cuenta?  "
+    val signUpTxt = "Registrarse"
+
+    val annotatedString = buildAnnotatedString {
+        append(initTxt)
+        withStyle(style = SpanStyle(color = Color(0xFF828282))) {
+            pushStringAnnotation(tag = signUpTxt, annotation = signUpTxt)
+            append(signUpTxt)
+        }
+    }
+
+    ClickableText(
+        text = annotatedString,
+        style = TextStyle(
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+            color = Color(0xFF000000)
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 5.dp),
+        onClick = { offset ->
+            annotatedString.getStringAnnotations(offset, offset).firstOrNull()
+                ?.also { span ->
+                    if ((span.item == signUpTxt)) {
+                        //TODO Navegar al registro
+                        go(AuthRoutes.SignUpScreen)
+                    }
+                }
+        }
+    )
 }

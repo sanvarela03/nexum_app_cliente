@@ -28,12 +28,13 @@ import androidx.compose.ui.unit.sp
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun FilterChipComponent(
-    text: String = "Ejemplo"
+    text: String = "Ejemplo",
+    isSelected: Boolean = false,
+    onClick: () -> Unit = {}
 ) {
-    var selected by rememberSaveable { mutableStateOf(false) }
     FilterChip(
-        onClick = { selected = !selected },
-        border = if (!selected) BorderStroke(1.dp, Color(0xFFD6D6D6)) else BorderStroke(
+        onClick = onClick,
+        border = if (!isSelected) BorderStroke(1.dp, Color(0xFFD6D6D6)) else BorderStroke(
             0.dp,
             Color.Transparent
         ),
@@ -42,11 +43,11 @@ fun FilterChipComponent(
             Text(
                 text = text,
                 fontSize = 12.sp,
-                color = if (selected) Color.White else Color.Black,
+                color = if (isSelected) Color.White else Color.Black,
                 modifier = Modifier.padding(horizontal = 1.dp) // <--- reduce ancho
             )
         },
-        selected = selected,
+        selected = isSelected,
         colors = FilterChipDefaults.filterChipColors(
             selectedContainerColor = Color.Black,
         ),

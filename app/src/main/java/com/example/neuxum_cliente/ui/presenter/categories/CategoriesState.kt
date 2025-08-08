@@ -12,6 +12,6 @@ import com.example.neuxum_cliente.data.category.local.CategoryEntity
  */
 data class CategoriesState(
     val categories: List<CategoryEntity> = emptyList(),
-    val errorMessage: String = "",
+    var errorMessage: String = "",
     val isRefreshing: Boolean = false,
 )

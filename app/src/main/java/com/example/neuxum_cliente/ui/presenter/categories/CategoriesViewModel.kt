@@ -9,7 +9,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.neuxum_cliente.data.global_payload.res.ApiResponse
 import com.example.neuxum_cliente.domain.use_cases.category.CategoryUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,6 +30,8 @@ class CategoriesViewModel @Inject constructor(
 
     var state by mutableStateOf(CategoriesState())
 
+    private var updateCategoriesJob: Job? = null
+
     init {
         observeCategories()
         updateCategories(fetchFromRemote = true)
@@ -45,6 +49,11 @@ class CategoriesViewModel @Inject constructor(
     fun observeCategories() {
         viewModelScope.launch {
             categoryUseCases.observeCategories()
+                .distinctUntilChanged()
+                .catch { e ->
+                    Log.d("CategoriesViewModel", "Error observando categorías: ${e.message}")
+                    state = state.copy(errorMessage = e.message ?: "Unknown error")
+                }
                 .collect { categories ->
                     state = state.copy(categories = categories)
                 }
@@ -52,15 +61,38 @@ class CategoriesViewModel @Inject constructor(
         }
     }
 
-    fun updateCategories(fetchFromRemote: Boolean) {
-        viewModelScope.launch {
+    fun updateCategories(fetchFromRemote: Boolean = false) {
+        Log.d(
+            "CategoriesViewModel",
+            "Actualizando categorias: fetchFromRemote=$fetchFromRemote"
+        )
+
+        updateCategoriesJob?.let {
+            if (it.isActive) {
+                it.cancel()
+            }
+        }
+        updateCategoriesJob = viewModelScope.launch {
             categoryUseCases.updateCategories(fetchFromRemote).catch {
                 Log.d("CategoriesViewModel", "Error actualizando categorias: ${it.message}")
                 state = state.copy(errorMessage = it.message ?: "Unknown error")
             }.collect {
                 when (it) {
                     is ApiResponse.Error -> {
+                        Log.d(
+                            "CategoriesViewModel",
+                            "Error actualizando categorias: ${it.errorMessage}"
+                        )
                         state = state.copy(isRefreshing = false)
+                        state = state.copy(errorMessage = it.errorMessage)
+                        Log.d(
+                            "CategoriesViewModel",
+                            "Error actualizando categorias: ${state.errorMessage}"
+                        )
+                        Log.d(
+                            "CategoriesViewModel",
+                            "Error actualizando isNotEmpty: ${state.errorMessage.isNotEmpty()}"
+                        )
                     }
 
                     is ApiResponse.Failure -> {
@@ -78,6 +110,18 @@ class CategoriesViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    override fun onCleared() {
+        Log.d("CategoriesViewModel", "onCleared")
+        super.onCleared()
+
+        updateCategoriesJob?.let {
+            if (it.isActive) {
+                it.cancel()
+            }
+        }
+
     }
 
 }

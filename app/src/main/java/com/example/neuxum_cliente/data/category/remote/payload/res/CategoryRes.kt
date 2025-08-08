@@ -10,8 +10,9 @@ package com.example.neuxum_cliente.data.category.remote.payload.res
  */
 data class CategoryRes(
     val id: Long,
-    val name: String,
-    val description: String,
-    val imageUrl: String,
-    val iconName: String,
+    val name: String?,
+    val description: String?,
+    val imageUrl: String?,
+    val serviceType: String?,
+    val iconName: String?,
 )

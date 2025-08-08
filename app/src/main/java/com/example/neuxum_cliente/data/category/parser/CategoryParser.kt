@@ -9,6 +9,7 @@ object CategoryParser {
         name = res.name,
         description = res.description,
         imageUrl = res.imageUrl,
+        serviceType = res.serviceType,
         iconName = res.iconName,
     )
 

@@ -4,6 +4,8 @@ import com.example.neuxum_cliente.domain.use_cases.auth.AuthUseCases
 import com.example.neuxum_cliente.domain.use_cases.category.CategoryUseCases
 import com.example.neuxum_cliente.ui.global_viewmodels.AuthViewModel
 import com.example.neuxum_cliente.ui.presenter.categories.CategoriesViewModel
+import com.example.neuxum_cliente.ui.presenter.job_offer.JobOfferViewModel
+import com.example.neuxum_cliente.ui.presenter.map.MapViewModel
 import com.example.neuxum_cliente.ui.presenter.sign_in.SignInViewModel
 import com.example.protapptest.security.TokenManager
 
@@ -39,6 +41,14 @@ object ViewModelModule {
     ) = CategoriesViewModel(
         categoryUseCases = categoryUseCases
     )
+
+    @Provides
+    @Singleton
+    fun providesJobOfferViewModel() = JobOfferViewModel()
+
+    @Provides
+    @Singleton
+    fun providesMapViewModel() = MapViewModel()
 
 //    @Provides
 //    @Singleton

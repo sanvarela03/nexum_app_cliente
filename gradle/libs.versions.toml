@@ -29,6 +29,11 @@ google = "4.4.1"
 googleServices = "4.4.1"
 roomRuntime = "2.6.1"
 composeMaterial = "1.4.1"
+timber = "5.0.1"
+
+mapsCompose = "4.3.3"
+places = "3.5.0"
+playServicesMaps = "19.0.0"
 
 
 [libraries]
@@ -103,6 +108,16 @@ glide-compose = { module = "com.github.bumptech.glide:compose", version.ref = "c
 
 # Swipe
 accompanist-swiperefresh = { module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanistSwiperefresh" }
+
+# Google Maps
+maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
+places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
+play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
+
+
+# Timber
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

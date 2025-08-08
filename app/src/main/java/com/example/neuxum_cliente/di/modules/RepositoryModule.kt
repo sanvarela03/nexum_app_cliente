@@ -34,8 +34,9 @@ object RepositoryModule {
     @Singleton
     fun provideAuthRepository(
         api: AuthApi,
-        tokenManager: TokenManager
-    ): AuthRepository = AuthRepositoryImpl(api, tokenManager)
+        tokenManager: TokenManager,
+        @IoDispatcher dispatcher: CoroutineDispatcher,
+    ): AuthRepository = AuthRepositoryImpl(api, tokenManager, dispatcher)
 
     @Provides
     @Singleton

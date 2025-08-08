@@ -1,6 +1,9 @@
 package com.example.neuxum_cliente.ui.presenter.home
 
 import android.annotation.SuppressLint
+import android.content.res.Configuration
+import android.view.Gravity
+import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -14,11 +17,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -29,7 +34,6 @@ import com.example.neuxum_cliente.ui.componets.NavigationDrawerHeader
 import com.example.neuxum_cliente.ui.navigation.graphs.Graph
 import com.example.neuxum_cliente.ui.navigation.graphs.homeGraph
 import com.example.neuxum_cliente.ui.navigation.rutes.HomeRoutes
-import com.example.neuxum_cliente.ui.presenter.sign_in.SignInViewModel
 import kotlinx.coroutines.launch
 
 /**
@@ -42,15 +46,17 @@ import kotlinx.coroutines.launch
 @SuppressLint("RestrictedApi")
 @Composable
 fun HomeScreen(
-    signInvViewModel: SignInViewModel = hiltViewModel(),
     homeViewModel: HomeViewModel = hiltViewModel(),
-    currentDestination: NavDestination? = null
 ) {
     val homeNavController = rememberNavController()
     val state = homeViewModel.state
     val client = state.clientEntity
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+
     val screens = listOf(
         HomeRoutes.CategoriesScreen,
         HomeRoutes.RequestsScreen,
@@ -62,6 +68,10 @@ fun HomeScreen(
         homeViewModel.updateClient(fetchFromRemote = true)
     }
 
+    if (state.errorMessage.isNotEmpty()) {
+        ErrorMsgToast(state)
+    }
+
 
     val navBackStackEntry = homeNavController.currentBackStackEntryAsState().value
     val currentDestination = navBackStackEntry?.destination
@@ -70,7 +80,7 @@ fun HomeScreen(
         currentDestination?.hierarchy?.any {
             it.hasRoute(destination::class)
         } == true
-    }
+    } && isPortrait
 
 
     ModalNavigationDrawer(
@@ -117,9 +127,11 @@ fun HomeScreen(
                     currentDestination = currentDestination,
                     navigateTo = {
                         homeNavController.navigate(it) {
-                            popUpTo(it) {
-                                inclusive = true
+                            popUpTo(homeNavController.graph.findStartDestination().id) {
+                                saveState = true
                             }
+                            restoreState = true
+                            launchSingleTop = true
                         }
 //                        {
 //                            popUpTo(homeNavController.graph.findStartDestination().id) {
@@ -148,5 +160,18 @@ fun HomeScreen(
         }
 
     }
+}
+
+@Composable
+private fun ErrorMsgToast(state: HomeState) {
+    val context = LocalContext.current.applicationContext
+    val toast =
+        Toast.makeText(
+            context,
+            "Error: ${state.errorMessage}",
+            Toast.LENGTH_SHORT
+        )
+    toast.setGravity(Gravity.BOTTOM, 0, 300)
+    toast.show()
 }
 

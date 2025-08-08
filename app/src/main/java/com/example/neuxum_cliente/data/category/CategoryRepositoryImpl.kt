@@ -1,5 +1,6 @@
 package com.example.neuxum_cliente.data.category
 
+import android.util.Log
 import com.example.neuxum_cliente.common.apiRequestFlow
 import com.example.neuxum_cliente.data.category.local.CategoryDao
 import com.example.neuxum_cliente.data.category.local.CategoryEntity
@@ -56,8 +57,12 @@ class CategoryRepositoryImpl @Inject constructor(
 
                 is ApiResponse.Success -> {
                     val dto = apiRes.data
+                    Log.d("CategoryRepositoryImpl", "DTO: ${dto.isEmpty()}")
                     if (dto.isEmpty()) {
-                        emit(ApiResponse.Error("Empty response from server"))
+                        Log.d("CategoryRepositoryImpl", "Empty response from server")
+                        categoryDao.clearAll()
+                        emit(ApiResponse.Success(Unit))
+                        // emit(ApiResponse.Error("Empty response from server"))
                     } else {
                         categoryDao.replaceCategories(CategoryParser.toEntity(dto))
                         emit(ApiResponse.Success(Unit))

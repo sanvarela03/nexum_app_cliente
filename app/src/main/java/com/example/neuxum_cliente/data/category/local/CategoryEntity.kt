@@ -15,8 +15,9 @@ import androidx.room.PrimaryKey
 data class CategoryEntity(
     @PrimaryKey
     val id: Long,
-    val name: String,
-    val description: String,
+    val name: String?,
+    val description: String?,
     val imageUrl: String?,
-    val iconName: String,
+    val serviceType: String?,
+    val iconName: String?,
 )
