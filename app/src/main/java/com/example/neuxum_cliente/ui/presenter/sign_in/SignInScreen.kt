@@ -115,7 +115,7 @@ fun SignInScreen(
             )
             ButtonComponent(
                 value = "Ingresar",
-                isEnabled = true,
+                isEnabled = viewModel.allValidationsPassed,
             ) {
                 viewModel.onEvent(SignInEvent.LoginButtonClicked)
             }

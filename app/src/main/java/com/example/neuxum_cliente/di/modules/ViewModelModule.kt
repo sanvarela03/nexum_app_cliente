@@ -3,6 +3,7 @@ package com.example.neuxum_cliente.di.modules
 import com.example.neuxum_cliente.domain.use_cases.auth.AuthUseCases
 import com.example.neuxum_cliente.ui.global_viewmodels.AuthViewModel
 import com.example.neuxum_cliente.ui.presenter.sign_in.SignInViewModel
+import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpViewModel
 import com.example.protapptest.security.TokenManager
 
 import dagger.Module
@@ -29,6 +30,13 @@ object ViewModelModule {
     ): SignInViewModel {
         return SignInViewModel(authUseCases, tokenManager, authViewModel)
     }
+
+    @Provides
+    @Singleton
+    fun provideSignUpViewModel(authUseCases: AuthUseCases): SignUpViewModel {
+        return SignUpViewModel(authUseCases)
+    }
+
 
 //    @Provides
 //    @Singleton

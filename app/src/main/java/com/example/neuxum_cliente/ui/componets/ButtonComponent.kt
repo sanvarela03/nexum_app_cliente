@@ -31,24 +31,17 @@ fun ButtonComponent(
             ,
         onClick = { onButtonClicked() },
         contentPadding = PaddingValues(),
-        colors = ButtonDefaults.buttonColors(Color.Transparent),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Black,
+            contentColor = Color.White
+        ),
         shape = RoundedCornerShape(8.dp),
         enabled = isEnabled
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(57.dp)
-                .background(
-                    color = Color.Black
-//                    brush = Brush.horizontalGradient(
-//                        listOf(
-//                            colorScheme.secondary,
-//                            colorScheme.primary
-//                        )
-//                    ),
-//                    shape = RoundedCornerShape(5.dp)
-                ),
+                .heightIn(57.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(

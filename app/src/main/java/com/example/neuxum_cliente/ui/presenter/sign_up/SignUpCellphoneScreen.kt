@@ -1,14 +1,17 @@
 package com.example.neuxum_cliente.ui.presenter.sign_up
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +27,18 @@ import com.example.neuxum_cliente.ui.componets.PagerNavigationComponent
 import com.example.neuxum_cliente.ui.theme.Neuxum_clienteTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.neuxum_cliente.ui.componets.MyNumberFieldComponent
 import com.example.neuxum_cliente.ui.componets.MyTextFieldComponent
 import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
@@ -38,9 +53,19 @@ import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun SignUpCellphoneScreen(
+    viewModel: SignUpViewModel = hiltViewModel(),
     go: (Any) -> Unit = {}
 ) {
+    var expanded by remember { mutableStateOf(false) }
+    var currentSelectedCode by remember { mutableStateOf("") }
+    val countryCodes = listOf(
+        "🇨🇴 +57",
+        "🇲🇽 +52",
+        "🇨🇱 +56"
+    )
     val textValue = rememberSaveable { mutableStateOf("") }
+    val state = viewModel.state
+
     Neuxum_clienteTheme {
         Column(
             modifier = Modifier
@@ -76,15 +101,48 @@ fun SignUpCellphoneScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        MyTextFieldComponent(
+                        Box(
                             modifier = Modifier
-                                .width(150.dp)
-                                .height(56.dp),
-                            labelValue = "Código",
-                            onTextSelected = {},
-                            trailingIcon = Icons.Default.ArrowDropDown,
-                            errorStatus = true,
-                        )
+                                .padding(8.dp)
+                                .border(
+                                    1.dp,
+                                    if (!state.phoneCodeError) Color.Red else Color(0xFFE6E6E6), // red if error, gray otherwise
+                                    RoundedCornerShape(12.dp)
+                                )
+                                .clip(RoundedCornerShape(12.dp))
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(start = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = if (currentSelectedCode.isEmpty()) "Código" else currentSelectedCode,
+                                    modifier = Modifier.padding(start = 5.dp)
+                                )
+                                IconButton(onClick = { expanded = !expanded }) {
+                                    Icon(
+                                        Icons.Default.ArrowDropDown,
+                                        contentDescription = "More options"
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false }
+                                ) {
+                                    countryCodes.forEach {
+                                        DropdownMenuItem(
+                                            text = { Text(it) },
+                                            onClick = {
+                                                currentSelectedCode = it
+                                                viewModel.onEvent(SignUpEvent.PhoneCodeChanged(currentSelectedCode))
+                                                expanded = false
+                                            },
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                     Column(modifier = Modifier.weight(1f)) {
                         MyNumberFieldComponent(
@@ -92,8 +150,10 @@ fun SignUpCellphoneScreen(
                                 .width(150.dp)
                                 .height(56.dp),
                             labelValue = "No. celular",
-                            onTextSelected = {},
-                            errorStatus = true,
+                            onTextSelected = {
+                                viewModel.onEvent(SignUpEvent.CellphoneChanged(it))
+                            },
+                            errorStatus = state.phoneError,
                             focusHops = 2
                         )
                     }
@@ -106,7 +166,8 @@ fun SignUpCellphoneScreen(
                              },
                     onNext = {
                         go(AuthRoutes.SignUpBirthdayScreen)
-                    }
+                    },
+                    enableNextButton = viewModel.signUpPhoneDataValidationPassed
                 )
             }
         }
