@@ -1,6 +1,7 @@
 package com.example.neuxum_cliente.ui.presenter.categories
 
 import android.content.Context
+import android.content.res.Configuration
 import android.util.Log
 import android.view.Gravity
 import android.widget.Toast
@@ -34,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -48,6 +50,7 @@ import com.example.neuxum_cliente.ui.componets.FilterChipComponent
 import com.example.neuxum_cliente.ui.navigation.rutes.JobOfferRoutes
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import timber.log.Timber
 
 /**
  * @author Santiago Varela Daza
@@ -63,29 +66,21 @@ fun CategoriesScreen(
     navController: NavController
 ) {
     val state = viewModel.state
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+    val categories = state.categories
+
     val swipeRefreshState = rememberSwipeRefreshState(
         isRefreshing = viewModel.state.isRefreshing
     )
-    val categories = state.categories
-//    Column {
-//        Text(text = "Categories: ${categoriesState.categories}")
-//        Text(text = "Client: ${state.clientEntity}")
-//    }
-    val context = LocalContext.current
-    Log.d("CategoriesScreen", "Recomposing. ErrorMessage: ${state.errorMessage}")
-    LaunchedEffect(state.errorMessage) {
-        Log.d(
-            "CategoriesScreen",
-            "LaunchedEffect triggered. ErrorMessage: ${state.errorMessage}"
-        )
-        if (state.errorMessage.isNotEmpty()) { // Comprueba si hay un mensaje de error
-            Log.d("CategoriesScreen", "Showing toast for error: ${state.errorMessage}")
-            errorMsgToast(state.errorMessage, context)
-            state.errorMessage = ""
-        } else {
-            Log.d("CategoriesScreen", "LAUNCHED_EFFECT: ErrorMessage is empty. No toast.")
-        }
-    }
+
+    var selectedServiceType by rememberSaveable { mutableStateOf("Todos") }
+    val options = listOf("Todos", "24 horas", "Remodelación", "Construcción")
+    val filteredCategories = categoryEntityList(selectedServiceType, categories)
+
+    ErrorMsg(state)
+
+    Timber.tag("CategoriesScreen").d("isRefreshing: ${viewModel.state.isRefreshing}")
 
     SwipeRefresh(
         state = swipeRefreshState,
@@ -107,17 +102,6 @@ fun CategoriesScreen(
                 textAlign = TextAlign.Left,
                 modifier = Modifier.padding(start = 10.dp)
             )
-            var selectedServiceType by rememberSaveable { mutableStateOf("Todos") }
-            val options = listOf("Todos", "24 horas", "Remodelación", "Construcción")
-
-            val filteredCategories = if (selectedServiceType == "Todos") {
-                categories
-            } else {
-                categories.filter {
-                    it.serviceType?.trim()?.equals(selectedServiceType, ignoreCase = true) == true
-                }
-            }
-
             FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -130,17 +114,13 @@ fun CategoriesScreen(
                     FilterChipComponent(
                         text = option,
                         isSelected = selectedServiceType == option,
-                        onClick = { selectedServiceType = option }
+                        onClick = { selectedServiceType = option },
+                        modifier = Modifier.defaultMinSize(minHeight = 24.dp),
                     )
                 }
             }
-
-            if (state.categories.isEmpty()) {
-                Text("No hay categorías disponibles")
-            }
-
             LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
+                columns = if (isPortrait) GridCells.Fixed(3) else GridCells.Fixed(4),
                 modifier = Modifier
                     .padding(horizontal = 10.dp, vertical = 10.dp)
                     .border(1.dp, color = Color(0xFFD9D9D9), shape = RoundedCornerShape(12.dp))
@@ -155,6 +135,42 @@ fun CategoriesScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun categoryEntityList(
+    selectedServiceType: String,
+    categories: List<CategoryEntity>
+): List<CategoryEntity> {
+    val filteredCategories = if (selectedServiceType == "Todos") {
+        categories
+    } else {
+        categories.filter {
+            it.serviceType?.trim()?.equals(selectedServiceType, ignoreCase = true) == true
+        }
+    }
+    return filteredCategories
+}
+
+@Composable
+private fun ErrorMsg(
+    state: CategoriesState
+) {
+    val context = LocalContext.current
+    Log.d("CategoriesScreen", "Recomposing. ErrorMessage: ${state.errorMessage}")
+    LaunchedEffect(state.errorMessage) {
+        Log.d(
+            "CategoriesScreen",
+            "LaunchedEffect triggered. ErrorMessage: ${state.errorMessage}"
+        )
+        if (state.errorMessage.isNotEmpty()) { // Comprueba si hay un mensaje de error
+            Log.d("CategoriesScreen", "Showing toast for error: ${state.errorMessage}")
+            errorMsgToast(state.errorMessage, context)
+            state.errorMessage = ""
+        } else {
+            Log.d("CategoriesScreen", "LAUNCHED_EFFECT: ErrorMessage is empty. No toast.")
         }
     }
 }
@@ -182,8 +198,8 @@ private fun CategoryItem(
                 .height(108.dp)
                 .clip(RoundedCornerShape(12.dp)),
             contentScale = ContentScale.Crop,
+        )
 
-            )
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally

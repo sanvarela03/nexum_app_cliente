@@ -2,6 +2,9 @@ package com.example.neuxum_cliente.ui.presenter.map
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Address
+import android.location.Geocoder
+import android.os.Build
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
@@ -10,8 +13,8 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import timber.log.Timber
+import java.util.Locale
 import javax.inject.Inject
-
 
 /**
  * @author Santiago Varela Daza
@@ -48,6 +51,39 @@ class MapViewModel @Inject constructor() : ViewModel() {
             }
         } else {
             Timber.e("Location permission is not granted.")
+        }
+    }
+
+    fun getAddressFromLatLng(
+        context: Context,
+        lat: Double,
+        lng: Double,
+        onResult: (String?) -> Unit
+    ) {
+        val geocoder = Geocoder(context, Locale.getDefault())
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // API 33+ (Android 13) usa callback asíncrono
+            geocoder.getFromLocation(lat, lng, 1) { addresses: List<Address> ->
+                if (addresses.isNotEmpty()) {
+                    onResult(addresses[0].getAddressLine(0))
+                } else {
+                    onResult(null)
+                }
+            }
+        } else {
+            // Versiones antiguas: llamada síncrona
+            try {
+                val addresses = geocoder.getFromLocation(lat, lng, 1)
+                if (!addresses.isNullOrEmpty()) {
+                    onResult(addresses[0].getAddressLine(0))
+                } else {
+                    onResult(null)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                onResult(null)
+            }
         }
     }
 }

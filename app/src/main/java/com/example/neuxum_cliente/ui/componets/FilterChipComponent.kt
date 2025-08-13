@@ -1,20 +1,20 @@
 package com.example.neuxum_cliente.ui.componets
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -29,6 +29,9 @@ import androidx.compose.ui.unit.sp
 @Preview(showBackground = true, showSystemUi = true)
 fun FilterChipComponent(
     text: String = "Ejemplo",
+    fontSize: TextUnit = 12.sp,
+    fontWeight: FontWeight = FontWeight.Normal,
+    modifier: Modifier = Modifier,
     isSelected: Boolean = false,
     onClick: () -> Unit = {}
 ) {
@@ -40,18 +43,25 @@ fun FilterChipComponent(
         ),
         shape = RoundedCornerShape(12.dp),
         label = {
-            Text(
-                text = text,
-                fontSize = 12.sp,
-                color = if (isSelected) Color.White else Color.Black,
-                modifier = Modifier.padding(horizontal = 1.dp) // <--- reduce ancho
-            )
+            Box(
+                modifier = Modifier
+                    .wrapContentHeight(), // Solo la altura necesaria
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = text,
+                    fontSize = fontSize,
+                    fontWeight = fontWeight,
+                    textAlign = TextAlign.Center,
+                    color = if (isSelected) Color.White else Color.Black,
+                )
+            }
         },
         selected = isSelected,
         colors = FilterChipDefaults.filterChipColors(
             selectedContainerColor = Color.Black,
         ),
-        modifier = Modifier.defaultMinSize(minHeight = 27.dp) // <--- ajusta al contenido
+        modifier = modifier // <--- ajusta al contenido
     )
 
 }
