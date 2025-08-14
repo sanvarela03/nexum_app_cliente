@@ -5,12 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.neuxum_cliente.domain.use_cases.auth.AuthUseCases
-import com.example.neuxum_cliente.ui.global_viewmodels.AuthViewModel
-import com.example.neuxum_cliente.ui.presenter.sign_in.SignInState
-import com.example.neuxum_cliente.ui.presenter.sign_in.SignInValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import javax.inject.Singleton
 
 @HiltViewModel
 class SignUpViewModel
@@ -23,6 +19,7 @@ class SignUpViewModel
     var signUpEmailValidationPassed by mutableStateOf(false)
     var signUpUserDataValidationPassed by mutableStateOf(false)
     var signUpPhoneDataValidationPassed by mutableStateOf(false)
+    var signUpBirthDateValidationPassed by mutableStateOf(false)
 
     fun onEvent(event: SignUpEvent) {
         when (event) {
@@ -46,11 +43,16 @@ class SignUpViewModel
                 state = state.copy(phone = event.phone)
             }
 
+            is SignUpEvent.BirthDateChanged -> {
+                state = state.copy(birthDate = event.birthDate)
+            }
+
             SignUpEvent.ContinueButtonClicked -> {}
         }
         validateSignUpEmail()
         validateSignUpUserData()
         validateSignUpPhoneData()
+        validateSignUpBirthDate()
     }
 
     private fun validateSignUpEmail() {
@@ -98,6 +100,19 @@ class SignUpViewModel
 
         signUpPhoneDataValidationPassed = phoneCodeResult.status && cellphoneResult.status
     }
+
+    private fun validateSignUpBirthDate() {
+        val birthDateResult = SignUpValidator.validateBirthDate(
+            birthDate = state.birthDate
+        )
+
+        state = state.copy(
+            birthDateError = birthDateResult.status,
+        )
+
+        signUpBirthDateValidationPassed = birthDateResult.status
+    }
+
 }
 
 

@@ -66,110 +66,107 @@ fun SignUpCellphoneScreen(
     val textValue = rememberSaveable { mutableStateOf("") }
     val state = viewModel.state
 
-    Neuxum_clienteTheme {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(
+                start = 20.dp,
+                top = 80.dp,    // ↑ increase this value
+                end = 20.dp,
+                bottom = 20.dp
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    )
+    {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    start = 20.dp,
-                    top = 80.dp,    // ↑ increase this value
-                    end = 20.dp,
-                    bottom = 20.dp
-                ),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         )
         {
-            Column(
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+            Text(
+                "¿Cuál es tu número de teléfono?",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 25.sp,
+                textAlign = TextAlign.Start,
             )
-            {
-                Text(
-                    "¿Cuál es tu número de teléfono?",
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 25.sp,
-                    textAlign = TextAlign.Start,
-                )
-                Text(
-                    "Celular",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Box(
+            Text(
+                "Celular",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Box(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .border(
+                                1.dp,
+                                if (!state.phoneCodeError) Color.Red else Color(0xFFE6E6E6), // red if error, gray otherwise
+                                RoundedCornerShape(12.dp)
+                            )
+                            .clip(RoundedCornerShape(12.dp))
+                    ) {
+                        Row(
                             modifier = Modifier
-                                .padding(8.dp)
-                                .border(
-                                    1.dp,
-                                    if (!state.phoneCodeError) Color.Red else Color(0xFFE6E6E6), // red if error, gray otherwise
-                                    RoundedCornerShape(12.dp)
-                                )
-                                .clip(RoundedCornerShape(12.dp))
+                                .padding(start = 5.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(start = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = if (currentSelectedCode.isEmpty()) "Código" else currentSelectedCode,
-                                    modifier = Modifier.padding(start = 5.dp)
+                            Text(
+                                text = if (currentSelectedCode.isEmpty()) "Código" else currentSelectedCode,
+                                modifier = Modifier.padding(start = 5.dp)
+                            )
+                            IconButton(onClick = { expanded = !expanded }) {
+                                Icon(
+                                    Icons.Default.ArrowDropDown,
+                                    contentDescription = "More options"
                                 )
-                                IconButton(onClick = { expanded = !expanded }) {
-                                    Icon(
-                                        Icons.Default.ArrowDropDown,
-                                        contentDescription = "More options"
+                            }
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                countryCodes.forEach {
+                                    DropdownMenuItem(
+                                        text = { Text(it) },
+                                        onClick = {
+                                            currentSelectedCode = it
+                                            viewModel.onEvent(SignUpEvent.PhoneCodeChanged(currentSelectedCode))
+                                            expanded = false
+                                        },
                                     )
-                                }
-                                DropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false }
-                                ) {
-                                    countryCodes.forEach {
-                                        DropdownMenuItem(
-                                            text = { Text(it) },
-                                            onClick = {
-                                                currentSelectedCode = it
-                                                viewModel.onEvent(SignUpEvent.PhoneCodeChanged(currentSelectedCode))
-                                                expanded = false
-                                            },
-                                        )
-                                    }
                                 }
                             }
                         }
                     }
-                    Column(modifier = Modifier.weight(1f)) {
-                        MyNumberFieldComponent(
-                            modifier = Modifier
-                                .width(150.dp)
-                                .height(56.dp),
-                            labelValue = "No. celular",
-                            onTextSelected = {
-                                viewModel.onEvent(SignUpEvent.CellphoneChanged(it))
-                            },
-                            errorStatus = state.phoneError,
-                            focusHops = 2
-                        )
-                    }
                 }
-                Spacer(modifier = Modifier.weight(1f))
-                PagerNavigationComponent(
-                    onBack = {
-                        //TODO Navegar al registro
-                        go(AuthRoutes.SignUpScreen)
-                             },
-                    onNext = {
-                        go(AuthRoutes.SignUpBirthdayScreen)
-                    },
-                    enableNextButton = viewModel.signUpPhoneDataValidationPassed
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    MyNumberFieldComponent(
+                        modifier = Modifier
+                            .width(150.dp)
+                            .height(56.dp),
+                        labelValue = "No. celular",
+                        onTextSelected = {
+                            viewModel.onEvent(SignUpEvent.CellphoneChanged(it))
+                        },
+                        errorStatus = state.phoneError,
+                        focusHops = 2
+                    )
+                }
             }
+            Spacer(modifier = Modifier.weight(1f))
+            PagerNavigationComponent(
+                onBack = {
+                    go(AuthRoutes.SignUpUserDataScreen)
+                         },
+                onNext = {
+                    go(AuthRoutes.SignUpBirthdayScreen)
+                },
+                enableNextButton = viewModel.signUpPhoneDataValidationPassed
+            )
         }
     }
 

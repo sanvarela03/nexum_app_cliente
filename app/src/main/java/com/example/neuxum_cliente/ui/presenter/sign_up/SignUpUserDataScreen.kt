@@ -33,68 +33,66 @@ fun SignUpUserDataScreen(
 
     val textValue = rememberSaveable { mutableStateOf("") }
     Log.d("TAG", "SignUpUserDataScreen: ${state.email}")
-    Neuxum_clienteTheme {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(
+                start = 20.dp,
+                top = 80.dp,    // ↑ increase this value
+                end = 20.dp,
+                bottom = 20.dp
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    )
+    {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    start = 20.dp,
-                    top = 80.dp,    // ↑ increase this value
-                    end = 20.dp,
-                    bottom = 20.dp
-                ),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         )
         {
-            Column(
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+            Text(
+                "¿Cómo te llamas?",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 20.sp,
+                textAlign = TextAlign.Center,
             )
-            {
-                Text(
-                    "¿Cómo te llamas?",
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center,
-                )
-                Text("Dinos cómo debemos llamarte \uD83D\uDE0A", fontSize = 14.sp)
+            Text("Dinos cómo debemos llamarte \uD83D\uDE0A", fontSize = 14.sp)
 
-                Text(
-                    "Nombre",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center,
-                )
-                MyTextFieldComponent(
-                    labelValue = "Ingrese su nombre",
-                    textValue = state.name,
-                    onTextSelected = {
-                        viewModel.onEvent(SignUpEvent.NameChanged(it))
-                    },
-                    errorStatus = state.nameError
-                )
-                Text(
-                    "Apellido",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center,
-                )
-                MyTextFieldComponent(
-                    labelValue = "Ingrese su apellido",
-                    textValue = state.lastName,
-                    onTextSelected = {
-                        viewModel.onEvent(SignUpEvent.LastNameChanged(it))
-                    },
-                    errorStatus = state.lastNameError
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                PagerNavigationComponent(
-                    onBack = { go(AuthRoutes.SignInScreen) },
-                    onNext = { go(AuthRoutes.SignUpCellphoneScreen) },
-                    enableNextButton = viewModel.signUpUserDataValidationPassed
-                )
-            }
+            Text(
+                "Nombre",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+            )
+            MyTextFieldComponent(
+                labelValue = "Ingrese su nombre",
+                textValue = state.name,
+                onTextSelected = {
+                    viewModel.onEvent(SignUpEvent.NameChanged(it))
+                },
+                errorStatus = state.nameError
+            )
+            Text(
+                "Apellido",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+            )
+            MyTextFieldComponent(
+                labelValue = "Ingrese su apellido",
+                textValue = state.lastName,
+                onTextSelected = {
+                    viewModel.onEvent(SignUpEvent.LastNameChanged(it))
+                },
+                errorStatus = state.lastNameError
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            PagerNavigationComponent(
+                onBack = { go(AuthRoutes.SignUpScreen) },
+                onNext = { go(AuthRoutes.SignUpCellphoneScreen) },
+                enableNextButton = viewModel.signUpUserDataValidationPassed
+            )
         }
     }
 

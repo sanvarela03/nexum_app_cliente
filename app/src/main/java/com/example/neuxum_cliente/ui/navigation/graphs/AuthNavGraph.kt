@@ -6,7 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
 import com.example.neuxum_cliente.ui.presenter.sign_in.SignInScreen
-import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpBirthdayScreen
+import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpBirthDateScreen
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpCellphoneScreen
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpScreen
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpUserDataScreen
@@ -26,6 +26,6 @@ fun NavGraphBuilder.authGraph(
         composable<AuthRoutes.SignUpScreen> { SignUpScreen(go = { navController.navigate(it) }) }
         composable<AuthRoutes.SignUpUserDataScreen> { SignUpUserDataScreen(go = { navController.navigate(it) }) }
         composable<AuthRoutes.SignUpCellphoneScreen> { SignUpCellphoneScreen(go = { navController.navigate(it) }) }
-        composable<AuthRoutes.SignUpBirthdayScreen> { SignUpBirthdayScreen() }
+        composable<AuthRoutes.SignUpBirthdayScreen> { SignUpBirthDateScreen(go = { navController.navigate(it) }) }
     }
 }

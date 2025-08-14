@@ -64,6 +64,8 @@ object SignUpValidator {
         return ValidationResult(true)
     }
 
-
+    fun validateBirthDate(birthDate: String?): ValidationResult = ValidationResult(
+        !birthDate.isNullOrEmpty()
+    )
 
 }
