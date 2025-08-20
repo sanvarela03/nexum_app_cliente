@@ -1,8 +1,7 @@
 package com.example.neuxum_cliente.ui.componets
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -43,10 +42,8 @@ fun FilterChipComponent(
         ),
         shape = RoundedCornerShape(12.dp),
         label = {
-            Box(
-                modifier = Modifier
-                    .wrapContentHeight(), // Solo la altura necesaria
-                contentAlignment = Alignment.Center
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = text,

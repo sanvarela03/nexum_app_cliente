@@ -1,5 +1,6 @@
 package com.example.neuxum_cliente.ui.presenter.sign_in
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,11 +34,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.neuxum_cliente.R
+import com.example.neuxum_cliente.ui.componets.ButtonComponent
 import com.example.neuxum_cliente.ui.componets.DividerTextComponent
+import com.example.neuxum_cliente.ui.componets.MyTextFieldComponent
 import com.example.neuxum_cliente.ui.componets.PasswordTextFieldComponent
 import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
-import com.example.neuxum_cliente.ui.componets.ButtonComponent
-import com.example.neuxum_cliente.ui.componets.MyTextFieldComponent
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
@@ -49,6 +50,8 @@ fun SignInScreen(
 
     val state = viewModel.state
 
+    Log.d("SignInScreen", "email error: ${state.emailError}")
+    Log.d("SignInScreen", "password error: ${state.passwordError}")
 
     Column(
         modifier = Modifier
@@ -82,11 +85,11 @@ fun SignInScreen(
             MyTextFieldComponent(
                 labelValue = "Ingrese su correo",
                 textValue = state.email,
-                icon = Icons.Default.Email,
+                leadingIcon = Icons.Default.Email,
                 onTextSelected = {
                     viewModel.onEvent(SignInEvent.UsernameChanged(it))
                 },
-                errorStatus = state.emailError
+                errorStatus = state.emailError,
             )
             PasswordTextFieldComponent(
                 labelValue = "Ingrese su contraseña",
@@ -100,7 +103,7 @@ fun SignInScreen(
             ForgotPasswordText(viewModel)
             ButtonComponent(
                 value = "Ingresar",
-                isEnabled = true,
+                isEnabled = viewModel.allValidationsPassed,
             ) {
                 viewModel.onEvent(SignInEvent.LoginButtonClicked)
             }
