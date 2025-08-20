@@ -100,7 +100,7 @@ fun SignInScreen(
             ForgotPasswordText(viewModel)
             ButtonComponent(
                 value = "Ingresar",
-                isEnabled = true,
+                isEnabled = viewModel.allValidationsPassed,
             ) {
                 viewModel.onEvent(SignInEvent.LoginButtonClicked)
             }

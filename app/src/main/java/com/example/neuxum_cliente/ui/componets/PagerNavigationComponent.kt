@@ -29,7 +29,8 @@ import androidx.compose.ui.graphics.Color
 @Composable
 fun PagerNavigationComponent(
     onBack: () -> Unit,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    enableNextButton: Boolean = true
 ) {
     Row(
         modifier = Modifier
@@ -54,7 +55,8 @@ fun PagerNavigationComponent(
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Black,
                 contentColor = Color.White
-            )
+            ),
+            enabled = enableNextButton
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowForward,

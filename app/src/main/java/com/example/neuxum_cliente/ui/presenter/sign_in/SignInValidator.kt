@@ -12,7 +12,8 @@ import com.example.neuxum_cliente.ui.common.ValidationResult
  */
 object SignInValidator {
     fun validateEmail(email: String?): ValidationResult = ValidationResult(
-        !email.isNullOrEmpty() && email.length >= 4 && email.length < 20
+        !email.isNullOrEmpty() && email.length >= 4 && email.length < 20,
+        "Email cannot be empty."
     )
 
     fun validatePassword(password: String?): ValidationResult = ValidationResult(

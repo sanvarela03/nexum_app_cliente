@@ -7,6 +7,7 @@ import com.example.neuxum_cliente.ui.presenter.categories.CategoriesViewModel
 import com.example.neuxum_cliente.ui.presenter.job_offer.JobOfferViewModel
 import com.example.neuxum_cliente.ui.presenter.map.MapViewModel
 import com.example.neuxum_cliente.ui.presenter.sign_in.SignInViewModel
+import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpViewModel
 import com.example.protapptest.security.TokenManager
 
 import dagger.Module
@@ -33,6 +34,13 @@ object ViewModelModule {
     ): SignInViewModel {
         return SignInViewModel(authUseCases, tokenManager, authViewModel)
     }
+
+    @Provides
+    @Singleton
+    fun provideSignUpViewModel(authUseCases: AuthUseCases): SignUpViewModel {
+        return SignUpViewModel(authUseCases)
+    }
+
 
     @Provides
     @Singleton

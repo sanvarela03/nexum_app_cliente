@@ -9,5 +9,6 @@ package com.example.neuxum_cliente.ui.common
  * @version 1.0
  */
 data class ValidationResult(
-    val status: Boolean = false
+    val status: Boolean = false,
+    val string: String = ""
 )

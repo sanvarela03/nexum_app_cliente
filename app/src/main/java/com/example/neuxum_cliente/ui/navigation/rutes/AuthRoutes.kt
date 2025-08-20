@@ -30,4 +30,7 @@ sealed class AuthRoutes {
     @Serializable
     object SignUpCellphoneScreen : AuthRoutes()
 
+    @Serializable
+    object SignUpUserDataScreen : AuthRoutes()
+
 }
