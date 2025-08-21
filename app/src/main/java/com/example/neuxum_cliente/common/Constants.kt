@@ -9,6 +9,6 @@ package com.example.neuxum_cliente.common
  */
 //private val IP = "172.27.80.1"
 //private val IP = "172.31.16.1"
-private val IP = "192.168.2.104"
+private val IP = "192.168.2.100"
 private val PORT = "8080"
 val HOST_URL = "http://$IP:$PORT"
