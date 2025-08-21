@@ -6,10 +6,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
 import com.example.neuxum_cliente.ui.presenter.sign_in.SignInScreen
-import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpBirthDateScreen
-import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpCellphoneScreen
-import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpScreen
-import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpUserDataScreen
+import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpBirthDateScreen
+import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpCellphoneScreen
+import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpCityScreen
+import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpIDScreen
+import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpScreen
+import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpUserDataScreen
 
 /**
  * @author Santiago Varela Daza
@@ -27,5 +29,7 @@ fun NavGraphBuilder.authGraph(
         composable<AuthRoutes.SignUpUserDataScreen> { SignUpUserDataScreen(go = { navController.navigate(it) }) }
         composable<AuthRoutes.SignUpCellphoneScreen> { SignUpCellphoneScreen(go = { navController.navigate(it) }) }
         composable<AuthRoutes.SignUpBirthdayScreen> { SignUpBirthDateScreen(go = { navController.navigate(it) }) }
+        composable<AuthRoutes.SignUpCityScreen> { SignUpCityScreen(go = { navController.navigate(it) }) }
+        composable<AuthRoutes.SignUpIDScreen> { SignUpIDScreen(go = { navController.navigate(it) }) }
     }
 }

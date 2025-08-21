@@ -1,4 +1,4 @@
-package com.example.neuxum_cliente.ui.presenter.sign_up
+package com.example.neuxum_cliente.ui.presenter.sign_up.screens
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +21,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.neuxum_cliente.ui.componets.MyTextFieldComponent
 import com.example.neuxum_cliente.ui.componets.PagerNavigationComponent
 import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
-import com.example.neuxum_cliente.ui.theme.Neuxum_clienteTheme
+import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpEvent
+import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpViewModel
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
