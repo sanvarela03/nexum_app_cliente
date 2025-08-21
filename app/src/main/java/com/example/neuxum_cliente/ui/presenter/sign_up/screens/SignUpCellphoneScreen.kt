@@ -1,4 +1,4 @@
-package com.example.neuxum_cliente.ui.presenter.sign_up
+package com.example.neuxum_cliente.ui.presenter.sign_up.screens
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row
@@ -24,11 +24,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.neuxum_cliente.ui.componets.PagerNavigationComponent
-import com.example.neuxum_cliente.ui.theme.Neuxum_clienteTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -40,8 +37,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.neuxum_cliente.ui.componets.MyNumberFieldComponent
-import com.example.neuxum_cliente.ui.componets.MyTextFieldComponent
 import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
+import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpEvent
+import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpViewModel
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -57,14 +55,13 @@ fun SignUpCellphoneScreen(
     go: (Any) -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var currentSelectedCode by remember { mutableStateOf("") }
+    val state = viewModel.state
     val countryCodes = listOf(
         "🇨🇴 +57",
         "🇲🇽 +52",
         "🇨🇱 +56"
     )
-    val textValue = rememberSaveable { mutableStateOf("") }
-    val state = viewModel.state
+    var currentSelectedCode by remember { mutableStateOf(state.phoneCode) }
 
     Column(
         modifier = Modifier
@@ -105,7 +102,7 @@ fun SignUpCellphoneScreen(
                             .padding(8.dp)
                             .border(
                                 1.dp,
-                                if (!state.phoneCodeError) Color.Red else Color(0xFFE6E6E6), // red if error, gray otherwise
+                                if (!state.phoneCodeError) Color.Red else Color(0xFFE6E6E6),
                                 RoundedCornerShape(12.dp)
                             )
                             .clip(RoundedCornerShape(12.dp))
@@ -149,6 +146,7 @@ fun SignUpCellphoneScreen(
                             .width(150.dp)
                             .height(56.dp),
                         labelValue = "No. celular",
+                        numberValue = state.phone,
                         onTextSelected = {
                             viewModel.onEvent(SignUpEvent.CellphoneChanged(it))
                         },

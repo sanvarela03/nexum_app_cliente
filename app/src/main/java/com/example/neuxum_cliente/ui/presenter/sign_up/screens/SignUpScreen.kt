@@ -1,4 +1,4 @@
-package com.example.neuxum_cliente.ui.presenter.sign_up
+package com.example.neuxum_cliente.ui.presenter.sign_up.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -14,14 +14,12 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -37,8 +35,8 @@ import com.example.neuxum_cliente.ui.componets.ButtonComponent
 import com.example.neuxum_cliente.ui.componets.DividerTextComponent
 import com.example.neuxum_cliente.ui.componets.MyTextFieldComponent
 import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
-import com.example.neuxum_cliente.ui.presenter.sign_in.SignInEvent
-import com.example.neuxum_cliente.ui.presenter.sign_in.SignInViewModel
+import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpEvent
+import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpViewModel
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -146,7 +144,6 @@ private fun TosAndPolicyText(go: (Any) -> Unit) {
             annotatedString.getStringAnnotations(offset, offset).firstOrNull()
                 ?.also { span ->
                     if ((span.item == signUpTxt)) {
-                        //TODO Navegar al registro
                         go(AuthRoutes.SignUpScreen)
                     }
                 }

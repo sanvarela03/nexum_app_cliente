@@ -20,6 +20,8 @@ class SignUpViewModel
     var signUpUserDataValidationPassed by mutableStateOf(false)
     var signUpPhoneDataValidationPassed by mutableStateOf(false)
     var signUpBirthDateValidationPassed by mutableStateOf(false)
+    var signUpCityValidationPassed by mutableStateOf(false)
+    var signUpDocumentNumberValidationPassed by mutableStateOf(false)
 
     fun onEvent(event: SignUpEvent) {
         when (event) {
@@ -47,12 +49,22 @@ class SignUpViewModel
                 state = state.copy(birthDate = event.birthDate)
             }
 
+            is SignUpEvent.CityChanged -> {
+                state = state.copy(city = event.city)
+            }
+
+            is SignUpEvent.DocumentNumberChanged -> {
+                state = state.copy(documentNumber = event.documentNumber)
+            }
+
             SignUpEvent.ContinueButtonClicked -> {}
         }
         validateSignUpEmail()
         validateSignUpUserData()
         validateSignUpPhoneData()
         validateSignUpBirthDate()
+        validateSignUpCity()
+        validateSignUpDocumentNumber()
     }
 
     private fun validateSignUpEmail() {
@@ -111,6 +123,32 @@ class SignUpViewModel
         )
 
         signUpBirthDateValidationPassed = birthDateResult.status
+    }
+
+    private fun validateSignUpCity() {
+        val cityResult = SignUpValidator.validateCity(
+            city = state.city
+        )
+
+        state = state.copy(
+            cityError = cityResult.status,
+        )
+
+        signUpCityValidationPassed = cityResult.status
+
+    }
+
+    private fun validateSignUpDocumentNumber() {
+        val documentNumberResult = SignUpValidator.validateDocumentNumber(
+            documentNumber = state.documentNumber
+        )
+
+        state = state.copy(
+            documentNumberError = documentNumberResult.status,
+        )
+
+        signUpDocumentNumberValidationPassed = documentNumberResult.status
+
     }
 
 }

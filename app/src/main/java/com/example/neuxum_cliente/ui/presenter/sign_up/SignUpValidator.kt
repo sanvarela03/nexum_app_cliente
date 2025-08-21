@@ -68,4 +68,16 @@ object SignUpValidator {
         !birthDate.isNullOrEmpty()
     )
 
+    fun validateCity(city: String?): ValidationResult = ValidationResult(
+        !city.isNullOrEmpty()
+    )
+
+    fun validateDocumentNumber(documentNumber: String?): ValidationResult {
+        val isValid = !documentNumber.isNullOrEmpty() &&
+                documentNumber.all { it.isDigit() } &&
+                documentNumber.length in 6..10
+
+        return ValidationResult(isValid)
+    }
+
 }

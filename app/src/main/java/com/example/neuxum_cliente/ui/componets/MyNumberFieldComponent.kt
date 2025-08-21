@@ -45,15 +45,15 @@ fun MyNumberFieldComponent(
     labelValue: String,
     icon: ImageVector? = null,
     trailingIcon: ImageVector? = null,
+    numberValue: String = "",
     onTextSelected: (String) -> Unit,
     errorStatus: Boolean = false,
     focusHops: Int = 1
 ) {
-    val textValue = rememberSaveable { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
 
     OutlinedTextField(
-        value = textValue.value,
+        value = numberValue,
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color.Blue,        // cuando está enfocado
             unfocusedBorderColor = Color(0xFFE6E6E6), // cuando no está enfocado
@@ -82,7 +82,6 @@ fun MyNumberFieldComponent(
         singleLine = true,
         maxLines = 1,
         onValueChange = {
-            textValue.value = it
             onTextSelected(it)
         },
         leadingIcon = icon?.let { nonNullIcon ->

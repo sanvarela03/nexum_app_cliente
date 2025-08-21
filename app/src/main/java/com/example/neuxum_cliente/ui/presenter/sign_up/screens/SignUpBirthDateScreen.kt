@@ -1,4 +1,4 @@
-package com.example.neuxum_cliente.ui.presenter.sign_up
+package com.example.neuxum_cliente.ui.presenter.sign_up.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,6 +23,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.neuxum_cliente.ui.componets.DateOfBirthPicker
 import com.example.neuxum_cliente.ui.componets.PagerNavigationComponent
 import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
+import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpEvent
+import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpViewModel
 import java.util.Calendar
 
 /**
@@ -82,7 +84,8 @@ fun SignUpBirthDateScreen(
                 maxYear = Calendar.getInstance().get(Calendar.YEAR) - 18,
                 onDateChanged = { y, m, d ->
                     year = y; month = m; day = d;
-                    viewModel.onEvent(SignUpEvent.BirthDateChanged(
+                    viewModel.onEvent(
+                        SignUpEvent.BirthDateChanged(
                         "$y-$m-$d"
                     ))
                 }
@@ -98,7 +101,7 @@ fun SignUpBirthDateScreen(
                 go(AuthRoutes.SignUpCellphoneScreen)
             },
             onNext = {
-                go(AuthRoutes.SignUpBirthdayScreen)
+                go(AuthRoutes.SignUpCityScreen)
             },
             enableNextButton = viewModel.signUpBirthDateValidationPassed
         )
