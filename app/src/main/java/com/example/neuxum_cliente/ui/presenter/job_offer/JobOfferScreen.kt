@@ -36,7 +36,7 @@ import com.example.neuxum_cliente.ui.components.FilterChipComponent
 import com.example.neuxum_cliente.ui.components.MyDialog2
 import com.example.neuxum_cliente.ui.components.MyTextFieldComponent
 import com.example.neuxum_cliente.ui.components.MyTextFieldComponent2
-import com.example.neuxum_cliente.ui.components.PhotoPickerComponent
+import com.example.neuxum_cliente.ui.components.MultiplePhotoPickerComponent
 import com.example.neuxum_cliente.ui.components.Stepper
 import com.example.neuxum_cliente.ui.presenter.map.MapScreen
 
@@ -114,7 +114,7 @@ fun JobOfferScreen(
         )
         Text("Agregar evidencia", fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
-        PhotoPickerComponent(
+        MultiplePhotoPickerComponent(
             selectedImages = state.images,
             onAddImage = { images ->
                 viewModel.onEvent(JobOfferEvent.AddImage(images))
