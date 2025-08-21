@@ -110,6 +110,23 @@ dependencies {
 
     //Glide
     implementation(libs.glide.compose)
+
+    // Swipe
+    implementation(libs.accompanist.swiperefresh)
+
+    // Google Maps SDK for Android
+    implementation(libs.places)
+    implementation(libs.play.services.maps)
+
+    // Google maps Compose
+    implementation(libs.maps.compose)
+
+    // Timber
+    implementation(libs.timber)
+
+    // Constraint layout
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.constraintlayout.compose)
 }
 kapt {
     correctErrorTypes = true

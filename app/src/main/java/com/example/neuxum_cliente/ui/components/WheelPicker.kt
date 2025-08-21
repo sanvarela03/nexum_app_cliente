@@ -1,4 +1,4 @@
-package com.example.neuxum_cliente.ui.componets
+package com.example.neuxum_cliente.ui.components
 
 import android.util.Log
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior

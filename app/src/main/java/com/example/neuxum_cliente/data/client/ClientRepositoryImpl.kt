@@ -1,5 +1,6 @@
 package com.example.neuxum_cliente.data.client
 
+import android.util.Log
 import com.example.neuxum_cliente.common.apiRequestFlow
 import com.example.neuxum_cliente.data.client.local.ClientDao
 import com.example.neuxum_cliente.data.client.local.ClientEntity
@@ -64,7 +65,9 @@ class ClientRepositoryImpl @Inject constructor(
         apiRequestFlow { clientApi.getClient() }
             .collect { apiRes ->
                 when (apiRes) {
-                    is ApiResponse.Loading -> {}
+                    is ApiResponse.Loading -> {
+                        emit(ApiResponse.Loading)
+                    }
 
                     is ApiResponse.Failure -> {
                         emit(ApiResponse.Failure(apiRes.errorMessage, apiRes.code))
@@ -76,6 +79,7 @@ class ClientRepositoryImpl @Inject constructor(
 
                     is ApiResponse.Success -> {
                         val dto = apiRes.data
+                        Log.d("ClientRepositoryImpl", "DTO: $dto")
                         if (dto == null) {
                             emit(ApiResponse.Error("Empty response from server"))
                         } else {

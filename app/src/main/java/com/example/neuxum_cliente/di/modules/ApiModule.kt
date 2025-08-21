@@ -2,6 +2,7 @@ package com.example.neuxum_cliente.di.modules
 
 import com.example.neuxum_cliente.common.HOST_URL
 import com.example.neuxum_cliente.data.auth.remote.AuthApi
+import com.example.neuxum_cliente.data.category.remote.CategoryApi
 import com.example.neuxum_cliente.data.client.remote.ClientApi
 import com.example.protapptest.security.AuthAuthenticator
 import com.example.protapptest.security.AuthInterceptor
@@ -45,6 +46,11 @@ object ApiModule {
 
     @Provides
     @Singleton
+    fun provideRetrofitBuilder(): Retrofit.Builder =
+        Retrofit.Builder().baseUrl(HOST_URL).addConverterFactory(GsonConverterFactory.create())
+
+    @Provides
+    @Singleton
     fun provideAuthAPI(
         okHttpClient: OkHttpClient, //TODO Arreglar para ingresar y registrarse y para el refresh
         retrofit: Retrofit.Builder
@@ -59,9 +65,13 @@ object ApiModule {
     ): ClientApi =
         retrofit.client(okHttpClient).build().create(ClientApi::class.java)
 
-
     @Provides
     @Singleton
-    fun provideRetrofitBuilder(): Retrofit.Builder =
-        Retrofit.Builder().baseUrl(HOST_URL).addConverterFactory(GsonConverterFactory.create())
+    fun provideCategoryAPI(
+        okHttpClient: OkHttpClient,
+        retrofit: Retrofit.Builder
+    ): CategoryApi =
+        retrofit.client(okHttpClient).build().create(CategoryApi::class.java)
+
+
 }

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,8 +23,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.neuxum_cliente.ui.componets.MyNumberFieldComponent
-import com.example.neuxum_cliente.ui.componets.PagerNavigationComponent
+import com.example.neuxum_cliente.ui.components.MyNumberFieldComponent
+import com.example.neuxum_cliente.ui.components.PagerNavigationComponent
 import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpEvent
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpViewModel

@@ -31,9 +31,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.neuxum_cliente.R
-import com.example.neuxum_cliente.ui.componets.ButtonComponent
-import com.example.neuxum_cliente.ui.componets.DividerTextComponent
-import com.example.neuxum_cliente.ui.componets.MyTextFieldComponent
+import com.example.neuxum_cliente.ui.components.ButtonComponent
+import com.example.neuxum_cliente.ui.components.DividerTextComponent
+import com.example.neuxum_cliente.ui.components.MyTextFieldComponent
 import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpEvent
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpViewModel
@@ -87,7 +87,7 @@ fun SignUpScreen(
             MyTextFieldComponent(
                 labelValue = "Ingrese su correo",
                 textValue = state.email,
-                icon = Icons.Default.Email,
+                leadingIcon = Icons.Default.Email,
                 onTextSelected = {
                     viewModel.onEvent(SignUpEvent.EmailChanged(it))
                 },

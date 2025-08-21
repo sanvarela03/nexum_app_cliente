@@ -1,12 +1,16 @@
 package com.example.neuxum_cliente.di.modules
 
 import com.example.neuxum_cliente.domain.repository.AuthRepository
+import com.example.neuxum_cliente.domain.repository.CategoryRepository
 import com.example.neuxum_cliente.domain.repository.ClientRepository
 import com.example.neuxum_cliente.domain.use_cases.auth.AuthUseCases
 import com.example.neuxum_cliente.domain.use_cases.auth.Authenticate
 import com.example.neuxum_cliente.domain.use_cases.auth.SignIn
 import com.example.neuxum_cliente.domain.use_cases.auth.SignOut
 import com.example.neuxum_cliente.domain.use_cases.auth.SignUp
+import com.example.neuxum_cliente.domain.use_cases.category.CategoryUseCases
+import com.example.neuxum_cliente.domain.use_cases.category.ObserveCategories
+import com.example.neuxum_cliente.domain.use_cases.category.UpdateCategories
 import com.example.neuxum_cliente.domain.use_cases.client.ClientUseCases
 import com.example.neuxum_cliente.domain.use_cases.client.ObserveClient
 import com.example.neuxum_cliente.domain.use_cases.client.ObserveUserId
@@ -46,6 +50,15 @@ object UseCasesModule {
             updateClient = UpdateClient(repository),
             observeClient = ObserveClient(repository),
             observeUserId = ObserveUserId(repository)
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideCategoryUseCases(repository: CategoryRepository): CategoryUseCases {
+        return CategoryUseCases(
+            updateCategories = UpdateCategories(repository),
+            observeCategories = ObserveCategories(repository)
         )
     }
 }

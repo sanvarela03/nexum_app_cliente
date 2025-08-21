@@ -1,4 +1,4 @@
-package com.example.neuxum_cliente.ui.componets
+package com.example.neuxum_cliente.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row

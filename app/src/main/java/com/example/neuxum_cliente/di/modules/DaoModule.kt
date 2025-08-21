@@ -1,5 +1,6 @@
 package com.example.neuxum_cliente.di.modules
 
+import com.example.neuxum_cliente.data.category.local.CategoryDao
 import com.example.neuxum_cliente.data.client.local.ClientDao
 import com.example.neuxum_cliente.data.client.local.db.ClientDb
 import com.example.neuxum_cliente.data.client.local.role.RoleDao
@@ -28,5 +29,10 @@ object DaoModule {
     @Provides
     @Singleton
     fun provideRoleDao(clientDb: ClientDb): RoleDao = clientDb.roleDao
+
+    @Provides
+    @Singleton
+    fun provideCategoryDao(clientDb: ClientDb): CategoryDao = clientDb.categoryDao
+
 
 }

@@ -1,9 +1,6 @@
 package com.example.neuxum_cliente.ui.presenter.home
 
 import android.util.Log
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,7 +12,6 @@ import com.example.neuxum_cliente.data.global_payload.res.MessageRes
 import com.example.neuxum_cliente.domain.use_cases.auth.AuthUseCases
 import com.example.neuxum_cliente.domain.use_cases.client.ClientUseCases
 import com.example.neuxum_cliente.ui.global_viewmodels.AuthViewModel
-import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
 import com.example.neuxum_cliente.ui.presenter.sign_in.SignInViewModel
 import com.example.neuxum_cliente.ui.presenter.splash.SplashEvent
 import com.example.protapptest.security.TokenManager
@@ -53,6 +49,7 @@ class HomeViewModel @Inject constructor(
     init {
         Log.d("HomeViewModel", " init ")
         observeClient()
+        Log.d("HomeViewModel", " init 2")
         clientUseCases.updateClient(fetchFromRemote = true)
     }
 
@@ -76,7 +73,7 @@ class HomeViewModel @Inject constructor(
     fun onEvent(event: HomeEvent) {
         when (event) {
             HomeEvent.SignOutBtnClicked -> {
-                signOutTest()
+                signOut()
             }
 
             HomeEvent.Refresh -> {
@@ -113,7 +110,7 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    fun signOutTest() {
+    fun signOut() {
         signOutJob = viewModelScope.launch {
             authUseCases.signOut().collect {
                 when (it) {
@@ -121,6 +118,8 @@ class HomeViewModel @Inject constructor(
                     is ApiResponse.Failure -> {
                         val data = it.errorMessage
                         Log.d("ApiResponse", "errorMessage = $data")
+                        state = state.copy(errorMessage = data)
+
                     }
 
                     is ApiResponse.Success -> {

@@ -20,8 +20,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.neuxum_cliente.ui.componets.DateOfBirthPicker
-import com.example.neuxum_cliente.ui.componets.PagerNavigationComponent
+import com.example.neuxum_cliente.ui.components.DateOfBirthPicker
+import com.example.neuxum_cliente.ui.components.PagerNavigationComponent
 import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpEvent
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpViewModel

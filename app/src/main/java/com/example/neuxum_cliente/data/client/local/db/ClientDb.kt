@@ -2,6 +2,8 @@ package com.example.neuxum_cliente.data.client.local.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.example.neuxum_cliente.data.category.local.CategoryDao
+import com.example.neuxum_cliente.data.category.local.CategoryEntity
 import com.example.neuxum_cliente.data.client.local.ClientDao
 import com.example.neuxum_cliente.data.client.local.ClientEntity
 import com.example.neuxum_cliente.data.client.local.role.RoleDao
@@ -19,11 +21,13 @@ import com.example.neuxum_cliente.data.client.local.role.RoleEntity
     entities = [
         ClientEntity::class,
         RoleEntity::class,
+        CategoryEntity::class,
     ],
     version = 1
 )
 abstract class ClientDb : RoomDatabase() {
     abstract val clientDao: ClientDao
     abstract val roleDao: RoleDao
+    abstract val categoryDao: CategoryDao
 
 }

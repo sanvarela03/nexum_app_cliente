@@ -14,5 +14,5 @@ data class HomeState(
     val clientEntity: ClientEntity? = null,
     var customerInfo: String = "",
     val isRefreshing: Boolean = false,
-    val errorMessage: String = ""
+    var errorMessage: String = ""
 )

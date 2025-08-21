@@ -1,4 +1,4 @@
-package com.example.neuxum_cliente.ui.componets
+package com.example.neuxum_cliente.ui.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth

@@ -4,6 +4,8 @@
 
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:name=".di.HiltApp"
@@ -48,6 +50,10 @@
             android:name=".service.RejectBroadcastReceiver"
             android:enabled="true"
             android:exported="false" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAxDNhjojPoxxJ7N-BpDFBtQMSBB2HvcWw"/>
 
 
     </application>

@@ -1,4 +1,5 @@
 [versions]
+accompanistSwiperefresh = "0.24.2-alpha"
 agp = "8.7.3"
 composeVersion = "1.0.0-beta01"
 kotlin = "2.0.0"
@@ -27,6 +28,13 @@ firebaseBom = "32.8.1"
 google = "4.4.1"
 googleServices = "4.4.1"
 roomRuntime = "2.6.1"
+composeMaterial = "1.4.1"
+timber = "5.0.1"
+constraintlayout = "2.1.4"
+constraintlayoutCompose = "1.0.1"
+mapsCompose = "4.3.3"
+places = "3.5.0"
+playServicesMaps = "19.0.0"
 
 
 [libraries]
@@ -98,6 +106,22 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRunt
 
 # Glide
 glide-compose = { module = "com.github.bumptech.glide:compose", version.ref = "composeVersion" }
+
+# Swipe
+accompanist-swiperefresh = { module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanistSwiperefresh" }
+
+# Google Maps
+maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
+places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
+play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
+
+
+# Timber
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+
+# Constraint layout
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
