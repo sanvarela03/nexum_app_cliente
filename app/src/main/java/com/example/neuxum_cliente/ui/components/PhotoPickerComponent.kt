@@ -1,4 +1,4 @@
-package com.example.neuxum_cliente.ui.componets
+package com.example.neuxum_cliente.ui.components
 
 import android.net.Uri
 import android.util.Log

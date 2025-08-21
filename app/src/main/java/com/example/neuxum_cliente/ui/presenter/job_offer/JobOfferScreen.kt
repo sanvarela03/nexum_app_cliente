@@ -32,12 +32,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.neuxum_cliente.R
-import com.example.neuxum_cliente.ui.componets.FilterChipComponent
-import com.example.neuxum_cliente.ui.componets.MyDialog2
-import com.example.neuxum_cliente.ui.componets.MyTextFieldComponent
-import com.example.neuxum_cliente.ui.componets.MyTextFieldComponent2
-import com.example.neuxum_cliente.ui.componets.PhotoPickerComponent
-import com.example.neuxum_cliente.ui.componets.Stepper
+import com.example.neuxum_cliente.ui.components.FilterChipComponent
+import com.example.neuxum_cliente.ui.components.MyDialog2
+import com.example.neuxum_cliente.ui.components.MyTextFieldComponent
+import com.example.neuxum_cliente.ui.components.MyTextFieldComponent2
+import com.example.neuxum_cliente.ui.components.PhotoPickerComponent
+import com.example.neuxum_cliente.ui.components.Stepper
 import com.example.neuxum_cliente.ui.presenter.map.MapScreen
 
 /**

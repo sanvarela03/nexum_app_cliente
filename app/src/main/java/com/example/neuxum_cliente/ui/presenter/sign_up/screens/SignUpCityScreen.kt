@@ -18,8 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpViewModel
-import com.example.neuxum_cliente.ui.componets.CitiesComponent
-import com.example.neuxum_cliente.ui.componets.PagerNavigationComponent
+import com.example.neuxum_cliente.ui.components.CitiesComponent
+import com.example.neuxum_cliente.ui.components.PagerNavigationComponent
 import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpEvent
 

@@ -27,10 +27,10 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.neuxum_cliente.ui.componets.AppToolBar
-import com.example.neuxum_cliente.ui.componets.HomeBottomBar
-import com.example.neuxum_cliente.ui.componets.NavigationDrawerBody
-import com.example.neuxum_cliente.ui.componets.NavigationDrawerHeader
+import com.example.neuxum_cliente.ui.components.AppToolBar
+import com.example.neuxum_cliente.ui.components.HomeBottomBar
+import com.example.neuxum_cliente.ui.components.NavigationDrawerBody
+import com.example.neuxum_cliente.ui.components.NavigationDrawerHeader
 import com.example.neuxum_cliente.ui.navigation.graphs.Graph
 import com.example.neuxum_cliente.ui.navigation.graphs.homeGraph
 import com.example.neuxum_cliente.ui.navigation.rutes.HomeRoutes

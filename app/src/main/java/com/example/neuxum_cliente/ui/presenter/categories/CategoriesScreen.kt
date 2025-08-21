@@ -46,7 +46,7 @@ import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.neuxum_cliente.data.category.local.CategoryEntity
-import com.example.neuxum_cliente.ui.componets.FilterChipComponent
+import com.example.neuxum_cliente.ui.components.FilterChipComponent
 import com.example.neuxum_cliente.ui.navigation.rutes.JobOfferRoutes
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
