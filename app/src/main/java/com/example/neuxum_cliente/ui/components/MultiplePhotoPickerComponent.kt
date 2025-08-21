@@ -45,7 +45,7 @@ import com.bumptech.glide.integration.compose.GlideImage
  */
 @OptIn(ExperimentalGlideComposeApi::class, ExperimentalLayoutApi::class)
 @Composable
-fun PhotoPickerComponent(
+fun MultiplePhotoPickerComponent(
     selectedImages: MutableList<Uri> = mutableStateListOf(),
     onAddImage: (Uri) -> Unit,
     onRemoveImage: (Int) -> Unit

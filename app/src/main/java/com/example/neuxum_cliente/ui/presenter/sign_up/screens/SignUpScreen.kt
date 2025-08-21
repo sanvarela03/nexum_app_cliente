@@ -38,7 +38,7 @@ import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpEvent
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpViewModel
 
-/**
+/** 
  * @author Ernesto Bastidas Pulido
  * @email ebastidasp@unal.edu.co
  * @github https://github.com/ebastidasp
