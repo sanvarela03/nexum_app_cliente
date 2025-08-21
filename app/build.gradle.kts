@@ -123,6 +123,10 @@ dependencies {
 
     // Timber
     implementation(libs.timber)
+
+    // Constraint layout
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.constraintlayout.compose)
 }
 kapt {
     correctErrorTypes = true

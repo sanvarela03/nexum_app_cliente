@@ -16,8 +16,9 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import timber.log.Timber
@@ -32,7 +33,8 @@ import timber.log.Timber
 @Composable
 fun MapScreen(
     modifier: Modifier = Modifier,
-    viewModel: MapViewModel = hiltViewModel()
+    viewModel: MapViewModel = hiltViewModel(),
+    onMapClick: (LatLng, String) -> Unit,
 ) {
     val context = LocalContext.current
     val london = LatLng(51.5074, -0.1278)
@@ -46,17 +48,54 @@ fun MapScreen(
     }
 
 
-
     val markerState = rememberMarkerState(position = london)
+
+    LaunchedEffect(userLocation) {
+        // Si obtenemos ubicación del usuario, mover marcador y cámara ahí
+        userLocation?.let {
+            markerState.position = it
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 10f)
+            viewModel.getAddressFromLatLng(
+                context = context,
+                lat = it.latitude,
+                lng = it.longitude
+            ) { address ->
+                onMapClick(it, address ?: "")
+            }
+
+            onMapClick(it, "")
+        }
+    }
 
     GoogleMap(
         modifier = modifier,
-        cameraPositionState = cameraPositionState
+        cameraPositionState = cameraPositionState,
+        properties = MapProperties(
+            isMyLocationEnabled = userLocation != null
+        ),
+        uiSettings = MapUiSettings(
+            myLocationButtonEnabled = true
+        ),
+//        onMapClick = { latLng ->
+//            markerState.position = latLng
+//        },
+        onMapLongClick = { latLng ->
+            markerState.position = latLng
+            markerState.position.latitude
+
+            viewModel.getAddressFromLatLng(
+                context = context,
+                lat = latLng.latitude,
+                lng = latLng.longitude
+            ) { address ->
+                onMapClick(latLng, address ?: "")
+            }
+        }
     ) {
         // If the user's location is available, place a marker on the map
         userLocation?.let {
             Marker(
-                state = MarkerState(position = it), // Place the marker at the user's location
+                state = markerState, // Place the marker at the user's location
                 title = "Tu estas aquí 😎✌🏻", // Set the title for the marker
                 snippet = "Aquí es donde te encuentras actualmente." // Set the snippet for the marker
             )

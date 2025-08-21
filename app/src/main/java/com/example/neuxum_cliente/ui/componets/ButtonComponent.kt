@@ -33,23 +33,20 @@ fun ButtonComponent(
         contentPadding = PaddingValues(),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Black,
-            contentColor = Color.White
+            disabledContainerColor = Color.Gray,
+            contentColor = Color.White,
+            disabledContentColor = Color.Gray
         ),
         shape = RoundedCornerShape(8.dp),
         enabled = isEnabled
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(57.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = value,
-                fontSize = 20.sp,
-                color = Color.White,
-                fontWeight = FontWeight.Medium
-            )
-        }
+
+        Text(
+            text = value,
+            fontSize = 20.sp,
+            color = Color.White,
+            fontWeight = FontWeight.Medium
+        )
     }
+
 }
