@@ -123,7 +123,13 @@ private fun ImagePreview(
     onRemoveImage: (Int) -> Unit,
     index: Int
 ) {
-    Box(modifier = Modifier.size(100.dp)) {
+    Box(modifier = Modifier.size(100.dp).dashedBorder(
+        color = Color(0xFFE6E6E6),
+        shape = RoundedCornerShape(12.dp),
+        strokeWidth = 1.dp,
+        dashLength = 4.dp,
+        gapLength = 4.dp
+    )) {
         GlideImage(
             model = uri,
             contentDescription = "Selected Image",

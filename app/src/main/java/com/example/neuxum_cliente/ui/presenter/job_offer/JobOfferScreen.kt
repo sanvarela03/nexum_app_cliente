@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -49,8 +50,9 @@ import com.example.neuxum_cliente.ui.presenter.map.MapScreen
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
+@Preview(showBackground = true, showSystemUi = true)
 fun JobOfferScreen(
-    categoryId: Long,
+    categoryId: Long = -1,
     viewModel: JobOfferViewModel = hiltViewModel()
 ) {
     val state = viewModel.state

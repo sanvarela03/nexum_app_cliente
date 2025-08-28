@@ -45,16 +45,24 @@ class SignUpViewModel
                 state = state.copy(phone = event.phone)
             }
 
-            is SignUpEvent.BirthDateChanged -> {
-                state = state.copy(birthDate = event.birthDate)
-            }
-
             is SignUpEvent.CityChanged -> {
                 state = state.copy(city = event.city)
             }
 
             is SignUpEvent.DocumentNumberChanged -> {
                 state = state.copy(documentNumber = event.documentNumber)
+            }
+
+            is SignUpEvent.BirthDateDayChanged -> {
+                state = state.copy(birthDateDay = event.birthDateDay)
+            }
+
+            is SignUpEvent.BirthDateMonthChanged -> {
+                state = state.copy(birthDateMonth = event.birthDateMonth)
+            }
+
+            is SignUpEvent.BirthDateYearChanged -> {
+                state = state.copy(birthDateYear = event.birthDateYear)
             }
 
             SignUpEvent.ContinueButtonClicked -> {}
@@ -115,7 +123,7 @@ class SignUpViewModel
 
     private fun validateSignUpBirthDate() {
         val birthDateResult = SignUpValidator.validateBirthDate(
-            birthDate = state.birthDate
+            birthDate = "${state.birthDateDay} - ${state.birthDateMonth} - ${state.birthDateYear}"
         )
 
         state = state.copy(

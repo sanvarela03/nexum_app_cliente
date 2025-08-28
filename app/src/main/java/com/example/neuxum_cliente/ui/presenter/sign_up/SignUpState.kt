@@ -14,6 +14,13 @@ data class SignUpState(
     var phoneCode: String = "",
     var phone: String = "",
     var birthDate: String = "",
+
+    var birthDateDay: Int = 8,
+    var birthDateMonth: Int = 6,
+    var birthDateYear: Int = 1978,
+
+
+
     var city: String = "",
     var documentNumber: String = "",
     var frontDocumentUrl: String = "",

@@ -8,10 +8,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -40,9 +36,9 @@ fun SignUpBirthDateScreen(
     viewModel: SignUpViewModel = hiltViewModel(),
     go: (Any) -> Unit = {}
 ) {
-    var year by remember { mutableIntStateOf(1978) }
-    var month by remember { mutableIntStateOf(9) }
-    var day by remember { mutableIntStateOf(3) }
+    var year = viewModel.state.birthDateYear
+    var month = viewModel.state.birthDateMonth
+    var day = viewModel.state.birthDateDay
 
     Column(
         modifier = Modifier
@@ -82,12 +78,17 @@ fun SignUpBirthDateScreen(
                 initialDay = day,
                 minYear = 1925,
                 maxYear = Calendar.getInstance().get(Calendar.YEAR) - 18,
-                onDateChanged = { y, m, d ->
-                    year = y; month = m; day = d;
-                    viewModel.onEvent(
-                        SignUpEvent.BirthDateChanged(
-                        "$y-$m-$d"
-                    ))
+                onDayChanged = {
+                    day = it
+                    viewModel.onEvent(SignUpEvent.BirthDateDayChanged(day))
+                },
+                onMonthChanged = {
+                    month = it
+                    viewModel.onEvent(SignUpEvent.BirthDateMonthChanged(month))
+                },
+                onYearChanged = {
+                    year = it
+                    viewModel.onEvent(SignUpEvent.BirthDateYearChanged(year))
                 }
             )
 

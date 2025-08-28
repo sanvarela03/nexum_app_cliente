@@ -13,13 +13,7 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="CityItem">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="CitiesComponent">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="SignUpCityScreen">
+      <SelectionState runConfigName="JobOfferScreen">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

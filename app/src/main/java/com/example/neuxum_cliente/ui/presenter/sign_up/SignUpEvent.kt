@@ -13,7 +13,11 @@ sealed class SignUpEvent {
     data class LastNameChanged(val lastName: String) : SignUpEvent()
     data class PhoneCodeChanged(val phoneCode: String) : SignUpEvent()
     data class CellphoneChanged(val phone: String) : SignUpEvent()
-    data class BirthDateChanged(val birthDate: String) : SignUpEvent()
+
+    data class BirthDateDayChanged(val birthDateDay: Int) : SignUpEvent()
+    data class BirthDateMonthChanged(val birthDateMonth: Int) : SignUpEvent()
+    data class BirthDateYearChanged(val birthDateYear: Int) : SignUpEvent()
+
     data class CityChanged(val city: String) : SignUpEvent()
     data class DocumentNumberChanged(val documentNumber: String) : SignUpEvent()
     object ContinueButtonClicked : SignUpEvent()
