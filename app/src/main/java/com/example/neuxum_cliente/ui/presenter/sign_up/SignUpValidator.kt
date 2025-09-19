@@ -1,5 +1,6 @@
 package com.example.neuxum_cliente.ui.presenter.sign_up
 
+import android.net.Uri
 import com.example.neuxum_cliente.ui.common.ValidationResult
 
 object SignUpValidator {
@@ -21,10 +22,6 @@ object SignUpValidator {
 
         return ValidationResult(isValid, errorMessage)
     }
-
-    fun validatePassword(password: String?): ValidationResult = ValidationResult(
-        (!password.isNullOrEmpty() && password.length >= 4)
-    )
 
     fun validateName(name: String?): ValidationResult = ValidationResult(
         !name.isNullOrEmpty() && name.length >= 4 && name.length < 20
@@ -79,5 +76,38 @@ object SignUpValidator {
 
         return ValidationResult(isValid)
     }
+
+    fun validateFrontDocumentUri(frontDocumentUri: Uri?): ValidationResult = ValidationResult(
+        !frontDocumentUri.toString().isEmpty()
+    )
+
+    fun validateBackDocumentUri(backDocumentUri: Uri?): ValidationResult = ValidationResult(
+        !backDocumentUri.toString().isEmpty()
+    )
+
+    fun validateFrontDocumentUrl(frontDocumentUrl: String?): ValidationResult = ValidationResult(
+        !frontDocumentUrl.isNullOrEmpty()
+    )
+
+    fun validateBackDocumentUrl(backDocumentUrl: String?): ValidationResult = ValidationResult(
+        !backDocumentUrl.isNullOrEmpty()
+    )
+
+    fun validatePassword(password: String?): ValidationResult = ValidationResult(
+        (!password.isNullOrEmpty() && password.length >= 4)
+    )
+
+    fun validateConfirmPassword(confirmPassword: String?, password: String?): ValidationResult = ValidationResult(
+        confirmPassword == password
+    )
+
+    fun validateProfilePictureUri(profilePictureUri: Uri?): ValidationResult = ValidationResult(
+        !profilePictureUri.toString().isEmpty()
+    )
+
+    fun validateProfilePictureUrl(profilePictureUrl: String?): ValidationResult = ValidationResult(
+        !profilePictureUrl.isNullOrEmpty()
+    )
+
 
 }

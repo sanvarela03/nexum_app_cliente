@@ -10,8 +10,12 @@ import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpBirthDateSc
 import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpCellphoneScreen
 import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpCityScreen
 import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpIDScreen
+import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpPasswordScreen
 import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpScreen
+import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpUploadDocumentScreen
 import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpUserDataScreen
+import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpPasswordScreen
+import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpProfilePictureScreen
 
 /**
  * @author Santiago Varela Daza
@@ -31,5 +35,9 @@ fun NavGraphBuilder.authGraph(
         composable<AuthRoutes.SignUpBirthdayScreen> { SignUpBirthDateScreen(go = { navController.navigate(it) }) }
         composable<AuthRoutes.SignUpCityScreen> { SignUpCityScreen(go = { navController.navigate(it) }) }
         composable<AuthRoutes.SignUpIDScreen> { SignUpIDScreen(go = { navController.navigate(it) }) }
+        composable<AuthRoutes.SignUpUploadDocumentScreen> { SignUpUploadDocumentScreen(go = { navController.navigate(it) }) }
+        composable<AuthRoutes.SignUpPasswordScreen> { SignUpPasswordScreen(go = { navController.navigate(it) }) }
+        composable<AuthRoutes.SignUpProfilePictureScreen> { SignUpProfilePictureScreen(go = { navController.navigate(it) }) }
+
     }
 }

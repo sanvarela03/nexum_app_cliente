@@ -43,16 +43,10 @@ fun WheelPicker(
     visibleCount: Int = 5
 ) {
     val state = rememberLazyListState(
-        // Start roughly centered on initialIndex
-        initialFirstVisibleItemIndex = (initialIndex - visibleCount / 2)
-            .coerceIn(0, (items.lastIndex).coerceAtLeast(0))
+        initialFirstVisibleItemIndex = initialIndex.coerceIn(0, items.lastIndex.coerceAtLeast(0))
     )
-    Log.d("WheelPicker", "${state.firstVisibleItemIndex}")
-    Log.d("WheelPicker", "${state.firstVisibleItemScrollOffset}")
-    Log.d("WheelPicker", "${state.layoutInfo}")
-    Log.d("WheelPicker", "items:${items.size}")
+
     val fling = rememberSnapFlingBehavior(lazyListState = state)
-    val itemHeightPx = with(LocalDensity.current) { itemHeight.toPx() }
 
     val centeredIndex by remember (items) {
         derivedStateOf {
@@ -83,7 +77,7 @@ fun WheelPicker(
             contentPadding = PaddingValues(vertical = itemHeight * sideItems), // ✅ Dp * Float
             userScrollEnabled = true
         ) {
-            itemsIndexed(items) { index, label ->
+            itemsIndexed(items) { index, item ->
                 val distance = abs(index - centeredIndex)
                 val alpha = when (distance) {
                     0 -> 1f
@@ -101,7 +95,7 @@ fun WheelPicker(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = label,
+                        text = item,
                         fontSize = size,
                         fontWeight = weight,
                         color = Color.Black.copy(alpha = alpha)

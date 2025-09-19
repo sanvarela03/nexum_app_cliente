@@ -23,8 +23,7 @@ interface CategoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveAll(categories: List<CategoryEntity>)
 
-    @Query("SELECT * FROM Categoryentity")
-    fun observeCategories(): Flow<List<CategoryEntity>>
+    @Query("SELECT * FROM Categoryentity") fun observeCategories(): Flow<List<CategoryEntity>>
 
     @Query("SELECT * FROM Categoryentity")
     suspend fun getAllCategories(): List<CategoryEntity?>

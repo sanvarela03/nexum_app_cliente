@@ -1,19 +1,64 @@
 package com.example.neuxum_cliente.ui.presenter.sign_up
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.neuxum_cliente.data.global_payload.res.ApiResponse
+import com.example.neuxum_cliente.data.market_location.local.MarketLocationEntity
+import com.example.neuxum_cliente.domain.repository.MarketLocationRepository
 import com.example.neuxum_cliente.domain.use_cases.auth.AuthUseCases
+import com.example.neuxum_cliente.domain.use_cases.market_location.MarketLocationUseCases
+import com.example.neuxum_cliente.service.FirebaseStorageService
+import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
+import com.example.neuxum_cliente.user_preferences.UserPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+
+// Data class to hold the UI state for market location selection
+data class MarketLocationUiState(
+    val allLocations: List<MarketLocationEntity> = emptyList(),
+    val countries: List<String> = emptyList(),
+    val states: List<String> = emptyList(),
+    val cities: List<MarketLocationEntity> = emptyList(), // Or List<String> if you only need city names
+    val selectedCountry: String? = null,
+    val selectedState: String? = null,
+    val selectedCityId: Long? = null, // Or selectedCityName: String?
+    val isLoading: Boolean = false,
+    val error: String? = null
+)
 
 @HiltViewModel
 class SignUpViewModel
 @Inject constructor(
-    private val authUseCases: AuthUseCases
+    private val authUseCases: AuthUseCases,
+    private val marketLocationUseCases: MarketLocationUseCases,
+    private val userPreferences: UserPreferences,
 //    private val viewModelScope: CoroutineScope
 ) : ViewModel() {
+
+    private val _isLoading = MutableStateFlow(false)
+    private val _selectedCountry = MutableStateFlow<String?>(null)
+    private val _selectedState = MutableStateFlow<String?>(null)
+    private val _selectedCityId = MutableStateFlow<Long?>(null) // Or String for name
 
     var state by mutableStateOf(SignUpState())
     var signUpEmailValidationPassed by mutableStateOf(false)
@@ -22,6 +67,38 @@ class SignUpViewModel
     var signUpBirthDateValidationPassed by mutableStateOf(false)
     var signUpCityValidationPassed by mutableStateOf(false)
     var signUpDocumentNumberValidationPassed by mutableStateOf(false)
+    var signUpDocumentImagesValidationPassed by mutableStateOf(false)
+    var signUpPasswordValidationPassed by mutableStateOf(false)
+    var signUpProfilePictureValidationPassed by mutableStateOf(false)
+
+    private var updateMarketLocations: Job? = null
+
+    init {
+        viewModelScope.launch {
+            val backFlow    = userPreferences.getBackDocumentUrl().distinctUntilChanged()
+            val frontFlow   = userPreferences.getFrontDocumentUrl().distinctUntilChanged()
+            val profileFlow = userPreferences.getProfilePictureUrl().distinctUntilChanged()
+
+            combine(backFlow, frontFlow, profileFlow) { back, front, profile ->
+                Triple(back, front, profile)
+            }
+                .distinctUntilChanged()
+                .collectLatest { (back, front, profile) ->
+                    state = state.copy(
+                        backDocumentUrl    = back    ?: state.backDocumentUrl,
+                        frontDocumentUrl   = front   ?: state.frontDocumentUrl,
+                        profilePictureUrl  = profile ?: state.profilePictureUrl
+                    )
+                    validateDocumentImages()
+                    validateProfilePictureImage()
+                }
+        }
+
+        observeAllLocation()
+        updateMarketLocations(true)
+
+    }
+
 
     fun onEvent(event: SignUpEvent) {
         when (event) {
@@ -45,8 +122,16 @@ class SignUpViewModel
                 state = state.copy(phone = event.phone)
             }
 
-            is SignUpEvent.BirthDateChanged -> {
-                state = state.copy(birthDate = event.birthDate)
+            is SignUpEvent.BirthDateDayChanged -> {
+                state = state.copy(birthDateDay = event.birthDateDay)
+            }
+
+            is SignUpEvent.BirthDateMonthChanged -> {
+                state = state.copy(birthDateMonth = event.birthDateMonth)
+            }
+
+            is SignUpEvent.BirthDateYearChanged -> {
+                state = state.copy(birthDateYear = event.birthDateYear)
             }
 
             is SignUpEvent.CityChanged -> {
@@ -57,6 +142,115 @@ class SignUpViewModel
                 state = state.copy(documentNumber = event.documentNumber)
             }
 
+            is SignUpEvent.FrontDocumentUriChanged -> {
+                state = state.copy(frontDocumentUri = event.frontDocumentUri)
+
+                if (state.frontDocumentUri != Uri.EMPTY && state.frontDocumentUrl.isEmpty()) {
+                    FirebaseStorageService.uploadImage(
+                        imageUri = state.frontDocumentUri,
+                        username = "test",
+                        folder = "documents"
+                    ) { frontURLString ->
+                        frontURLString?.let {
+                            state = state.copy(frontDocumentUrl = it)
+                            Log.d(
+                                "FirebaseStorageService",
+                                "Front Image uploaded successfully: $it"
+                            )
+                            viewModelScope.launch {
+                                userPreferences.saveFrontDocumentUrl(it)
+                            }
+                            validateDocumentImages()
+                        }
+                    }
+                } else if (state.frontDocumentUrl.isNotEmpty()) {
+                    FirebaseStorageService.deleteImage(state.frontDocumentUrl){
+                        state = state.copy(frontDocumentUrl = "")
+                        viewModelScope.launch {
+                            userPreferences.saveFrontDocumentUrl("")
+                        }
+                    }
+                }
+
+            }
+
+            is SignUpEvent.BackDocumentUriChanged -> {
+                state = state.copy(backDocumentUri = event.backDocumentUri)
+                if (state.backDocumentUri != Uri.EMPTY && state.backDocumentUrl.isEmpty()) {
+                    FirebaseStorageService.uploadImage(
+                        imageUri = state.backDocumentUri,
+                        username = "test",
+                        folder = "documents"
+                    ) { backURLString ->
+                        backURLString?.let {
+                            state = state.copy(backDocumentUrl = it)
+                            Log.d("FirebaseStorageService", "Back Image uploaded successfully: $it")
+                            viewModelScope.launch {
+                                userPreferences.saveBackDocumentUrl(it)
+                            }
+                            validateDocumentImages()
+                        }
+                    }
+                } else if (state.backDocumentUrl.isNotEmpty()) {
+                    FirebaseStorageService.deleteImage(state.backDocumentUrl){
+                        state = state.copy(backDocumentUrl = "")
+                        viewModelScope.launch {
+                            userPreferences.saveBackDocumentUrl("")
+                        }
+                    }
+                }
+            }
+
+            is SignUpEvent.FrontDocumentUrlChanged -> {
+                state = state.copy(frontDocumentUrl = event.frontDocumentUrl)
+            }
+
+            is SignUpEvent.BackDocumentUrlChanged -> {
+                state = state.copy(backDocumentUrl = event.backDocumentUrl)
+            }
+
+            is SignUpEvent.PasswordChanged -> {
+                state = state.copy(password = event.password)
+            }
+
+            is SignUpEvent.ConfirmPasswordChanged -> {
+                state = state.copy(confirmPassword = event.confirmPassword)
+            }
+
+            is SignUpEvent.ProfilePictureUriChanged -> {
+                state = state.copy(profilePictureUri = event.profilePictureUri)
+                if (state.profilePictureUri != Uri.EMPTY && state.profilePictureUrl.isEmpty()) {
+                    FirebaseStorageService.uploadImage(
+                        imageUri = state.profilePictureUri,
+                        username = "test",
+                        folder = "profile_pictures"
+                    ) { profilePictureURLString ->
+                        profilePictureURLString?.let {
+                            state = state.copy(profilePictureUrl = it)
+                            Log.d(
+                                "FirebaseStorageService",
+                                "Profile Picture uploaded successfully: $it"
+                            )
+                            viewModelScope.launch {
+                                userPreferences.saveProfilePictureUrl(it)
+                            }
+                            validateProfilePictureImage()
+                        }
+                    }
+                } else if (state.profilePictureUrl.isNotEmpty()) {
+                    FirebaseStorageService.deleteImage(state.profilePictureUrl){
+                        state = state.copy(profilePictureUrl = "")
+                        viewModelScope.launch {
+                            userPreferences.saveProfilePictureUrl("")
+                        }
+                    }
+                }
+            }
+
+            is SignUpEvent.ProfilePictureUrlChanged -> {
+                state = state.copy(profilePictureUrl = event.profilePictureUrl)
+            }
+
             SignUpEvent.ContinueButtonClicked -> {}
         }
         validateSignUpEmail()
@@ -65,6 +259,51 @@ class SignUpViewModel
         validateSignUpBirthDate()
         validateSignUpCity()
         validateSignUpDocumentNumber()
+        validateSignUpPassword()
+    }
+
+    fun observeAllLocation() {
+        viewModelScope.launch {
+            marketLocationUseCases.observeMarketLocations()
+                .distinctUntilChanged()
+                .collect { locations ->
+                    state = state.copy(cities = locations.map{ it.city })
+                }
+        }
+    }
+
+    fun updateMarketLocations(fetchFromRemote: Boolean = false) {
+
+        updateMarketLocations?.let {
+            if (it.isActive) {
+                it.cancel()
+            }
+        }
+        updateMarketLocations = viewModelScope.launch {
+            marketLocationUseCases.updateMarketLocations("" ,fetchFromRemote).catch {
+                state = state.copy(errorMessage = it.message ?: "Unknown error")
+            }.collect {
+                when (it) {
+                    is ApiResponse.Error -> {
+                        state = state.copy(isRefreshing = false)
+                        state = state.copy(errorMessage = it.errorMessage)
+                    }
+
+                    is ApiResponse.Failure -> {
+                        state = state.copy(isRefreshing = false)
+                    }
+
+                    ApiResponse.Loading -> {
+                        state = state.copy(isRefreshing = true)
+                    }
+
+                    is ApiResponse.Success -> {
+                        state = state.copy(isRefreshing = false)
+
+                    }
+                }
+            }
+        }
     }
 
     private fun validateSignUpEmail() {
@@ -115,7 +354,7 @@ class SignUpViewModel
 
     private fun validateSignUpBirthDate() {
         val birthDateResult = SignUpValidator.validateBirthDate(
-            birthDate = state.birthDate
+            birthDate = "${state.birthDateDay} - ${state.birthDateMonth} - ${state.birthDateYear}"
         )
 
         state = state.copy(
@@ -151,6 +390,67 @@ class SignUpViewModel
 
     }
 
+    private fun validateDocumentImages() {
+
+        val frontDocumentUriResult = SignUpValidator.validateFrontDocumentUri(
+            frontDocumentUri = state.frontDocumentUri
+        )
+
+        val backDocumentUriResult = SignUpValidator.validateBackDocumentUri(
+            backDocumentUri = state.backDocumentUri
+        )
+
+        val frontDocumentUrlResult = SignUpValidator.validateFrontDocumentUrl(
+            frontDocumentUrl = state.frontDocumentUrl
+        )
+
+        val backDocumentUrlResult = SignUpValidator.validateBackDocumentUrl(
+            backDocumentUrl = state.backDocumentUrl
+        )
+
+        state = state.copy(
+            frontDocumentUriError = frontDocumentUriResult.status,
+            backDocumentUriError = backDocumentUriResult.status,
+            frontDocumentUrlError = frontDocumentUrlResult.status,
+            backDocumentUrlError = backDocumentUrlResult.status,
+        )
+
+        signUpDocumentImagesValidationPassed = frontDocumentUrlResult.status && backDocumentUrlResult.status
+    }
+
+    private fun validateSignUpPassword() {
+        val passwordResult = SignUpValidator.validatePassword(
+            password = state.password
+        )
+
+        val confirmPasswordResult = SignUpValidator.validateConfirmPassword(
+            confirmPassword = state.confirmPassword,
+            password = state.password
+        )
+
+        state = state.copy(
+            passwordError = passwordResult.status,
+            confirmPasswordError = confirmPasswordResult.status
+        )
+
+        signUpPasswordValidationPassed = passwordResult.status && confirmPasswordResult.status
+    }
+
+    fun validateProfilePictureImage() {
+        val profilePictureUriResult = SignUpValidator.validateProfilePictureUri(
+            profilePictureUri = state.profilePictureUri
+        )
+
+        val profilePictureUrlResult = SignUpValidator.validateProfilePictureUrl(
+            profilePictureUrl = state.profilePictureUrl
+        )
+
+        state = state.copy(
+            profilePictureUriError = profilePictureUriResult.status,
+            profilePictureUrlError = profilePictureUrlResult.status
+        )
+
+        signUpProfilePictureValidationPassed = profilePictureUrlResult.status
+    }
+
 }
-
-

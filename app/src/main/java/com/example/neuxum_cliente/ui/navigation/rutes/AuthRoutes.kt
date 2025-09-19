@@ -39,4 +39,13 @@ sealed class AuthRoutes {
     @Serializable
     object SignUpIDScreen : AuthRoutes()
 
+    @Serializable
+    object SignUpUploadDocumentScreen : AuthRoutes()
+
+    @Serializable
+    object SignUpPasswordScreen : AuthRoutes()
+
+    @Serializable
+    object SignUpProfilePictureScreen : AuthRoutes()
+
 }

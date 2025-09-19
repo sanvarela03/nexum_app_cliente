@@ -43,7 +43,7 @@ fun SignUpCityScreen(
             .fillMaxSize()
             .padding(
                 start = 20.dp,
-                top = 80.dp,    // ↑ increase this value
+                top = 80.dp,
                 end = 20.dp,
                 bottom = 20.dp
             ),
@@ -66,16 +66,7 @@ fun SignUpCityScreen(
         Spacer(modifier = Modifier.height(35.dp))
         CitiesComponent(
             initialSelectedCity = state.city,
-            cities = listOf(
-                "Bogotá",
-                "Barranquilla",
-                "Chía",
-                "Medellín",
-                "Cartagena",
-                "Cúcuta",
-                "Bucaramanga",
-                "Cali"
-            ),
+            cities = state.cities,
             onCitySelected = {
                 viewModel.onEvent(SignUpEvent.CityChanged(it))
             },

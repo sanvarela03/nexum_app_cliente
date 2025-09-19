@@ -118,38 +118,43 @@ fun MultiplePhotoPickerComponent(
 
 @Composable
 @OptIn(ExperimentalGlideComposeApi::class)
-private fun ImagePreview(
-    uri: Uri,
+fun ImagePreview(
+    uri: Any?,
     onRemoveImage: (Int) -> Unit,
-    index: Int
+    index: Int,
+    contentScale: ContentScale = ContentScale.Crop,
+    modifier: Modifier = Modifier
+        .clip(RoundedCornerShape(12.dp))
+        .fillMaxSize()
 ) {
     Box(modifier = Modifier.size(100.dp)) {
-        GlideImage(
-            model = uri,
-            contentDescription = "Selected Image",
-            modifier = Modifier
-                .clip(RoundedCornerShape(12.dp))
-                .fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-
-        IconButton(
-            onClick = {
-                onRemoveImage(index)// Elimina de la lista
-            },
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(3.dp)
-                .clip(RoundedCornerShape(50))
-                .size(24.dp)
-                .background(Color.Black.copy(alpha = 0.6f))
-        ) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Remove",
-                tint = Color.White,
-                modifier = Modifier.size(16.dp)
+        // Show image only if we actually have one
+        if (uri != null && uri != "") {
+            GlideImage(
+                model = uri,
+                contentDescription = "Selected Image",
+                modifier = modifier,
+                contentScale = contentScale
             )
+
+            // Show remove icon only when an image is shown
+            IconButton(
+                onClick = { onRemoveImage(index) },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(3.dp)
+                    .clip(RoundedCornerShape(50))
+                    .size(24.dp)
+                    .background(Color.Black.copy(alpha = 0.6f))
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Remove",
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
     }
 }
+

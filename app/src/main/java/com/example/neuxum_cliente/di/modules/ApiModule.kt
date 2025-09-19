@@ -4,6 +4,7 @@ import com.example.neuxum_cliente.common.HOST_URL
 import com.example.neuxum_cliente.data.auth.remote.AuthApi
 import com.example.neuxum_cliente.data.category.remote.CategoryApi
 import com.example.neuxum_cliente.data.client.remote.ClientApi
+import com.example.neuxum_cliente.data.market_location.remote.MarketLocationApi
 import com.example.protapptest.security.AuthAuthenticator
 import com.example.protapptest.security.AuthInterceptor
 import dagger.Module
@@ -52,10 +53,9 @@ object ApiModule {
     @Provides
     @Singleton
     fun provideAuthAPI(
-        okHttpClient: OkHttpClient, //TODO Arreglar para ingresar y registrarse y para el refresh
         retrofit: Retrofit.Builder
     ): AuthApi =
-        retrofit.client(okHttpClient).build().create(AuthApi::class.java)
+        retrofit.build().create(AuthApi::class.java)
 
     @Provides
     @Singleton
@@ -73,5 +73,12 @@ object ApiModule {
     ): CategoryApi =
         retrofit.client(okHttpClient).build().create(CategoryApi::class.java)
 
+    @Provides
+    @Singleton
+    fun provideMarketLocationAPI(
+        okHttpClient: OkHttpClient,
+        retrofit: Retrofit.Builder
+    ): MarketLocationApi =
+        retrofit.client(okHttpClient).build().create(MarketLocationApi::class.java)
 
 }

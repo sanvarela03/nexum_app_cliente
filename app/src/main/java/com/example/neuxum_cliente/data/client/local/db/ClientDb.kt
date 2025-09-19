@@ -8,6 +8,8 @@ import com.example.neuxum_cliente.data.client.local.ClientDao
 import com.example.neuxum_cliente.data.client.local.ClientEntity
 import com.example.neuxum_cliente.data.client.local.role.RoleDao
 import com.example.neuxum_cliente.data.client.local.role.RoleEntity
+import com.example.neuxum_cliente.data.market_location.local.MarketLocationDao
+import com.example.neuxum_cliente.data.market_location.local.MarketLocationEntity
 
 
 /**
@@ -22,6 +24,7 @@ import com.example.neuxum_cliente.data.client.local.role.RoleEntity
         ClientEntity::class,
         RoleEntity::class,
         CategoryEntity::class,
+        MarketLocationEntity::class
     ],
     version = 1
 )
@@ -29,5 +32,6 @@ abstract class ClientDb : RoomDatabase() {
     abstract val clientDao: ClientDao
     abstract val roleDao: RoleDao
     abstract val categoryDao: CategoryDao
+    abstract val marketLocationDao: MarketLocationDao
 
 }

@@ -8,9 +8,13 @@ import com.example.neuxum_cliente.data.category.remote.CategoryApi
 import com.example.neuxum_cliente.data.client.ClientRepositoryImpl
 import com.example.neuxum_cliente.data.client.local.ClientDao
 import com.example.neuxum_cliente.data.client.remote.ClientApi
+import com.example.neuxum_cliente.data.market_location.MarketLocationRepositoryImpl
+import com.example.neuxum_cliente.data.market_location.local.MarketLocationDao
+import com.example.neuxum_cliente.data.market_location.remote.MarketLocationApi
 import com.example.neuxum_cliente.domain.repository.AuthRepository
 import com.example.neuxum_cliente.domain.repository.CategoryRepository
 import com.example.neuxum_cliente.domain.repository.ClientRepository
+import com.example.neuxum_cliente.domain.repository.MarketLocationRepository
 import com.example.protapptest.security.TokenManager
 import dagger.Module
 import dagger.Provides
@@ -63,5 +67,18 @@ object RepositoryModule {
         categoryDao = categoryDao,
         dispatcher = dispatcher
     )
+
+    @Provides
+    @Singleton
+    fun provideMarketLocationRepository(
+        marketLocationApi: MarketLocationApi,
+        marketLocationDao: MarketLocationDao,
+        @IoDispatcher dispatcher: CoroutineDispatcher
+    ): MarketLocationRepository = MarketLocationRepositoryImpl(
+        api = marketLocationApi,
+        dao = marketLocationDao,
+        dispatcher = dispatcher
+    )
+
 
 }

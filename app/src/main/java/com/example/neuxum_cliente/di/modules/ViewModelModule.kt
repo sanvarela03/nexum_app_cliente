@@ -2,12 +2,14 @@ package com.example.neuxum_cliente.di.modules
 
 import com.example.neuxum_cliente.domain.use_cases.auth.AuthUseCases
 import com.example.neuxum_cliente.domain.use_cases.category.CategoryUseCases
+import com.example.neuxum_cliente.domain.use_cases.market_location.MarketLocationUseCases
 import com.example.neuxum_cliente.ui.global_viewmodels.AuthViewModel
 import com.example.neuxum_cliente.ui.presenter.categories.CategoriesViewModel
 import com.example.neuxum_cliente.ui.presenter.job_offer.JobOfferViewModel
 import com.example.neuxum_cliente.ui.presenter.map.MapViewModel
 import com.example.neuxum_cliente.ui.presenter.sign_in.SignInViewModel
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpViewModel
+import com.example.neuxum_cliente.user_preferences.UserPreferences
 import com.example.protapptest.security.TokenManager
 
 import dagger.Module
@@ -37,8 +39,8 @@ object ViewModelModule {
 
     @Provides
     @Singleton
-    fun provideSignUpViewModel(authUseCases: AuthUseCases): SignUpViewModel {
-        return SignUpViewModel(authUseCases)
+    fun provideSignUpViewModel(authUseCases: AuthUseCases, marketLocationUseCases: MarketLocationUseCases, userPreferences: UserPreferences): SignUpViewModel {
+        return SignUpViewModel(authUseCases, marketLocationUseCases, userPreferences)
     }
 
 

@@ -34,6 +34,8 @@ import com.example.neuxum_cliente.R
 import com.example.neuxum_cliente.ui.components.ButtonComponent
 import com.example.neuxum_cliente.ui.components.DividerTextComponent
 import com.example.neuxum_cliente.ui.components.MyTextFieldComponent
+import com.example.neuxum_cliente.ui.components.RichClickableText
+import com.example.neuxum_cliente.ui.components.TosAndPolicyText
 import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpEvent
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpViewModel
@@ -102,86 +104,28 @@ fun SignUpScreen(
             }
             DividerTextComponent()
 
-            TosAndPolicyText(go)
+            TosAndPolicyText(
+                initTxt = "Al hacer clic en continuar, acepta nuestros  ",
+                signUpTxt = "Términos de servicio",
+                policyTxt = "Política de privacidad.",
+                go
+            )
 
-            SignUpText(go)
+            RichClickableText(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 5.dp),
+                style = TextStyle(
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
+                    color = Color(0xFF000000)
+                )
+            ) {
+                text("¿Ya tienes una cuenta?  ")
+                link("Inicia sesión") { go(AuthRoutes.SignInScreen) }
+            }
 
         }
     }
 
-}
-
-@Composable
-private fun TosAndPolicyText(go: (Any) -> Unit) {
-    val initTxt = "Al hacer clic en continuar, acepta nuestros "
-    val signUpTxt = "Términos de servicio"
-    val policyTxt = "Política de privacidad."
-
-    val annotatedString = buildAnnotatedString {
-        append(initTxt)
-        withStyle(style = SpanStyle(color = Color(0xFF828282))) {
-            pushStringAnnotation(tag = signUpTxt, annotation = signUpTxt)
-            append(signUpTxt)
-        }
-        append(" y ")
-        withStyle(style = SpanStyle(color = Color(0xFF828282))) {
-            pushStringAnnotation(tag = policyTxt, annotation = policyTxt)
-            append(policyTxt)
-        }
-    }
-
-    ClickableText(
-        text = annotatedString,
-        style = TextStyle(
-            fontSize = 14.sp,
-            textAlign = TextAlign.Center,
-            color = Color(0xFF000000)
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 5.dp),
-        onClick = { offset ->
-            annotatedString.getStringAnnotations(offset, offset).firstOrNull()
-                ?.also { span ->
-                    if ((span.item == signUpTxt)) {
-                        go(AuthRoutes.SignUpScreen)
-                    }
-                }
-        }
-    )
-}
-
-@Composable
-private fun SignUpText(go: (Any) -> Unit) {
-    val initTxt = "¿Ya tienes una cuenta?  "
-    val signUpTxt = "Inicia sesión"
-
-    val annotatedString = buildAnnotatedString {
-        append(initTxt)
-        withStyle(style = SpanStyle(color = Color(0xFF828282))) {
-            pushStringAnnotation(tag = signUpTxt, annotation = signUpTxt)
-            append(signUpTxt)
-        }
-    }
-
-    ClickableText(
-        text = annotatedString,
-        style = TextStyle(
-            fontSize = 14.sp,
-            textAlign = TextAlign.Center,
-            color = Color(0xFF000000)
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 5.dp),
-        onClick = { offset ->
-            annotatedString.getStringAnnotations(offset, offset).firstOrNull()
-                ?.also { span ->
-                    if ((span.item == signUpTxt)) {
-                        //TODO Navegar al inicio de sesión
-                        go(AuthRoutes.SignInScreen)
-                    }
-                }
-        }
-    )
 }

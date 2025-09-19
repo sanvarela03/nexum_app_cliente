@@ -4,6 +4,7 @@ import com.example.neuxum_cliente.data.category.local.CategoryDao
 import com.example.neuxum_cliente.data.client.local.ClientDao
 import com.example.neuxum_cliente.data.client.local.db.ClientDb
 import com.example.neuxum_cliente.data.client.local.role.RoleDao
+import com.example.neuxum_cliente.data.market_location.local.MarketLocationDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,5 +35,8 @@ object DaoModule {
     @Singleton
     fun provideCategoryDao(clientDb: ClientDb): CategoryDao = clientDb.categoryDao
 
+    @Provides
+    @Singleton
+    fun provideMarketLocationDao(clientDb: ClientDb): MarketLocationDao = clientDb.marketLocationDao
 
 }

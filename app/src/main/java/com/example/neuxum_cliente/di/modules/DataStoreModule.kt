@@ -1,6 +1,7 @@
 package com.example.neuxum_cliente.di.modules
 
 import android.content.Context
+import com.example.neuxum_cliente.user_preferences.UserPreferences
 import com.example.protapptest.security.TokenManager
 import dagger.Module
 import dagger.Provides
@@ -24,4 +25,9 @@ object DataStoreModule {
     @Singleton
     fun provideTokenManager(@ApplicationContext context: Context): TokenManager =
         TokenManager(context)
+
+    @Provides
+    @Singleton
+    fun provideUserPreferences(@ApplicationContext context: Context): UserPreferences =
+        UserPreferences(context)
 }

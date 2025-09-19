@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.neuxum_cliente.ui.components.MyNumberFieldComponent
 import com.example.neuxum_cliente.ui.components.PagerNavigationComponent
+import com.example.neuxum_cliente.ui.components.TosAndPolicyText
 import com.example.neuxum_cliente.ui.navigation.rutes.AuthRoutes
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpEvent
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpViewModel
@@ -48,9 +49,9 @@ fun SignUpIDScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(
-                start = 20.dp,
-                top = 80.dp,    // ↑ increase this value
-                end = 20.dp,
+                start = 10.dp,
+                top = 80.dp,
+                end = 10.dp,
                 bottom = 20.dp
             ),
         horizontalAlignment = Alignment.Start,
@@ -63,7 +64,29 @@ fun SignUpIDScreen(
             textAlign = TextAlign.Start
         )
         Spacer(modifier = Modifier.height(10.dp))
-        TosAndPolicyText {  }
+        TosAndPolicyText(
+            initTxt = "Solicitamos esta información para asegurar nuestras operaciones, consulta nuestros ",
+            signUpTxt = "términos de uso",
+            policyTxt = "política de privacidad.",
+            go,
+            textStyle = TextStyle(
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
+                textAlign = TextAlign.Start,
+                color = Color(0xFF000000)
+            ),
+            defaultTextStyle = SpanStyle(
+                color = Color(0xFF858191),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Light
+            ),
+            defaultLinkStyle = SpanStyle(
+                color = Color(0xFF858191),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+        )
+        Spacer(modifier = Modifier.height(20.dp))
         Text(
             "Número de documento",
             fontWeight = FontWeight.Bold,
@@ -86,49 +109,10 @@ fun SignUpIDScreen(
             onBack = {
                 go(AuthRoutes.SignUpBirthdayScreen)
             },
-            onNext = {},
+            onNext = {
+                go(AuthRoutes.SignUpUploadDocumentScreen)
+            },
             enableNextButton = viewModel.signUpDocumentNumberValidationPassed
-
         )
     }
-}
-
-@Composable
-private fun TosAndPolicyText(go: (Any) -> Unit) {
-    val initTxt = "Solicitamos esta información para asegurar nuestras operaciones, consulta nuestros "
-    val signUpTxt = "términos de uso"
-    val policyTxt = "política de privacidad."
-
-    val annotatedString = buildAnnotatedString {
-        append(initTxt)
-        withStyle(style = SpanStyle(color = Color(0xFF828282))) {
-            pushStringAnnotation(tag = signUpTxt, annotation = signUpTxt)
-            append(signUpTxt)
-        }
-        append(" y ")
-        withStyle(style = SpanStyle(color = Color(0xFF828282))) {
-            pushStringAnnotation(tag = policyTxt, annotation = policyTxt)
-            append(policyTxt)
-        }
-    }
-
-    ClickableText(
-        text = annotatedString,
-        style = TextStyle(
-            fontSize = 14.sp,
-            textAlign = TextAlign.Start,
-            color = Color(0xFF000000)
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 5.dp),
-        onClick = { offset ->
-            annotatedString.getStringAnnotations(offset, offset).firstOrNull()
-                ?.also { span ->
-                    if ((span.item == signUpTxt)) {
-                        go(AuthRoutes.SignUpScreen)
-                    }
-                }
-        }
-    )
 }

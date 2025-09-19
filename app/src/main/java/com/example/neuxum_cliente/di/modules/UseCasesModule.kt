@@ -3,6 +3,7 @@ package com.example.neuxum_cliente.di.modules
 import com.example.neuxum_cliente.domain.repository.AuthRepository
 import com.example.neuxum_cliente.domain.repository.CategoryRepository
 import com.example.neuxum_cliente.domain.repository.ClientRepository
+import com.example.neuxum_cliente.domain.repository.MarketLocationRepository
 import com.example.neuxum_cliente.domain.use_cases.auth.AuthUseCases
 import com.example.neuxum_cliente.domain.use_cases.auth.Authenticate
 import com.example.neuxum_cliente.domain.use_cases.auth.SignIn
@@ -15,6 +16,9 @@ import com.example.neuxum_cliente.domain.use_cases.client.ClientUseCases
 import com.example.neuxum_cliente.domain.use_cases.client.ObserveClient
 import com.example.neuxum_cliente.domain.use_cases.client.ObserveUserId
 import com.example.neuxum_cliente.domain.use_cases.client.UpdateClient
+import com.example.neuxum_cliente.domain.use_cases.market_location.MarketLocationUseCases
+import com.example.neuxum_cliente.domain.use_cases.market_location.ObserveMarketLocations
+import com.example.neuxum_cliente.domain.use_cases.market_location.UpdateMarketLocations
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -60,5 +64,15 @@ object UseCasesModule {
             updateCategories = UpdateCategories(repository),
             observeCategories = ObserveCategories(repository)
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideMarketLocationUseCases(repository: MarketLocationRepository): MarketLocationUseCases {
+        return MarketLocationUseCases(
+            updateMarketLocations = UpdateMarketLocations(repository),
+            observeMarketLocations = ObserveMarketLocations(repository)
+        )
+
     }
 }

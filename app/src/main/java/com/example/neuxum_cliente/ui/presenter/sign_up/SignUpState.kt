@@ -1,5 +1,7 @@
 package com.example.neuxum_cliente.ui.presenter.sign_up
 
+import android.net.Uri
+
 /**
  * @author Ernesto Bastidas Pulido
  * @email ebastidasp@unal.edu.co
@@ -14,13 +16,29 @@ data class SignUpState(
     var phoneCode: String = "",
     var phone: String = "",
     var birthDate: String = "",
+    var birthDateDay: Int = 8,
+    var birthDateMonth: Int = 6,
+    var birthDateYear: Int = 1978,
     var city: String = "",
     var documentNumber: String = "",
+    var frontDocumentUri: Uri = Uri.EMPTY,
+    var backDocumentUri: Uri = Uri.EMPTY,
     var frontDocumentUrl: String = "",
     var backDocumentUrl: String = "",
-    var profilePictureUrl: String = "",
     var password: String = "",
     var confirmPassword: String = "",
+    var profilePictureUri: Uri = Uri.EMPTY,
+    var profilePictureUrl: String = "",
+    var cities: List<String> = listOf(
+        "Bogotá",
+        "Barranquilla",
+        "Chía",
+        "Medellín",
+        "Cartagena",
+        "Cúcuta",
+        "Bucaramanga",
+        "Cali"
+    ),
 
     var emailError: Boolean = false,
     var nameError: Boolean = false,
@@ -30,9 +48,15 @@ data class SignUpState(
     var birthDateError: Boolean = false,
     var cityError: Boolean = false,
     var documentNumberError: Boolean = false,
+    var frontDocumentUriError: Boolean = false,
+    var backDocumentUriError: Boolean = false,
     var frontDocumentUrlError: Boolean = false,
     var backDocumentUrlError: Boolean = false,
-    var profilePictureUrlError: Boolean = false,
     var passwordError: Boolean = false,
     var confirmPasswordError: Boolean = false,
+    var profilePictureUriError: Boolean = false,
+    var profilePictureUrlError: Boolean = false,
+    var errorMessage: String = "",
+    var isRefreshing: Boolean = false,
+
 )
