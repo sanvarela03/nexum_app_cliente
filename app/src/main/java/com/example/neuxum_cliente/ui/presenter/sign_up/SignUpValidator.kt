@@ -1,6 +1,7 @@
 package com.example.neuxum_cliente.ui.presenter.sign_up
 
 import android.net.Uri
+import com.example.neuxum_cliente.data.market_location.local.MarketLocationEntity
 import com.example.neuxum_cliente.ui.common.ValidationResult
 
 object SignUpValidator {
@@ -65,8 +66,8 @@ object SignUpValidator {
         !birthDate.isNullOrEmpty()
     )
 
-    fun validateCity(city: String?): ValidationResult = ValidationResult(
-        !city.isNullOrEmpty()
+    fun validateCity(city: CityState?): ValidationResult = ValidationResult(
+        !city.toString().isEmpty()
     )
 
     fun validateDocumentNumber(documentNumber: String?): ValidationResult {

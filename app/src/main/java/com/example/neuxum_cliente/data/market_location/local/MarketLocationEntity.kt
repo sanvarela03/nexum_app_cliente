@@ -10,11 +10,12 @@ import androidx.room.PrimaryKey
  * @since 04/09/2025
  * @version 1.0
  */
-@Entity
+@Entity(tableName = "MarketLocationEntity")
 data class MarketLocationEntity(
     @PrimaryKey
     val id: Long,
     val city: String,
     val state: String,
     val country: String,
+    val countryCode: String
 )

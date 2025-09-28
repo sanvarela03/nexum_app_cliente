@@ -1,6 +1,9 @@
 package com.example.neuxum_cliente.ui.presenter.sign_up
 
 import android.net.Uri
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.example.neuxum_cliente.data.market_location.local.MarketLocationEntity
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -19,7 +22,7 @@ data class SignUpState(
     var birthDateDay: Int = 8,
     var birthDateMonth: Int = 6,
     var birthDateYear: Int = 1978,
-    var city: String = "",
+    var city: CityState = CityState(),
     var documentNumber: String = "",
     var frontDocumentUri: Uri = Uri.EMPTY,
     var backDocumentUri: Uri = Uri.EMPTY,
@@ -29,17 +32,17 @@ data class SignUpState(
     var confirmPassword: String = "",
     var profilePictureUri: Uri = Uri.EMPTY,
     var profilePictureUrl: String = "",
-    var cities: List<String> = listOf(
-        "Bogotá",
-        "Barranquilla",
-        "Chía",
-        "Medellín",
-        "Cartagena",
-        "Cúcuta",
-        "Bucaramanga",
-        "Cali"
+    var cities: List<CityState> = emptyList(),
+    var countryCodes: List<String> = listOf(
+        "🇨🇴 +57",
+        "🇲🇽 +52",
+        "🇨🇱 +56"
     ),
-
+    var countriesByCountryCode: Map<String, String> = mapOf(
+        "🇨🇴 +57" to "CO",
+        "🇲🇽 +52" to "MX",
+        "🇨🇱 +56" to "CL"
+    ),
     var emailError: Boolean = false,
     var nameError: Boolean = false,
     var lastNameError: Boolean = false,
@@ -59,4 +62,11 @@ data class SignUpState(
     var errorMessage: String = "",
     var isRefreshing: Boolean = false,
 
+    )
+
+data class CityState(
+    var city: String = "",
+    var state: String = "",
+    var country: String = "",
+    var countryCode: String = ""
 )

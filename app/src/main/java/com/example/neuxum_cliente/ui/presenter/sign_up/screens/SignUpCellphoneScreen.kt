@@ -55,11 +55,6 @@ fun SignUpCellphoneScreen(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val state = viewModel.state
-    val countryCodes = listOf(
-        "🇨🇴 +57",
-        "🇲🇽 +52",
-        "🇨🇱 +56"
-    )
     var currentSelectedCode by remember { mutableStateOf(state.phoneCode) }
 
     Column(
@@ -125,7 +120,7 @@ fun SignUpCellphoneScreen(
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false }
                             ) {
-                                countryCodes.forEach {
+                                state.countryCodes.forEach {
                                     DropdownMenuItem(
                                         text = { Text(it) },
                                         onClick = {

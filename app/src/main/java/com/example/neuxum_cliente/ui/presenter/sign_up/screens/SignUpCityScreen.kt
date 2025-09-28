@@ -1,5 +1,6 @@
 package com.example.neuxum_cliente.ui.presenter.sign_up.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,6 +9,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.neuxum_cliente.data.market_location.local.MarketLocationEntity
 import com.example.neuxum_cliente.ui.presenter.sign_up.SignUpViewModel
 import com.example.neuxum_cliente.ui.components.CitiesComponent
 import com.example.neuxum_cliente.ui.components.PagerNavigationComponent
@@ -37,6 +42,8 @@ fun SignUpCityScreen(
     go: (Any) -> Unit = {}
 ) {
     val state = viewModel.state
+    val cities = state.cities.filter { it.countryCode == state.countriesByCountryCode[state.phoneCode] }
+    Log.d("cities", cities.toString())
 
     Column(
         modifier = Modifier
@@ -66,7 +73,7 @@ fun SignUpCityScreen(
         Spacer(modifier = Modifier.height(35.dp))
         CitiesComponent(
             initialSelectedCity = state.city,
-            cities = state.cities,
+            cities = cities,
             onCitySelected = {
                 viewModel.onEvent(SignUpEvent.CityChanged(it))
             },

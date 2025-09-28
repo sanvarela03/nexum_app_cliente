@@ -1,4 +1,4 @@
-package com.example.neuxum_cliente.data.local
+package com.example.neuxum_cliente.data.market_location.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
@@ -18,8 +18,6 @@ import android.content.Context
 import androidx.room.Room
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.neuxum_cliente.data.local.AppDatabase
-import com.example.neuxum_cliente.data.local.MarketLocationDao
-import com.example.neuxum_cliente.data.local.MarketLocationEntity // Ensure this import is correct
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -64,12 +62,6 @@ object DatabaseModule {
             )
             .build()
     }
-
-    @Provides
-    @Singleton
-    fun provideMarketLocationDao(database: AppDatabase): MarketLocationDao {
-        return database.marketLocationDao()
-    }
 }
 
 // You can define the callback class here or in its own file (e.g., PrepopulateCallback.kt)
@@ -87,13 +79,13 @@ private class AppDatabaseCallback(
 
     private suspend fun populateDatabase() {
         val predefinedLocations = listOf(
-            MarketLocationEntity(1, "Bogotá", "Cundinamarca", "Colombia"),
-            MarketLocationEntity(2, "Barranquilla", "Atlántico", "Colombia"),
-            MarketLocationEntity(3, "Chía", "Cundinamarca", "Colombia"),
-            MarketLocationEntity(4, "Medellín", "Antioquia", "Colombia")
+            MarketLocationEntity(1, "Bogotá", "Cundinamarca", "Colombia", "CO"),
+            MarketLocationEntity(2, "Barranquilla", "Atlántico", "Colombia", "CO"),
+            MarketLocationEntity(3, "Chía", "Cundinamarca", "Colombia", "CO"),
+            MarketLocationEntity(4, "Medellín", "Antioquia", "Colombia", "CO")
             // ... add all your locations
         )
         // Get DAO instance via provider inside the coroutine, after DB is created
-        marketLocationDaoProvider.get().insertAll(predefinedLocations)
+        marketLocationDaoProvider.get().saveAll(predefinedLocations)
     }
 }

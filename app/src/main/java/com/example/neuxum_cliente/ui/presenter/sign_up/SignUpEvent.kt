@@ -1,6 +1,7 @@
 package com.example.neuxum_cliente.ui.presenter.sign_up
 
 import android.net.Uri
+import com.example.neuxum_cliente.data.market_location.local.MarketLocationEntity
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -18,7 +19,7 @@ sealed class SignUpEvent {
     data class BirthDateDayChanged(val birthDateDay: Int) : SignUpEvent()
     data class BirthDateMonthChanged(val birthDateMonth: Int) : SignUpEvent()
     data class BirthDateYearChanged(val birthDateYear: Int) : SignUpEvent()
-    data class CityChanged(val city: String) : SignUpEvent()
+    data class CityChanged(val city: CityState) : SignUpEvent()
     data class DocumentNumberChanged(val documentNumber: String) : SignUpEvent()
     data class FrontDocumentUriChanged(val frontDocumentUri: Uri) : SignUpEvent()
     data class BackDocumentUriChanged(val backDocumentUri: Uri) : SignUpEvent()

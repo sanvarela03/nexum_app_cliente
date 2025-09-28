@@ -11,14 +11,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.neuxum_cliente.data.market_location.local.MarketLocationEntity
+import com.example.neuxum_cliente.ui.presenter.sign_up.CityState
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -30,12 +34,12 @@ import androidx.compose.ui.unit.dp
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun CitiesComponent(
-    initialSelectedCity: String = "",
-    cities: List<String> = listOf("Ciudad", "Ciudad 2", "Ciudad 3"),
-    onCitySelected: (String) -> Unit = {},
+    initialSelectedCity: CityState? = null,
+    cities: List<CityState> = emptyList<CityState>(),
+    onCitySelected: (CityState) -> Unit = {},
     maxHeight: Dp = 340.dp
 ) {
-    var selectedCity by rememberSaveable { mutableStateOf(initialSelectedCity) }
+    var selectedCity = initialSelectedCity ?: cities.firstOrNull()
 
     LazyColumn(
         modifier = Modifier
@@ -48,7 +52,7 @@ fun CitiesComponent(
     ) {
         items(cities) { city ->
             CityItem(
-                text = city,
+                text = city.city,
                 isSelected = selectedCity == city,
                 onClick = {
                     selectedCity = city

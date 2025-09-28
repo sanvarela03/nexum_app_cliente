@@ -9,6 +9,7 @@ object MarketLocationParser {
         city = res.city,
         state = res.state,
         country = res.country,
+        countryCode = res.countryCode,
     )
 
     fun toEntity(res: List<MarketLocationRes>): List<MarketLocationEntity> = res.map { MarketLocationParser.toEntity(it) }

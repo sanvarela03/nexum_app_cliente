@@ -6,10 +6,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.neuxum_cliente.app.CustomerApp
+import com.example.neuxum_cliente.data.local.AppDatabase
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Provider
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var appDatabaseProvider: Provider<AppDatabase>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d("MainActivity", "onCreate: ")
@@ -17,6 +23,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             CustomerApp()
         }
+        appDatabaseProvider.get()
     }
     override fun onStart() {
         super.onStart()

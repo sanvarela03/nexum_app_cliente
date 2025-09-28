@@ -2,8 +2,6 @@ package com.example.neuxum_cliente.data.market_location
 
 import android.util.Log
 import com.example.neuxum_cliente.common.apiRequestFlow
-import com.example.neuxum_cliente.data.category.local.CategoryEntity
-import com.example.neuxum_cliente.data.category.parser.CategoryParser
 import com.example.neuxum_cliente.data.global_payload.res.ApiResponse
 import com.example.neuxum_cliente.data.market_location.local.MarketLocationDao
 import com.example.neuxum_cliente.data.market_location.local.MarketLocationEntity
@@ -34,10 +32,56 @@ class MarketLocationRepositoryImpl @Inject constructor (
 ): MarketLocationRepository {
     override fun observeAllLocations(): Flow<List<MarketLocationEntity>> = dao.observeAllLocations()
 
-    override fun updateAllLocations(countryCode: String, fetchFromRemote: Boolean): Flow<ApiResponse<Unit>> = flow {
-        checkLocal(fetchFromRemote)
-        loadFromRemote()
-    }.flowOn(dispatcher)
+    override fun updateAllLocations(countryCode: String, fetchFromRemote: Boolean): Flow<ApiResponse<Unit>> =
+        flow {
+            // 1) Check local cache synchronously (DB call on IO because flowOn(dispatcher) is applied later)
+            val localLocations = dao.getAllLocations()
+            val cacheExists = false
+            Log.d("SignUpViewModel", "cacheExists=$cacheExists fetchFromRemote=$fetchFromRemote")
+
+            // If cache exists and the caller didn't ask to fetch remote, we return success and stop.
+            if (cacheExists && !fetchFromRemote) {
+                emit(ApiResponse.Success(Unit))
+                return@flow
+            }
+
+            // 2) No cache or caller asked for fresh remote data -> call remote
+            // Emit Loading if you want the UI to react
+            emit(ApiResponse.Loading)
+
+            // The helper apiRequestFlow is assumed to wrap network call and emit ApiResponse<T>
+            apiRequestFlow {
+                api.getAllLocations(if (countryCode.isBlank()) null else countryCode)
+            }.collect { apiRes ->
+                when (apiRes) {
+                    is ApiResponse.Error -> {
+                        // map to your ApiResponse.Error handling (maybe transform)
+                        emit(apiRes)
+                    }
+                    is ApiResponse.Failure -> {
+                        emit(ApiResponse.Failure(apiRes.errorMessage, apiRes.code))
+                    }
+                    ApiResponse.Loading -> {
+                        // already handled above but forward if desired
+                        emit(ApiResponse.Loading)
+                    }
+                    is ApiResponse.Success -> {
+                        val dto = apiRes.data
+                        Log.d("SignUpViewModel", "Remote DTO empty=${dto.isEmpty()}")
+                        if (dto.isEmpty()) {
+                            dao.clearAll()
+                            emit(ApiResponse.Success(Unit))
+                        } else {
+                            // convert and persist
+                            dao.replaceLocations(MarketLocationParser.toEntity(dto))
+
+                            emit(ApiResponse.Success(Unit))
+                        }
+                    }
+                }
+            }
+        }.flowOn(dispatcher)
+
 
     private suspend fun FlowCollector<ApiResponse<Unit>>.checkLocal(
         fetchFromRemote: Boolean

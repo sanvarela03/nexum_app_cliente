@@ -5,10 +5,12 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.neuxum_cliente.data.global_payload.res.ApiResponse
+import com.example.neuxum_cliente.data.market_location.local.MarketLocationDao
 import com.example.neuxum_cliente.data.market_location.local.MarketLocationEntity
 import com.example.neuxum_cliente.domain.repository.MarketLocationRepository
 import com.example.neuxum_cliente.domain.use_cases.auth.AuthUseCases
@@ -52,6 +54,7 @@ class SignUpViewModel
     private val authUseCases: AuthUseCases,
     private val marketLocationUseCases: MarketLocationUseCases,
     private val userPreferences: UserPreferences,
+    private val dao: MarketLocationDao,
 //    private val viewModelScope: CoroutineScope
 ) : ViewModel() {
 
@@ -75,8 +78,10 @@ class SignUpViewModel
 
     init {
         viewModelScope.launch {
-            val backFlow    = userPreferences.getBackDocumentUrl().distinctUntilChanged()
-            val frontFlow   = userPreferences.getFrontDocumentUrl().distinctUntilChanged()
+            val locations = dao.getAllLocations()
+            Log.d("SignUpViewModel3", "getAllLocations: $locations")
+            val backFlow = userPreferences.getBackDocumentUrl().distinctUntilChanged()
+            val frontFlow = userPreferences.getFrontDocumentUrl().distinctUntilChanged()
             val profileFlow = userPreferences.getProfilePictureUrl().distinctUntilChanged()
 
             combine(backFlow, frontFlow, profileFlow) { back, front, profile ->
@@ -85,17 +90,17 @@ class SignUpViewModel
                 .distinctUntilChanged()
                 .collectLatest { (back, front, profile) ->
                     state = state.copy(
-                        backDocumentUrl    = back    ?: state.backDocumentUrl,
-                        frontDocumentUrl   = front   ?: state.frontDocumentUrl,
-                        profilePictureUrl  = profile ?: state.profilePictureUrl
+                        backDocumentUrl = back ?: state.backDocumentUrl,
+                        frontDocumentUrl = front ?: state.frontDocumentUrl,
+                        profilePictureUrl = profile ?: state.profilePictureUrl
                     )
                     validateDocumentImages()
                     validateProfilePictureImage()
                 }
         }
-
+        Log.d("SignUpViewModel1", "init 1")
         observeAllLocation()
-        updateMarketLocations(true)
+        updateMarketLocations()
 
     }
 
@@ -164,7 +169,7 @@ class SignUpViewModel
                         }
                     }
                 } else if (state.frontDocumentUrl.isNotEmpty()) {
-                    FirebaseStorageService.deleteImage(state.frontDocumentUrl){
+                    FirebaseStorageService.deleteImage(state.frontDocumentUrl) {
                         state = state.copy(frontDocumentUrl = "")
                         viewModelScope.launch {
                             userPreferences.saveFrontDocumentUrl("")
@@ -192,7 +197,7 @@ class SignUpViewModel
                         }
                     }
                 } else if (state.backDocumentUrl.isNotEmpty()) {
-                    FirebaseStorageService.deleteImage(state.backDocumentUrl){
+                    FirebaseStorageService.deleteImage(state.backDocumentUrl) {
                         state = state.copy(backDocumentUrl = "")
                         viewModelScope.launch {
                             userPreferences.saveBackDocumentUrl("")
@@ -238,7 +243,7 @@ class SignUpViewModel
                         }
                     }
                 } else if (state.profilePictureUrl.isNotEmpty()) {
-                    FirebaseStorageService.deleteImage(state.profilePictureUrl){
+                    FirebaseStorageService.deleteImage(state.profilePictureUrl) {
                         state = state.copy(profilePictureUrl = "")
                         viewModelScope.launch {
                             userPreferences.saveProfilePictureUrl("")
@@ -267,41 +272,35 @@ class SignUpViewModel
             marketLocationUseCases.observeMarketLocations()
                 .distinctUntilChanged()
                 .collect { locations ->
-                    state = state.copy(cities = locations.map{ it.city })
+                    state = state.copy(
+                        cities = locations.map { e ->
+                            CityState(
+                                city = e.city,
+                                state = e.state,
+                                country = e.country,
+                                countryCode = e.countryCode
+                            )
+                        }
+                    )
+
+                    Log.d("SignUpViewModel2", "observeAllLocationTest: ${state.cities}")
                 }
         }
     }
 
     fun updateMarketLocations(fetchFromRemote: Boolean = false) {
 
-        updateMarketLocations?.let {
-            if (it.isActive) {
-                it.cancel()
-            }
-        }
+        Log.d("SignUpViewModel", "updateMarketLocations")
         updateMarketLocations = viewModelScope.launch {
-            marketLocationUseCases.updateMarketLocations("" ,fetchFromRemote).catch {
+            val countryName: String = state.phoneCode.let { code ->
+                state.countriesByCountryCode[code]
+            } ?: ""
+
+            marketLocationUseCases.updateMarketLocations(countryName, fetchFromRemote).catch {
+                Log.d("SignUpViewModel", "updateMarketLocations Error: $it");
                 state = state.copy(errorMessage = it.message ?: "Unknown error")
             }.collect {
-                when (it) {
-                    is ApiResponse.Error -> {
-                        state = state.copy(isRefreshing = false)
-                        state = state.copy(errorMessage = it.errorMessage)
-                    }
-
-                    is ApiResponse.Failure -> {
-                        state = state.copy(isRefreshing = false)
-                    }
-
-                    ApiResponse.Loading -> {
-                        state = state.copy(isRefreshing = true)
-                    }
-
-                    is ApiResponse.Success -> {
-                        state = state.copy(isRefreshing = false)
-
-                    }
-                }
+                Log.d("SignUpViewModel", "updateMarketLocations: $it");
             }
         }
     }
@@ -415,7 +414,8 @@ class SignUpViewModel
             backDocumentUrlError = backDocumentUrlResult.status,
         )
 
-        signUpDocumentImagesValidationPassed = frontDocumentUrlResult.status && backDocumentUrlResult.status
+        signUpDocumentImagesValidationPassed =
+            frontDocumentUrlResult.status && backDocumentUrlResult.status
     }
 
     private fun validateSignUpPassword() {

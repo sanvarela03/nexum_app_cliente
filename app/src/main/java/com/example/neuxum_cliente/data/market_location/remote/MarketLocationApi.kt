@@ -3,6 +3,7 @@ package com.example.neuxum_cliente.data.market_location.remote
 import com.example.neuxum_cliente.data.market_location.remote.payload.res.MarketLocationRes
 import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.Query
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -12,6 +13,8 @@ import retrofit2.http.GET
  * @version 1.0
  */
 interface MarketLocationApi {
-    @GET("/api/v1/market_locations")
-    suspend fun getAllLocations(countryCode: String): Response<List<MarketLocationRes>>
+    @GET("api/v1/market_locations")
+    suspend fun getAllLocations(
+        @Query("country_code") countryCode: String? = null
+    ): Response<List<MarketLocationRes>>
 }

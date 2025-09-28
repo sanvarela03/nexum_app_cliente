@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.AddLocation
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Edit
@@ -26,6 +27,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -162,7 +164,7 @@ fun SignUpProfilePictureScreen (
                 ) {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                         Icon(
-                            imageVector = Icons.Default.CameraAlt,
+                            imageVector = Icons.Outlined.AddAPhoto,
                             contentDescription = "Change photo",
                             tint = Color.Black
                         )
@@ -217,7 +219,10 @@ fun SignUpProfilePictureScreen (
                 tint = Color.Black
             )
             Spacer(modifier = Modifier.width(5.dp))
-            Text(text = state.city)
+            state.city?.let { loc ->
+                Text(text = "${loc.city}, ${loc.state}, ${loc.country}")
+            }
+
         }
         Spacer(modifier = Modifier.height(10.dp))
         ButtonComponent(

@@ -1,8 +1,12 @@
 package com.example.neuxum_cliente.di.modules
 
 import android.app.Application
+import android.util.Log
 import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.neuxum_cliente.data.client.local.db.ClientDb
+import com.example.neuxum_cliente.data.local.AppDatabaseCallback
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,6 +31,20 @@ object DbModule {
             app,
             ClientDb::class.java,
             "client.db"
+        ).addCallback(
+            object : RoomDatabase.Callback() {
+                override fun onCreate(db: SupportSQLiteDatabase) {
+                    super.onCreate(db)
+                    // Aquí puedes ejecutar SQL crudo
+
+                    Log.d("DbModule", "onCreate:")
+                    db.execSQL("INSERT INTO MarketLocationEntity (id, city, country, state, countryCode) VALUES (1, 'Bogotá', 'Colombia', 'Cundinamarca', 'CO')")
+                    db.execSQL("INSERT INTO MarketLocationEntity (id, city, country, state, countryCode) VALUES (2, 'Barranquilla', 'Colombia', 'Atlántico', 'CO')")
+                    db.execSQL("INSERT INTO MarketLocationEntity (id, city, country, state, countryCode) VALUES (3, 'Chía', 'Colombia', 'Cundinamarca', 'CO')")
+                    db.execSQL("INSERT INTO MarketLocationEntity (id, city, country, state, countryCode) VALUES (4, 'Medellín', 'Colombia', 'Antioquia', 'CO')")
+                    db.execSQL("INSERT INTO MarketLocationEntity (id, city, country, state, countryCode) VALUES (5, 'Ciudad de México', 'México', 'Ciudad de México', 'MX')")
+                }
+            }
         ).build()
     }
 }

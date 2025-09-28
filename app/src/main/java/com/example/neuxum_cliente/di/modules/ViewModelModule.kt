@@ -1,5 +1,6 @@
 package com.example.neuxum_cliente.di.modules
 
+import com.example.neuxum_cliente.data.market_location.local.MarketLocationDao
 import com.example.neuxum_cliente.domain.use_cases.auth.AuthUseCases
 import com.example.neuxum_cliente.domain.use_cases.category.CategoryUseCases
 import com.example.neuxum_cliente.domain.use_cases.market_location.MarketLocationUseCases
@@ -39,8 +40,13 @@ object ViewModelModule {
 
     @Provides
     @Singleton
-    fun provideSignUpViewModel(authUseCases: AuthUseCases, marketLocationUseCases: MarketLocationUseCases, userPreferences: UserPreferences): SignUpViewModel {
-        return SignUpViewModel(authUseCases, marketLocationUseCases, userPreferences)
+    fun provideSignUpViewModel(
+        authUseCases: AuthUseCases,
+        marketLocationUseCases: MarketLocationUseCases,
+        userPreferences: UserPreferences,
+        dao: MarketLocationDao
+    ): SignUpViewModel {
+        return SignUpViewModel(authUseCases, marketLocationUseCases, userPreferences, dao)
     }
 
 

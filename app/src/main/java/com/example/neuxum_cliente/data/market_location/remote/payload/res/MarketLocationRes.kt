@@ -12,4 +12,5 @@ data class MarketLocationRes (
     val city: String,
     val state: String,
     val country: String,
+    val countryCode: String,
 )

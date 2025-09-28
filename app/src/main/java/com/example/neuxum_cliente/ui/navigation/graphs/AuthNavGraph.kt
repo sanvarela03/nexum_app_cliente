@@ -27,7 +27,7 @@ import com.example.neuxum_cliente.ui.presenter.sign_up.screens.SignUpProfilePict
 fun NavGraphBuilder.authGraph(
     navController: NavController
 ) {
-    navigation<Graph.InitialGraph>(startDestination = AuthRoutes.SignInScreen) {
+    navigation<Graph.InitialGraph>(startDestination = AuthRoutes.SignUpCellphoneScreen) {
         composable<AuthRoutes.SignInScreen> { SignInScreen(go = { navController.navigate(it) }) }
         composable<AuthRoutes.SignUpScreen> { SignUpScreen(go = { navController.navigate(it) }) }
         composable<AuthRoutes.SignUpUserDataScreen> { SignUpUserDataScreen(go = { navController.navigate(it) }) }
