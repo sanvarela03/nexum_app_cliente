@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.neuxum_cliente"
+    namespace = "com.example.nexum_cliente"
     compileSdk = 35
     defaultConfig {
         applicationId = "com.example.neuxum_cliente"
