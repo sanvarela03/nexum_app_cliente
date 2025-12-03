@@ -260,6 +260,10 @@ class SignUpViewModel
                 Log.d("Register Button Function", "Register button clicked")
                 signUp()
             }
+
+            is SignUpEvent.PhoneCodeRegexChanged -> {
+                state = state.copy(phoneRegex = event.phoneCodeRegex)
+            }
         }
         validateSignUpEmail()
         validateSignUpUserData()

@@ -29,6 +29,8 @@ sealed class SignUpEvent {
     data class ProfilePictureUriChanged(val profilePictureUri: Uri) : SignUpEvent()
     data class ProfilePictureUrlChanged(val profilePictureUrl: String) : SignUpEvent()
 
+    data class PhoneCodeRegexChanged(val phoneCodeRegex: String) : SignUpEvent()
+
     object RegisterButtonClicked : SignUpEvent()
     object ContinueButtonClicked : SignUpEvent()
 }

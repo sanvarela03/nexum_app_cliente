@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.ui.presenter.sign_up.screens
 
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nexum_cliente.ui.components.MyNumberFieldComponent
 import com.example.nexum_cliente.ui.navigation.rutes.AuthRoutes
 import com.example.nexum_cliente.ui.presenter.sign_up.CityState
@@ -131,7 +133,15 @@ fun SignUpCellphoneScreen(
                                             currentSelectedCode = it
                                             viewModel.onEvent(SignUpEvent.PhoneCodeChanged(currentSelectedCode))
                                             expanded = false
-                                            state.phoneRegex = state.countries.find { it.phoneCode == currentSelectedCode }?.phoneCheckRegex ?: ""
+
+                                            state.phoneRegex = state.countries.find {
+                                                Log.d("CellphoneValidator", "selectedphonecode ${currentSelectedCode.split(' ')[1]}")
+                                                Log.d("CellphoneValidator", "phonecode ${it.phoneCode}")
+                                                it.phoneCode == currentSelectedCode.split(' ')[1]
+                                            }?.phoneCheckRegex ?: ""
+                                            Log.d("CellphoneValidator", "phoneRegex ${state.phoneRegex}")
+                                            viewModel.onEvent(SignUpEvent.PhoneCodeRegexChanged(state.phoneRegex))
+
                                         },
                                     )
                                 }

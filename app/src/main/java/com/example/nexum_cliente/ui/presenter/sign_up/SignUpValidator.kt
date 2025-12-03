@@ -40,7 +40,7 @@ object SignUpValidator {
         if (phone.isNullOrBlank()) return ValidationResult(false, "El número no puede estar vacío")
         val digits = phone.filter { it.isDigit() }
 
-        Log.d("CellphoneValidator", "")
+        Log.d("CellphoneValidator", "regex ${regex.toString()}")
 
         if (!regex.matches(digits)) {
             val msg = when (phoneCode) {
