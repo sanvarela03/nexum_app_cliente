@@ -11,17 +11,14 @@ import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import com.example.nexum_cliente.data.global_payload.res.MessageRes
 import com.example.nexum_cliente.domain.use_cases.auth.AuthUseCases
 import com.example.nexum_cliente.domain.use_cases.client.ClientUseCases
-import com.example.nexum_cliente.ui.global_viewmodels.AuthViewModel
-import com.example.nexum_cliente.ui.presenter.sign_in.SignInViewModel
-import com.example.nexum_cliente.ui.presenter.splash.SplashEvent
-import com.example.protapptest.security.TokenManager
+import com.example.nexum_cliente.domain.use_cases.sign_in.SaveLastUserEmailUseCase
+import com.example.nexum_cliente.security.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -31,9 +28,9 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val authUseCases: AuthUseCases,
     private val clientUseCases: ClientUseCases,
+    private val saveLastUserEmailUseCase: SaveLastUserEmailUseCase,
     private val tokenManager: TokenManager,
-    private val authViewModel: AuthViewModel,
-    private val signInViewModel: SignInViewModel
+//    private val authViewModel: AuthViewModel,
 ) : ViewModel() {
 
     var state by mutableStateOf(HomeState())
@@ -53,19 +50,20 @@ class HomeViewModel @Inject constructor(
         clientUseCases.updateClient(fetchFromRemote = true)
     }
 
+
+    fun getUserId() = tokenManager.getUserId()
+
     private fun observeClient() {
         viewModelScope.launch {
-            clientUseCases.observeUserId()
+            clientUseCases.observeClient()
                 .filterNotNull()
                 .distinctUntilChanged()
-                .flatMapLatest { userId ->
-                    clientUseCases.observeClient(userId)
-                }.catch { e ->
+                .catch { e ->
                     Log.d("HomeViewModel", "Error observando cliente: ${e.message}")
                     state = state.copy(errorMessage = e.message ?: "Unknown error")
                 }
                 .collect { client ->
-                    state = state.copy(clientEntity = client)
+                    state = state.copy(client = client)
                 }
         }
     }
@@ -77,12 +75,12 @@ class HomeViewModel @Inject constructor(
             }
 
             HomeEvent.Refresh -> {
-                updateClient(fetchFromRemote = true)
+                refreshClient(fetchFromRemote = true)
             }
         }
     }
 
-    fun updateClient(fetchFromRemote: Boolean) {
+    fun refreshClient(fetchFromRemote: Boolean) {
         viewModelScope.launch {
             clientUseCases.updateClient(fetchFromRemote).catch {
                 Log.d("HomeViewModel", "Error actualizando cliente: ${it.message}")
@@ -112,22 +110,29 @@ class HomeViewModel @Inject constructor(
 
     fun signOut() {
         signOutJob = viewModelScope.launch {
-            authUseCases.signOut().collect {
-                when (it) {
-                    ApiResponse.Loading -> {}
+            state.client?.email?.let {
+                saveLastUserEmailUseCase(it)
+            }
+            authUseCases.signOut().collect { response ->
+                when (response) {
+                    ApiResponse.Loading -> {
+                        Log.d("ApiResponse", "Loading")
+                        state = state.copy(isSignOutLoading = true)
+                    }
+
                     is ApiResponse.Failure -> {
-                        val data = it.errorMessage
+                        val data = response.errorMessage
                         Log.d("ApiResponse", "errorMessage = $data")
                         state = state.copy(errorMessage = data)
 
                     }
 
                     is ApiResponse.Success -> {
-                        it.data.let {
+                        response.data.let {
                             Log.d("ApiResponse", "message = $it")
-                            tokenManager.deleteAccessToken()
-                            authViewModel.onEvent(SplashEvent.CheckAuthentication)
+                            state = state.copy(signOutResponse = it.message)
                         }
+                        state = state.copy(isSignOutLoading = false)
                     }
 
                     is ApiResponse.Error -> TODO()

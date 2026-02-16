@@ -8,5 +8,16 @@ package com.example.nexum_cliente.data.job_offer.remote.payload.req
  * @since 1/14/2026
  * @version 1.0
  */
+<<<<<<< Updated upstream
 class AddJobOfferReq {
 }
+=======
+data class AddJobOfferReq(
+    val title: String,
+    val description: String,
+    val categoryId: Long,
+    val requestedDate: String,
+    val photos: List<String>,
+    val location: List<Double>,
+)
+>>>>>>> Stashed changes

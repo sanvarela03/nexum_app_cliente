@@ -15,7 +15,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.nexum_cliente.ui.presenter.sign_up.CityState
+import com.example.nexum_cliente.common.capitalizeFirstLetter
+import com.example.nexum_cliente.domain.model.MarketLocation
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -27,13 +28,11 @@ import com.example.nexum_cliente.ui.presenter.sign_up.CityState
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun CitiesComponent(
-    initialSelectedCity: CityState? = null,
-    cities: List<CityState> = emptyList<CityState>(),
-    onCitySelected: (CityState) -> Unit = {},
+    selectedMarketLocation: MarketLocation? = null,
+    marketLocations: List<MarketLocation> = emptyList(),
+    onCitySelected: (MarketLocation) -> Unit = {},
     maxHeight: Dp = 340.dp
 ) {
-    var selectedCity = initialSelectedCity ?: cities.firstOrNull()
-
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -43,13 +42,12 @@ fun CitiesComponent(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(8.dp)
     ) {
-        items(cities) { city ->
+        items(marketLocations) { marketLocation ->
             CityItem(
-                text = city.city,
-                isSelected = selectedCity == city,
+                text = marketLocation.city.capitalizeFirstLetter(),
+                isSelected = selectedMarketLocation?.id == marketLocation.id,
                 onClick = {
-                    selectedCity = city
-                    onCitySelected(city)
+                    onCitySelected(marketLocation)
                 }
             )
         }

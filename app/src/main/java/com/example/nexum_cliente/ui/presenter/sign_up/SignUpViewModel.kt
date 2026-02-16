@@ -1,586 +1,437 @@
 package com.example.nexum_cliente.ui.presenter.sign_up
 
 import android.net.Uri
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nexum_cliente.data.global_payload.res.ApiResponse
-import com.example.nexum_cliente.data.market_location.local.MarketLocationDao
-import com.example.nexum_cliente.data.market_location.local.MarketLocationEntity
+import com.example.nexum_cliente.data.mapper.SignUpMapper
 import com.example.nexum_cliente.domain.use_cases.auth.AuthUseCases
+import com.example.nexum_cliente.domain.use_cases.common.GetFcmTokenUseCase
+import com.example.nexum_cliente.domain.use_cases.common.MediaManagementUseCase
 import com.example.nexum_cliente.domain.use_cases.country.CountryUseCases
 import com.example.nexum_cliente.domain.use_cases.market_location.MarketLocationUseCases
-import com.example.nexum_cliente.service.FirebaseStorageService
-import com.example.nexum_cliente.user_preferences.UserPreferences
-import com.google.firebase.messaging.FirebaseMessaging
+import com.example.nexum_cliente.domain.use_cases.sign_up.RestoreSignUpDraftUseCase
+import com.example.nexum_cliente.domain.use_cases.sign_up.ValidateSignUpUseCase
+import com.google.firebase.storage.StorageException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
-import javax.inject.Inject
-
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.launch
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import javax.inject.Inject
 
-// Data class to hold the UI state for market location selection
-data class MarketLocationUiState(
-    val allLocations: List<MarketLocationEntity> = emptyList(),
-    val countries: List<String> = emptyList(),
-    val states: List<String> = emptyList(),
-    val cities: List<MarketLocationEntity> = emptyList(), // Or List<String> if you only need city names
-    val selectedCountry: String? = null,
-    val selectedState: String? = null,
-    val selectedCityId: Long? = null, // Or selectedCityName: String?
-    val isLoading: Boolean = false,
-    val error: String? = null
-)
 
 @HiltViewModel
-class SignUpViewModel
-@Inject constructor(
+class SignUpViewModel @Inject constructor(
     private val authUseCases: AuthUseCases,
-    private val marketLocationUseCases: MarketLocationUseCases,
     private val countryUseCases: CountryUseCases,
-    private val userPreferences: UserPreferences,
-    private val dao: MarketLocationDao,
-//    private val viewModelScope: CoroutineScope
+    private val marketLocationUseCases: MarketLocationUseCases,
+    private val mediaManagementUseCase: MediaManagementUseCase,
+    private val restoreSignUpDraftUseCase: RestoreSignUpDraftUseCase,
+    private val getFcmTokenUseCase: GetFcmTokenUseCase,
+    private val validateSignUpUseCase: ValidateSignUpUseCase,
+    private val signUpMapper: SignUpMapper
 ) : ViewModel() {
-    private var signUpJob : Job? = null
-    private val _isLoading = MutableStateFlow(false)
-    private val _selectedCountry = MutableStateFlow<String?>(null)
-    private val _selectedState = MutableStateFlow<String?>(null)
-    private val _selectedCityId = MutableStateFlow<Long?>(null) // Or String for name
 
     var state by mutableStateOf(SignUpState())
-    var signUpEmailValidationPassed by mutableStateOf(false)
-    var signUpUserDataValidationPassed by mutableStateOf(false)
-    var signUpPhoneDataValidationPassed by mutableStateOf(false)
-    var signUpBirthDateValidationPassed by mutableStateOf(false)
-    var signUpCityValidationPassed by mutableStateOf(false)
-    var signUpDocumentNumberValidationPassed by mutableStateOf(false)
-    var signUpDocumentImagesValidationPassed by mutableStateOf(false)
-    var signUpPasswordValidationPassed by mutableStateOf(false)
-    var signUpProfilePictureValidationPassed by mutableStateOf(false)
+        private set
 
-    private var updateMarketLocations: Job? = null
+    private var signUpJob: Job? = null
 
     init {
-        viewModelScope.launch {
-            val locations = dao.getAllLocations()
-            Log.d("SignUpViewModel3", "getAllLocations: $locations")
-            val backFlow = userPreferences.getBackDocumentUrl().distinctUntilChanged()
-            val frontFlow = userPreferences.getFrontDocumentUrl().distinctUntilChanged()
-            val profileFlow = userPreferences.getProfilePictureUrl().distinctUntilChanged()
-
-            combine(backFlow, frontFlow, profileFlow) { back, front, profile ->
-                Triple(back, front, profile)
-            }
-                .distinctUntilChanged()
-                .collectLatest { (back, front, profile) ->
-                    state = state.copy(
-                        backDocumentUrl = back ?: state.backDocumentUrl,
-                        frontDocumentUrl = front ?: state.frontDocumentUrl,
-                        profilePictureUrl = profile ?: state.profilePictureUrl
-                    )
-                    validateDocumentImages()
-                    validateProfilePictureImage()
-                }
-        }
-        Log.d("SignUpViewModel1", "init 1")
-        updateMarketLocations(true)
-        observeAllLocation()
+        loadPersistedUrls()
         refreshCountries(true)
         observeCountries()
-
+        observeMarketLocations()
+        refreshMarketLocations(true)
     }
 
+    private fun loadPersistedUrls() {
+        viewModelScope.launch {
+            val draft = restoreSignUpDraftUseCase()
+            state = state.copy(
+                frontDocumentUrl = draft.frontDocumentUrl,
+                backDocumentUrl = draft.backDocumentUrl,
+                profilePictureUrl = draft.profilePictureUrl
+            )
+        }
+    }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun onEvent(event: SignUpEvent) {
-        when (event) {
+        // Reducer: Actualiza el estado de forma atómica
+        state = reduceState(event)
+
+        // Side Effects: Maneja lógica asíncrona o de navegación
+        handleEventSideEffects(event)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun reduceState(event: SignUpEvent): SignUpState {
+        return when (event) {
             is SignUpEvent.EmailChanged -> {
-                state = state.copy(email = event.email)
+                val result = validateSignUpUseCase.executeEmail(event.email)
+                state.copy(email = event.email, emailError = !result.isValid)
             }
 
             is SignUpEvent.NameChanged -> {
-                state = state.copy(name = event.name)
+                val result = validateSignUpUseCase.executeName(event.name)
+                state.copy(name = event.name, nameError = !result.isValid)
             }
 
             is SignUpEvent.LastNameChanged -> {
-                state = state.copy(lastName = event.lastName)
+                val result = validateSignUpUseCase.executeLastName(event.lastName)
+                state.copy(lastName = event.lastName, lastNameError = !result.isValid)
             }
 
             is SignUpEvent.PhoneCodeChanged -> {
-                state = state.copy(phoneCode = event.phoneCode)
+                val phoneCodeResult = validateSignUpUseCase.executePhoneCode(event.country)
+                val phoneResult = validateSignUpUseCase.executeCellphone(state.phone, event.country)
+                state.copy(
+                    selectedCountry = event.country,
+                    phoneCodeError = !phoneCodeResult.isValid,
+                    phoneError = !phoneResult.isValid
+                )
             }
 
             is SignUpEvent.CellphoneChanged -> {
-                state = state.copy(phone = event.phone)
+                val result =
+                    validateSignUpUseCase.executeCellphone(event.phone, state.selectedCountry)
+                state.copy(phone = event.phone, phoneError = !result.isValid)
             }
 
             is SignUpEvent.BirthDateDayChanged -> {
-                state = state.copy(birthDateDay = event.birthDateDay)
+                val result = validateSignUpUseCase.executeBirthDate(
+                    event.birthDateDay,
+                    state.birthDateMonth,
+                    state.birthDateYear
+                )
+                state.copy(birthDateDay = event.birthDateDay, birthDateError = !result.isValid)
             }
 
             is SignUpEvent.BirthDateMonthChanged -> {
-                state = state.copy(birthDateMonth = event.birthDateMonth)
+                val result = validateSignUpUseCase.executeBirthDate(
+                    state.birthDateDay,
+                    event.birthDateMonth,
+                    state.birthDateYear
+                )
+                state.copy(birthDateMonth = event.birthDateMonth, birthDateError = !result.isValid)
             }
 
             is SignUpEvent.BirthDateYearChanged -> {
-                state = state.copy(birthDateYear = event.birthDateYear)
+                val result = validateSignUpUseCase.executeBirthDate(
+                    state.birthDateDay,
+                    state.birthDateMonth,
+                    event.birthDateYear
+                )
+                state.copy(birthDateYear = event.birthDateYear, birthDateError = !result.isValid)
             }
 
             is SignUpEvent.CityChanged -> {
-                state = state.copy(city = event.city)
+                val result = validateSignUpUseCase.executeCity(event.marketLocation)
+                state.copy(
+                    selectedMarketLocation = event.marketLocation,
+                    cityError = !result.isValid
+                )
             }
 
             is SignUpEvent.DocumentNumberChanged -> {
-                state = state.copy(documentNumber = event.documentNumber)
-            }
-
-            is SignUpEvent.FrontDocumentUriChanged -> {
-                state = state.copy(frontDocumentUri = event.frontDocumentUri)
-
-                if (state.frontDocumentUri != Uri.EMPTY && state.frontDocumentUrl.isEmpty()) {
-                    FirebaseStorageService.uploadImage(
-                        imageUri = state.frontDocumentUri,
-                        username = "test",
-                        folder = "documents"
-                    ) { frontURLString ->
-                        frontURLString?.let {
-                            state = state.copy(frontDocumentUrl = it)
-                            Log.d(
-                                "FirebaseStorageService",
-                                "Front Image uploaded successfully: $it"
-                            )
-                            viewModelScope.launch {
-                                userPreferences.saveFrontDocumentUrl(it)
-                            }
-                            validateDocumentImages()
-                        }
-                    }
-                } else if (state.frontDocumentUrl.isNotEmpty()) {
-                    FirebaseStorageService.deleteImage(state.frontDocumentUrl) {
-                        state = state.copy(frontDocumentUrl = "")
-                        viewModelScope.launch {
-                            userPreferences.saveFrontDocumentUrl("")
-                        }
-                    }
-                }
-
-            }
-
-            is SignUpEvent.BackDocumentUriChanged -> {
-                state = state.copy(backDocumentUri = event.backDocumentUri)
-                if (state.backDocumentUri != Uri.EMPTY && state.backDocumentUrl.isEmpty()) {
-                    FirebaseStorageService.uploadImage(
-                        imageUri = state.backDocumentUri,
-                        username = "test",
-                        folder = "documents"
-                    ) { backURLString ->
-                        backURLString?.let {
-                            state = state.copy(backDocumentUrl = it)
-                            Log.d("FirebaseStorageService", "Back Image uploaded successfully: $it")
-                            viewModelScope.launch {
-                                userPreferences.saveBackDocumentUrl(it)
-                            }
-                            validateDocumentImages()
-                        }
-                    }
-                } else if (state.backDocumentUrl.isNotEmpty()) {
-                    FirebaseStorageService.deleteImage(state.backDocumentUrl) {
-                        state = state.copy(backDocumentUrl = "")
-                        viewModelScope.launch {
-                            userPreferences.saveBackDocumentUrl("")
-                        }
-                    }
-                }
-            }
-
-            is SignUpEvent.FrontDocumentUrlChanged -> {
-                state = state.copy(frontDocumentUrl = event.frontDocumentUrl)
-            }
-
-            is SignUpEvent.BackDocumentUrlChanged -> {
-                state = state.copy(backDocumentUrl = event.backDocumentUrl)
+                val result = validateSignUpUseCase.executeDocumentNumber(event.documentNumber)
+                state.copy(
+                    documentNumber = event.documentNumber,
+                    documentNumberError = !result.isValid
+                )
             }
 
             is SignUpEvent.PasswordChanged -> {
-                state = state.copy(password = event.password)
+                val passwordResult = validateSignUpUseCase.executePassword(event.password)
+                val confirmPasswordResult = validateSignUpUseCase.executeConfirmPassword(
+                    event.password,
+                    state.confirmPassword
+                )
+                state.copy(
+                    password = event.password,
+                    passwordError = !passwordResult.isValid,
+                    confirmPasswordError = !confirmPasswordResult.isValid
+                )
             }
 
             is SignUpEvent.ConfirmPasswordChanged -> {
-                state = state.copy(confirmPassword = event.confirmPassword)
+                val result = validateSignUpUseCase.executeConfirmPassword(
+                    state.password,
+                    event.confirmPassword
+                )
+                state.copy(
+                    confirmPassword = event.confirmPassword,
+                    confirmPasswordError = !result.isValid
+                )
             }
 
-            is SignUpEvent.ProfilePictureUriChanged -> {
-                state = state.copy(profilePictureUri = event.profilePictureUri)
-                if (state.profilePictureUri != Uri.EMPTY && state.profilePictureUrl.isEmpty()) {
-                    FirebaseStorageService.uploadImage(
-                        imageUri = state.profilePictureUri,
-                        username = "test",
-                        folder = "profile_pictures"
-                    ) { profilePictureURLString ->
-                        profilePictureURLString?.let {
-                            state = state.copy(profilePictureUrl = it)
-                            Log.d(
-                                "FirebaseStorageService",
-                                "Profile Picture uploaded successfully: $it"
-                            )
-                            viewModelScope.launch {
-                                userPreferences.saveProfilePictureUrl(it)
-                            }
-                            validateProfilePictureImage()
-                        }
-                    }
-                } else if (state.profilePictureUrl.isNotEmpty()) {
-                    FirebaseStorageService.deleteImage(state.profilePictureUrl) {
-                        state = state.copy(profilePictureUrl = "")
-                        viewModelScope.launch {
-                            userPreferences.saveProfilePictureUrl("")
-                        }
-                    }
-                }
+            // Eventos que no requieren validación en este punto, solo actualizan el estado
+            is SignUpEvent.BackDocumentUriChanged -> state.copy(backDocumentUri = event.backDocumentUri)
+            is SignUpEvent.FrontDocumentUriChanged -> state.copy(frontDocumentUri = event.frontDocumentUri)
+            is SignUpEvent.ProfilePictureUriChanged -> state.copy(profilePictureUri = event.profilePictureUri)
+            is SignUpEvent.LoadCountries -> state.copy(isLoadingCountries = true)
+            is SignUpEvent.LoadMarketLocations -> state.copy(isLoadingMarketLocations = true)
+
+
+            // Estos eventos son resultados de side effects, ahora validan al actualizar
+            is SignUpEvent.FrontDocumentUrlChanged -> {
+                val result = validateSignUpUseCase.executeDocumentUrl(event.frontDocumentUrl)
+                state.copy(
+                    frontDocumentUrl = event.frontDocumentUrl,
+                    frontDocumentUrlError = !result.isValid
+                )
+            }
+
+            is SignUpEvent.BackDocumentUrlChanged -> {
+                val result = validateSignUpUseCase.executeDocumentUrl(event.backDocumentUrl)
+                state.copy(
+                    backDocumentUrl = event.backDocumentUrl,
+                    backDocumentUrlError = !result.isValid
+                )
             }
 
             is SignUpEvent.ProfilePictureUrlChanged -> {
-                state = state.copy(profilePictureUrl = event.profilePictureUrl)
+                val result = validateSignUpUseCase.executeProfilePictureUrl(event.profilePictureUrl)
+                state.copy(
+                    profilePictureUrl = event.profilePictureUrl,
+                    profilePictureUrlError = !result.isValid
+                )
             }
 
-            is SignUpEvent.ContinueButtonClicked -> {}
-            is SignUpEvent.RegisterButtonClicked -> {
-                Log.d("Register Button Function", "Register button clicked")
-                signUp()
-            }
+            // Eventos de UI/Diálogos
+            SignUpEvent.ConfirmTosDialog -> state.copy(showTosDialog = false, tosAccepted = true)
+            SignUpEvent.DismissTosDialog -> state.copy(showTosDialog = false, tosAccepted = false)
+            SignUpEvent.ConfirmPolicyDialog -> state.copy(
+                showPolicyDialog = false,
+                policyAccepted = true
+            )
 
-            is SignUpEvent.PhoneCodeRegexChanged -> {
-                state = state.copy(phoneRegex = event.phoneCodeRegex)
-            }
+            SignUpEvent.DismissPolicyDialog -> state.copy(
+                showPolicyDialog = false,
+                policyAccepted = false
+            )
+
+            SignUpEvent.DismissSignUpSuccessDialog -> state.copy(isSignedUp = false)
+            SignUpEvent.ShowPolicyDialog -> state.copy(showPolicyDialog = true)
+            SignUpEvent.ShowTosDialog -> state.copy(showTosDialog = true)
+
+            // Eventos que solo disparan side-effects
+            SignUpEvent.ContinueButtonClicked, SignUpEvent.RegisterButtonClicked -> state
         }
-        validateSignUpEmail()
-        validateSignUpUserData()
-        validateSignUpPhoneData()
-        validateSignUpBirthDate()
-        validateSignUpCity()
-        validateSignUpDocumentNumber()
-        validateSignUpPassword()
     }
 
-    fun observeAllLocation() {
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun handleEventSideEffects(event: SignUpEvent) {
+        when (event) {
+            is SignUpEvent.FrontDocumentUriChanged -> {
+                handleMediaChange(
+                    newUri = event.frontDocumentUri,
+                    currentUrl = state.frontDocumentUrl,
+                    storageKey = "frontDocumentUrl",
+                    onSuccess = { onEvent(SignUpEvent.FrontDocumentUrlChanged(it)) },
+                    onDelete = { onEvent(SignUpEvent.FrontDocumentUrlChanged("")) }
+                )
+            }
+
+            is SignUpEvent.BackDocumentUriChanged -> {
+                handleMediaChange(
+                    newUri = event.backDocumentUri,
+                    currentUrl = state.backDocumentUrl,
+                    storageKey = "backDocumentUrl",
+                    onSuccess = { onEvent(SignUpEvent.BackDocumentUrlChanged(it)) },
+                    onDelete = { onEvent(SignUpEvent.BackDocumentUrlChanged("")) }
+                )
+            }
+
+            is SignUpEvent.ProfilePictureUriChanged -> {
+                handleMediaChange(
+                    newUri = event.profilePictureUri,
+                    currentUrl = state.profilePictureUrl,
+                    storageKey = "profilePictureUrl",
+                    onSuccess = { onEvent(SignUpEvent.ProfilePictureUrlChanged(it)) },
+                    onDelete = { onEvent(SignUpEvent.ProfilePictureUrlChanged("")) }
+                )
+            }
+
+            SignUpEvent.RegisterButtonClicked -> signUp()
+            is SignUpEvent.LoadCountries -> refreshCountries(event.fetchFromRemote)
+            is SignUpEvent.LoadMarketLocations -> refreshMarketLocations(event.fetchFromRemote)
+            else -> { /* Sin efectos secundarios para otros eventos */
+            }
+        }
+    }
+
+    private fun handleMediaChange(
+        newUri: Uri?,
+        currentUrl: String,
+        storageKey: String,
+        onSuccess: (String) -> Unit,
+        onDelete: () -> Unit
+    ) {
+        Log.d("SignUpViewModel", "handleMediaChange: $newUri ${newUri.toString().length}")
         viewModelScope.launch {
-            marketLocationUseCases.observeMarketLocations()
-                .distinctUntilChanged()
-                .collect { locations ->
-                    state = state.copy(
-                        cities = locations.map { e ->
-                            CityState(
-                                id = e.id,
-                                city = e.city,
-                                state = e.state,
-                                country = e.country,
-                                countryCode = e.countryCode
-                            )
+            if (newUri == null || newUri == Uri.EMPTY) {
+                mediaManagementUseCase.deleteImage(currentUrl, storageKey)
+                    .onSuccess { onDelete() }
+                    .onFailure { exception ->
+                        Log.e("SignUpViewModel", "Error deleting image", exception)
+                        Log.i(
+                            "SignUpViewModel",
+                            "isStorageException: ${exception is StorageException}"
+                        )
+                        if (exception is StorageException) {
+                            Log.i("SignUpViewModel", "errorCode: ${exception.errorCode}")
                         }
-                    )
 
-                    Log.d("SignUpViewModel2", "observeAllLocationTest: ${state.cities}")
-                }
+                        Log.i(
+                            "SignUpViewModel",
+                            "isNotFound: ${exception is StorageException && exception.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND}"
+                        )
+                        if (exception is StorageException && exception.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND) {
+                            Log.w(
+                                "SignUpViewModel",
+                                "Image to delete was not found in Firebase. Deleting locally",
+                                exception
+                            )
+                            onDelete()
+                        } else {
+                            Log.e("SignUpViewModel", "Error deleting image", exception)
+                        }
+                    }
+            } else {
+                mediaManagementUseCase.uploadAndSaveImage(newUri, currentUrl, storageKey)
+                    .onSuccess(onSuccess)
+                    .onFailure { Log.e("SignUpViewModel", "Error uploading image", it) }
+            }
         }
     }
 
-    fun updateMarketLocations(fetchFromRemote: Boolean = false) {
+    private fun refreshCountries(fetchFromRemote: Boolean = false) {
+        viewModelScope.launch {
+            countryUseCases.updateCountry(fetchFromRemote)
+                .onStart { state = state.copy(isLoadingCountries = true) }
+                .catch { exception -> handleNetworkError(exception) }
+                .collect { result ->
+                    when (result) {
+                        is ApiResponse.Success -> state = state.copy(isLoadingCountries = false)
+                        is ApiResponse.Error -> state = state.copy(
+                            isLoadingCountries = false,
+                            countriesError = result.errorMessage
+                        )
 
-        Log.d("SignUpViewModel", "updateMarketLocations")
-        updateMarketLocations = viewModelScope.launch {
-            val countryName: String = state.phoneCode.let { code ->
-                state.countriesByCountryCode[code]
-            } ?: ""
+                        is ApiResponse.Failure -> state = state.copy(
+                            isLoadingCountries = false,
+                            countriesError = result.errorMessage
+                        )
 
-            marketLocationUseCases.updateMarketLocations(countryName, fetchFromRemote).catch {
-                Log.d("SignUpViewModel", "updateMarketLocations Error: $it");
-                state = state.copy(errorMessage = it.message ?: "Unknown error")
-            }.collect {
-                Log.d("SignUpViewModel", "updateMarketLocations: $it");
-            }
+                        is ApiResponse.Loading -> state = state.copy(isLoadingCountries = true)
+                    }
+                }
         }
     }
 
     private fun observeCountries() {
-        Log.d("SignUpViewModel", "Observing countries...")
         viewModelScope.launch {
-            countryUseCases.observeCountries()
-                .onStart {
-                    state = state.copy(isLoadingCountries = true, countriesError = null)
-                }
-                .catch { exception ->
-                    val errorMessage = when (exception) {
-                        is SocketTimeoutException -> "Se agotó el tiempo de espera. Revisa tu conexión a internet."
-                        is UnknownHostException -> "No se pudo conectar al servidor. Revisa tu conexión a internet."
-                        else -> "Ocurrió un error inesperado: ${exception.message}"
-                    }
-                    state = state.copy(isLoadingCountries = false, countriesError = errorMessage)
-                }
+            countryUseCases.observeCountry()
+                .distinctUntilChanged()
+                .catch { handleNetworkError(it) }
                 .collect { countries ->
                     state = state.copy(isLoadingCountries = false, countries = countries)
                 }
         }
     }
 
-    private fun refreshCountries(fetchFromRemote: Boolean = false) {
-        Log.d("SignUpViewModel", "Refreshing countries...")
-        viewModelScope.launch {
-            countryUseCases.updateCountries(fetchFromRemote)
-                .onStart {
-                    state = state.copy(isLoadingCountries = true)
-                }
-                .catch { exception ->
-                    Log.e("SignUpViewModel", "Error refreshing countries", exception)
-                    state = state.copy(
-                        isLoadingCountries = false,
-                        countriesError = "Ocurrió un error inesperado al refrescar."
-                    )
-                }
-                .collect { result: ApiResponse<Unit> ->
-
-                    when (result) {
-                        is ApiResponse.Success -> {
-                            state = state.copy(isLoadingCountries = false)
-                        }
-
-                        is ApiResponse.Error -> {
-                            state = state.copy(
-                                isLoadingCountries = false,
-                                countriesError = result.errorMessage
-                            )
-                        }
-
-                        is ApiResponse.Failure -> {
-                            state = state.copy(
-                                isLoadingCountries = false,
-                                countriesError = result.errorMessage
-                            )
-                        }
-
-                        is ApiResponse.Loading -> {
-                            state = state.copy(isLoadingCountries = true)
-                        }
-                    }
-                }
+    private fun handleNetworkError(exception: Throwable) {
+        val errorMessage = when (exception) {
+            is SocketTimeoutException -> "Revisa tu conexión a internet."
+            is UnknownHostException -> "No se pudo conectar al servidor."
+            else -> "Ocurrió un error: ${exception.message}"
         }
+        state = state.copy(isLoadingCountries = false, countriesError = errorMessage)
+        Log.e("SignUpViewModel", "Network Error", exception)
     }
 
-    private fun validateSignUpEmail() {
-        val emailResult = SignUpValidator.validateEmail(
-            email = state.email
-        )
-
-        state = state.copy(
-            emailError = emailResult.status,
-        )
-
-        signUpEmailValidationPassed = emailResult.status
-    }
-
-    private fun validateSignUpUserData() {
-        val nameResult = SignUpValidator.validateName(
-            name = state.name
-        )
-
-        val lastNameResult = SignUpValidator.validateLastName(
-            lastName = state.lastName
-        )
-
-        state = state.copy(
-            nameError = nameResult.status,
-            lastNameError = lastNameResult.status,
-        )
-
-        signUpUserDataValidationPassed = nameResult.status && lastNameResult.status
-    }
-
-    private fun validateSignUpPhoneData() {
-        val phoneCodeResult = SignUpValidator.validatePhoneCode(
-            phoneCode = state.phoneCode
-        )
-
-        val cellphoneResult = SignUpValidator.validateCellphone(
-            phone = state.phone, phoneCode = state.phoneCode, regex = state.phoneRegex.toRegex()
-        )
-
-        state = state.copy(
-            phoneCodeError = phoneCodeResult.status,
-            phoneError = cellphoneResult.status,
-        )
-
-
-        signUpPhoneDataValidationPassed = phoneCodeResult.status && cellphoneResult.status
-    }
-
-    private fun validateSignUpBirthDate() {
-        val birthDateResult = SignUpValidator.validateBirthDate(
-            birthDate = "${state.birthDateDay} - ${state.birthDateMonth} - ${state.birthDateYear}"
-        )
-
-        state = state.copy(
-            birthDateError = birthDateResult.status,
-        )
-
-        signUpBirthDateValidationPassed = birthDateResult.status
-    }
-
-    private fun validateSignUpCity() {
-        val cityResult = SignUpValidator.validateCity(
-            city = state.city
-        )
-
-        state = state.copy(
-            cityError = cityResult.status,
-        )
-
-        signUpCityValidationPassed = cityResult.status
-
-    }
-
-    private fun validateSignUpDocumentNumber() {
-        val documentNumberResult = SignUpValidator.validateDocumentNumber(
-            documentNumber = state.documentNumber
-        )
-
-        state = state.copy(
-            documentNumberError = documentNumberResult.status,
-        )
-
-        signUpDocumentNumberValidationPassed = documentNumberResult.status
-
-    }
-
-    private fun validateDocumentImages() {
-
-        val frontDocumentUriResult = SignUpValidator.validateFrontDocumentUri(
-            frontDocumentUri = state.frontDocumentUri
-        )
-
-        val backDocumentUriResult = SignUpValidator.validateBackDocumentUri(
-            backDocumentUri = state.backDocumentUri
-        )
-
-        val frontDocumentUrlResult = SignUpValidator.validateFrontDocumentUrl(
-            frontDocumentUrl = state.frontDocumentUrl
-        )
-
-        val backDocumentUrlResult = SignUpValidator.validateBackDocumentUrl(
-            backDocumentUrl = state.backDocumentUrl
-        )
-
-        state = state.copy(
-            frontDocumentUriError = frontDocumentUriResult.status,
-            backDocumentUriError = backDocumentUriResult.status,
-            frontDocumentUrlError = frontDocumentUrlResult.status,
-            backDocumentUrlError = backDocumentUrlResult.status,
-        )
-
-        signUpDocumentImagesValidationPassed =
-            frontDocumentUrlResult.status && backDocumentUrlResult.status
-    }
-
-    private fun validateSignUpPassword() {
-        val passwordResult = SignUpValidator.validatePassword(
-            password = state.password
-        )
-
-        val confirmPasswordResult = SignUpValidator.validateConfirmPassword(
-            confirmPassword = state.confirmPassword,
-            password = state.password
-        )
-
-        state = state.copy(
-            passwordError = passwordResult.status,
-            confirmPasswordError = confirmPasswordResult.status
-        )
-
-        signUpPasswordValidationPassed = passwordResult.status && confirmPasswordResult.status
-    }
-
-    fun validateProfilePictureImage() {
-        val profilePictureUriResult = SignUpValidator.validateProfilePictureUri(
-            profilePictureUri = state.profilePictureUri
-        )
-
-        val profilePictureUrlResult = SignUpValidator.validateProfilePictureUrl(
-            profilePictureUrl = state.profilePictureUrl
-        )
-
-        state = state.copy(
-            profilePictureUriError = profilePictureUriResult.status,
-            profilePictureUrlError = profilePictureUrlResult.status
-        )
-
-        signUpProfilePictureValidationPassed = profilePictureUrlResult.status
-    }
-
-    fun signUp () {
-        signUpJob?.cancel()
-        signUpJob = viewModelScope.launch {
-            val tkn = FirebaseMessaging.getInstance().token.await()
-            val SignUpRequest = state.toResponse(tkn)
-            Log.d("SignUpRequest", SignUpRequest.toString())
-            authUseCases.signUp(SignUpRequest).collect {
-                response -> when (response) {
-                    is ApiResponse.Success -> {
-                        Log.d("SignUpViewModel", "signUp: ${response.data}")
-                        state = state.copy(
-                            isSignedUp = true,
-                            signUpResponse = response.data.message
-                        )
-                    }
-
-                    is ApiResponse.Error -> {
-                        Log.d("SignUpError", "signUp: ${response.errorMessage}")
-                        state = state.copy(
-                            signUpError = true,
-                            errorMessage = response.errorMessage
-                        )
-                    }
-
-                    is ApiResponse.Failure -> {
-                        Log.d("SignUpFailure", "signUp: ${response.errorMessage}")
-                        state = state.copy(
-                            signUpError = true,
-                            errorMessage = response.errorMessage
-                        )
-                    }
-
-                    is ApiResponse.Loading -> {
-                    }
-                }
+    private fun refreshMarketLocations(fetchFromRemote: Boolean = false) {
+        viewModelScope.launch {
+            marketLocationUseCases.updateMarketLocations(fetchFromRemote).catch {
+                Log.d("SignUpViewModel", "updateMarketLocations Error: $it");
+            }.collect {
+                Log.d("SignUpViewModel", "updateMarketLocations: $it");
             }
         }
-
     }
 
-    fun resetSignUpGlobalValidation () {
+    private fun observeMarketLocations() {
+        viewModelScope.launch {
+            marketLocationUseCases.observeMarketLocations()
+                .distinctUntilChanged()
+                .catch { Log.e("SignUpViewModel", "observeMarketLocations Error: $it"); }
+                .collect { state = state.copy(marketLocations = it) }
+        }
+    }
+
+    fun resetSignUpGlobalValidation() {
         state = state.copy(
             signUpError = false,
             errorMessage = ""
         )
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        signUpJob?.let {
-            if (it.isActive) {
-                it.cancel()
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun signUp() {
+        signUpJob?.cancel()
+        signUpJob = viewModelScope.launch {
+            val tokenResult = getFcmTokenUseCase()
+            val tkn = tokenResult.getOrElse {
+                state = state.copy(
+                    signUpError = true,
+                    errorMessage = "No se pudo obtener el token de notificación."
+                )
+                return@launch
+            }
+
+            val username = signUpMapper.generateUsername(state.name, state.lastName)
+            state = state.copy(username = username)
+
+            val signUpReq = signUpMapper.mapStateToRequest(state, tkn, username)
+
+            Log.d("SignUpRequest", signUpReq.toString())
+            authUseCases.signUp(signUpReq).collect { response ->
+                when (response) {
+                    is ApiResponse.Success -> {
+                        state =
+                            state.copy(isSignedUp = true, signUpResponse = response.data.message)
+                    }
+
+                    is ApiResponse.Error -> {
+                        state = state.copy(signUpError = true, errorMessage = response.errorMessage)
+                    }
+
+                    is ApiResponse.Failure -> {
+                        state = state.copy(signUpError = true, errorMessage = response.errorMessage)
+                    }
+
+                    is ApiResponse.Loading -> { /* Opcional: mostrar un spinner global */
+                    }
+                }
             }
         }
-        Log.d("Cleared", "onCleared")
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        signUpJob?.cancel()
+        Log.d("SignUpViewModel", "onCleared")
+    }
 }

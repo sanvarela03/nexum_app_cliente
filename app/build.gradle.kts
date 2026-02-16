@@ -19,6 +19,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8081\"")
+        buildConfigField("String", "WS_URL", "\"ws://10.0.2.2:8081\"")
     }
 
     buildTypes {
@@ -28,6 +31,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+//            buildConfigField("String", "BASE_URL", "\"https://api.nexum.com\"")
+//            buildConfigField("String", "WS_URL", "\"wss://api.nexum.com\"")
         }
     }
     compileOptions {
@@ -39,6 +44,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -53,6 +59,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.common.android)
+    implementation(libs.androidx.compose.material3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -87,6 +94,11 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.slf4j.simple)
+    implementation(libs.ktor.client.android)
+    implementation(libs.ktor.client.websockets)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.serialization)
+
 
     // Retrofit
     implementation(libs.retrofit)

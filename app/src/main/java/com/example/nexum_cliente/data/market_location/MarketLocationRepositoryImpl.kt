@@ -1,19 +1,16 @@
 package com.example.nexum_cliente.data.market_location
 
-import android.util.Log
-import com.example.nexum_cliente.common.apiRequestFlow
+import com.example.nexum_cliente.common.updateResourceFlow
 import com.example.nexum_cliente.data.global_payload.res.ApiResponse
-import com.example.nexum_cliente.data.market_location.local.MarketLocationDao
-import com.example.nexum_cliente.data.market_location.local.MarketLocationEntity
-import com.example.nexum_cliente.data.market_location.parser.MarketLocationParser
-import com.example.nexum_cliente.data.market_location.remote.MarketLocationApi
+import com.example.nexum_cliente.data.market_location.local.MarketLocationLocalDataSource
+import com.example.nexum_cliente.data.market_location.mapper.MarketLocationMapper
+import com.example.nexum_cliente.data.market_location.remote.MarketLocationRemoteDataSource
 import com.example.nexum_cliente.di.modules.IoDispatcher
+import com.example.nexum_cliente.domain.model.MarketLocation
 import com.example.nexum_cliente.domain.repository.MarketLocationRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,103 +22,21 @@ import javax.inject.Singleton
  * @version 1.0
  */
 @Singleton
-class MarketLocationRepositoryImpl @Inject constructor (
-    private val api: MarketLocationApi,
-    private val dao: MarketLocationDao,
+class MarketLocationRepositoryImpl @Inject constructor(
+    private val localDataSource: MarketLocationLocalDataSource,
+    private val remoteDataSource: MarketLocationRemoteDataSource,
     @IoDispatcher private val dispatcher: CoroutineDispatcher,
-): MarketLocationRepository {
-    override fun observeAllLocations(): Flow<List<MarketLocationEntity>> = dao.observeAllLocations()
-
-    override fun updateAllLocations(countryCode: String, fetchFromRemote: Boolean): Flow<ApiResponse<Unit>> =
-        flow {
-            // 1) Check local cache synchronously (DB call on IO because flowOn(dispatcher) is applied later)
-            val localLocations = dao.getAllLocations()
-            val cacheExists = false
-            Log.d("SignUpViewModel", "cacheExists=$cacheExists fetchFromRemote=$fetchFromRemote")
-
-            // If cache exists and the caller didn't ask to fetch remote, we return success and stop.
-            if (cacheExists && !fetchFromRemote) {
-                emit(ApiResponse.Success(Unit))
-                return@flow
-            }
-
-            // 2) No cache or caller asked for fresh remote data -> call remote
-            // Emit Loading if you want the UI to react
-            emit(ApiResponse.Loading)
-
-            // The helper apiRequestFlow is assumed to wrap network call and emit ApiResponse<T>
-            apiRequestFlow {
-                api.getAllLocations(if (countryCode.isBlank()) null else countryCode)
-            }.collect { apiRes ->
-                when (apiRes) {
-                    is ApiResponse.Error -> {
-                        // map to your ApiResponse.Error handling (maybe transform)
-                        emit(apiRes)
-                    }
-                    is ApiResponse.Failure -> {
-                        emit(ApiResponse.Failure(apiRes.errorMessage, apiRes.code))
-                    }
-                    ApiResponse.Loading -> {
-                        // already handled above but forward if desired
-                        emit(ApiResponse.Loading)
-                    }
-                    is ApiResponse.Success -> {
-                        val dto = apiRes.data
-                        Log.d("SignUpViewModel", "Remote DTO empty=${dto.isEmpty()}")
-                        if (dto.isEmpty()) {
-                            dao.clearAll()
-                            emit(ApiResponse.Success(Unit))
-                        } else {
-                            // convert and persist
-                            dao.replaceLocations(MarketLocationParser.toEntity(dto))
-
-                            emit(ApiResponse.Success(Unit))
-                        }
-                    }
-                }
-            }
-        }.flowOn(dispatcher)
-
-
-    private suspend fun FlowCollector<ApiResponse<Unit>>.checkLocal(
-        fetchFromRemote: Boolean
-    ) {
-        val localLocations = dao.getAllLocations()
-        val cacheExists = localLocations.isNotEmpty()
-        if (cacheExists && !fetchFromRemote) {
-            emit(ApiResponse.Success(Unit))
-            return
-        }
+) : MarketLocationRepository {
+    override fun update(fetchFromRemote: Boolean): Flow<ApiResponse<Unit>> {
+        return updateResourceFlow(
+            fetchFromRemote = fetchFromRemote,
+            checkCache = { localDataSource.hasResource() },
+            remoteCall = { remoteDataSource.getAllLocations() },
+            saveToCache = { localDataSource.replaceAll(MarketLocationMapper.toEntity(it)) },
+            clearCache = { localDataSource.clearAll() },
+            dispatcher = dispatcher
+        )
     }
-
-    private suspend fun FlowCollector<ApiResponse<Unit>>.loadFromRemote() {
-        apiRequestFlow {
-            api.getAllLocations("")
-        }.collect { apiRes ->
-            when (apiRes) {
-                is ApiResponse.Error -> TODO()
-                is ApiResponse.Failure -> {
-                    emit(ApiResponse.Failure(apiRes.errorMessage, apiRes.code))
-                }
-
-                ApiResponse.Loading -> {
-                    emit(ApiResponse.Loading)
-                }
-
-                is ApiResponse.Success -> {
-                    val dto = apiRes.data
-                    Log.d("CategoryRepositoryImpl", "DTO: ${dto.isEmpty()}")
-                    if (dto.isEmpty()) {
-                        Log.d("CategoryRepositoryImpl", "Empty response from server")
-                        dao.clearAll()
-                        emit(ApiResponse.Success(Unit))
-                        // emit(ApiResponse.Error("Empty response from server"))
-                    } else {
-                        dao.replaceLocations(MarketLocationParser.toEntity(dto))
-                        emit(ApiResponse.Success(Unit))
-                    }
-                }
-            }
-        }
-    }
+    override fun observe(): Flow<List<MarketLocation>> =
+        localDataSource.observe().map { MarketLocationMapper.toDomain(it) }
 }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
@@ -33,7 +34,11 @@ fun CityItem(
 ) {
     OutlinedCard(
         Modifier
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White,
+            contentColor = Color.Black
+        )
     ) {
         Row (
             verticalAlignment = Alignment.CenterVertically,
@@ -41,11 +46,7 @@ fun CityItem(
         ) {
             Text(text = text, fontWeight = FontWeight.Medium, fontSize = 16.sp)
             Spacer(Modifier.weight(1f))
-            RadioButton(selected = isSelected, onClick = onClick, colors = RadioButtonDefaults.colors(
-                selectedColor = Color.Black,
-                unselectedColor = Color.Black
-            )
-            )
+            RadioButton(selected = isSelected, onClick = onClick)
         }
     }
 }

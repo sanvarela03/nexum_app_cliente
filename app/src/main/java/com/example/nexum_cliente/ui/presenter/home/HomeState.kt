@@ -1,6 +1,7 @@
 package com.example.nexum_cliente.ui.presenter.home
 
 import com.example.nexum_cliente.data.client.local.ClientEntity
+import com.example.nexum_cliente.domain.model.Client
 
 
 /**
@@ -12,7 +13,10 @@ import com.example.nexum_cliente.data.client.local.ClientEntity
  */
 data class HomeState(
     val clientEntity: ClientEntity? = null,
+    val client: Client? = null,
     var customerInfo: String = "",
     val isRefreshing: Boolean = false,
-    var errorMessage: String = ""
+    var errorMessage: String = "",
+    val isSignOutLoading: Boolean = false,
+    val signOutResponse : String = ""
 )

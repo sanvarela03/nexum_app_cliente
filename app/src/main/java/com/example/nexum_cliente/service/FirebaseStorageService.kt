@@ -23,27 +23,28 @@ object FirebaseStorageService {
         val fileRef = storage.reference.child("$folder/$fileName")
         val uploadTask = fileRef.putFile(imageUri)
 
-        uploadTask.addOnSuccessListener {
+        uploadTask.addOnSuccessListener { 
             fileRef.downloadUrl.addOnSuccessListener { uri ->
                 Log.d("FirebaseStorageService", "Image uploaded successfully: $uri")
                 onComplete(uri.toString())
-            }.addOnFailureListener {
+            }.addOnFailureListener { 
                 Log.e("FirebaseStorageService", "Error getting download URL", it)
                 onComplete(null)
             }
-        }.addOnFailureListener {
+        }.addOnFailureListener { 
             Log.e("FirebaseStorageService", "Error uploading image", it)
             onComplete(null)
         }
     }
 
-    fun deleteImage (imageUrl: String, onComplete: (Boolean) -> Unit = {}) {
+    fun deleteImage (imageUrl: String, onComplete: (Boolean, Exception?) -> Unit) {
         val fileRef = storage.getReferenceFromUrl(imageUrl)
-        fileRef.delete().addOnSuccessListener {
+        fileRef.delete().addOnSuccessListener { 
             Log.d("FirebaseStorageService", "Image deleted successfully")
-            onComplete(true)
-        }.addOnFailureListener {
+            onComplete(true, null)
+        }.addOnFailureListener { 
             Log.e("FirebaseStorageService", "Error deleting image", it)
+            onComplete(false, it)
         }
     }
 }

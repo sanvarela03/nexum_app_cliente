@@ -24,9 +24,9 @@ interface AuthApi {
     @POST("/api/v1/auth/sign-up")
     suspend fun signUp(@Body signUpReq: SignUpReq): Response<MessageRes>
 
-    @POST("/api/v1/auth/signout")
+    @POST("/api/v1/auth/sign-out")
     suspend fun signOut(): Response<MessageRes>
 
-    @POST("/api/v1/auth/refreshtoken")
+    @POST("/api/v1/auth/refresh-token")
     suspend fun refreshToken(@Body refreshRequest: RefreshReq): Response<RefreshRes>
 }

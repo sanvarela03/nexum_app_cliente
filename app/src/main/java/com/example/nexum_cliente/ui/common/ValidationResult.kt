@@ -9,6 +9,6 @@ package com.example.nexum_cliente.ui.common
  * @version 1.0
  */
 data class ValidationResult(
-    val status: Boolean = false,
+    val isValid: Boolean = false,
     val string: String = ""
 )

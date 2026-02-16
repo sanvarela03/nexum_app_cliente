@@ -1,4 +1,4 @@
-package com.example.protapptest.security
+package com.example.nexum_cliente.security
 
 import android.content.Context
 import android.util.Log
@@ -24,10 +24,14 @@ class TokenManager(private val context: Context) {
         }
     }
 
-    suspend fun saveRefreshToken(token: String) {
-        Log.d("saveRefreshToken ->", token)
-        context.dataStore.edit { preferences ->
-            preferences[REFRESH_TOKEN_KEY] = token
+    suspend fun saveRefreshToken(token: String?) {
+        if (token != null) {
+            Log.d("TokenManager", "Saving Refresh Token")
+            context.dataStore.edit { preferences ->
+                preferences[REFRESH_TOKEN_KEY] = token
+            }
+        } else {
+            Log.e("TokenManager", "saveRefreshToken was called with a null token!")
         }
     }
 
@@ -37,17 +41,20 @@ class TokenManager(private val context: Context) {
         }
     }
 
-
     fun getAccessToken(): Flow<String?> {
         return context.dataStore.data.map { preferences ->
             preferences[ACCESS_TOKEN_KEY]
         }
     }
 
-    suspend fun saveAccessToken(token: String) {
-        Log.d("saveAccessToken ->", token)
-        context.dataStore.edit { preferences ->
-            preferences[ACCESS_TOKEN_KEY] = token
+    suspend fun saveAccessToken(token: String?) {
+        if (token != null) {
+            Log.d("TokenManager", "Saving Access Token: $token")
+            context.dataStore.edit { preferences ->
+                preferences[ACCESS_TOKEN_KEY] = token
+            }
+        } else {
+            Log.e("TokenManager", "saveAccessToken was called with a null token!")
         }
     }
 
@@ -58,16 +65,13 @@ class TokenManager(private val context: Context) {
         }
     }
 
-
-    suspend fun saveUserId(userId: Long) {
-//        val roleSet = mutableSetOf<String>()
-//        signInResponse.roles.forEach {
-//            roleSet.add(it)
-//        }
-
-        context.dataStore.edit { preferences ->
-            preferences[USER_KEY] = userId
-//            preferences[USER_ROLES] = roleSet
+    suspend fun saveUserId(userId: Long?) {
+        if (userId != null) {
+            context.dataStore.edit { preferences ->
+                preferences[USER_KEY] = userId
+            }
+        } else {
+            Log.e("TokenManager", "saveUserId was called with a null ID!")
         }
     }
 
@@ -76,6 +80,4 @@ class TokenManager(private val context: Context) {
             preferences[USER_KEY]
         }
     }
-
-
 }

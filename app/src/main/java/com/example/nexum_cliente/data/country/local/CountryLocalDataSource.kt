@@ -1,6 +1,6 @@
 package com.example.nexum_cliente.data.country.local
-import com.example.nexum_cliente.data.country.mapper.CountryMapper
-import com.example.nexum_cliente.data.country.remote.payload.res.CountryRes
+
+import com.example.nexum_trabajador.data.local_data_source.LocalDataSource
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -13,25 +13,14 @@ import javax.inject.Inject
  */
 class CountryLocalDataSource @Inject constructor(
     private val countryDao: CountryDao
-) {
-    suspend fun getAllCountries(): List<CountryEntity> {
-        return countryDao.getAll()
-    }
+) : LocalDataSource<CountryEntity> {
+    override suspend fun clearAll() { countryDao.clearAll() }
+    override suspend fun hasResource(): Boolean = getAll().isNotEmpty()
+    override suspend fun getAll(): List<CountryEntity> = countryDao.getAll()
 
-    fun observeCountries(): Flow<List<CountryEntity>> {
-        return countryDao.observe()
-    }
+    override fun observe(): Flow<List<CountryEntity>> = countryDao.observe()
 
-    suspend fun replaceCountries(countries: List<CountryRes>) {
-        countryDao.replaceAll(CountryMapper.toEntity(countries))
+    override suspend fun replaceAll(resources: List<CountryEntity>) {
+        countryDao.replaceAll(resources)
     }
-
-    suspend fun hasCountries(): Boolean {
-        return getAllCountries().isNotEmpty()
-    }
-
-    suspend fun clearAll() {
-        countryDao.clearAll()
-    }
-
 }

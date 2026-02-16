@@ -12,7 +12,6 @@ import retrofit2.http.GET
  * @version 1.0
  */
 interface CategoryApi {
-
     @GET("/api/v1/categories")
     suspend fun getCategories() : Response<List<CategoryRes>>
 }

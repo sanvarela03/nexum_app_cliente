@@ -11,10 +11,31 @@ import com.example.nexum_cliente.ui.common.ValidationResult
  * @version 1.0
  */
 object SignInValidator {
-    fun validateEmail(email: String?): ValidationResult = ValidationResult(
-        !email.isNullOrEmpty() && email.length >= 4 && email.length < 20,
-        "Email cannot be empty."
-    )
+    fun validateEmail(email: String?): ValidationResult {
+
+
+        if (email.isNullOrEmpty()) {
+            return ValidationResult(false, "Email cannot be empty.")
+        }
+        if (email.contains("@") && email.contains(".")) {
+
+            val emailRegex = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
+
+
+            val isValid = emailRegex.matches(email) && email.length >= 4 && email.length <= 20
+
+            val errorMessage = when {
+                !emailRegex.matches(email) -> "Invalid email format."
+                email.length < 4 -> "Email is too short (minimum 4 characters)."
+                email.length > 20 -> "Email is too long (maximum 19 characters)."
+                else -> ""
+            }
+
+            return ValidationResult(isValid, errorMessage)
+        }
+
+        return ValidationResult(email.length >= 4 && email.length <= 20, "Invalid email format.")
+    }
 
     fun validatePassword(password: String?): ValidationResult = ValidationResult(
         (!password.isNullOrEmpty() && password.length >= 4)

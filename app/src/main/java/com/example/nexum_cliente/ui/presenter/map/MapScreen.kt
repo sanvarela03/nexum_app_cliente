@@ -79,7 +79,7 @@ fun MapScreen(
 //        onMapClick = { latLng ->
 //            markerState.position = latLng
 //        },
-        onMapLongClick = { latLng ->
+        onMapClick = { latLng ->
             markerState.position = latLng
             markerState.position.latitude
 

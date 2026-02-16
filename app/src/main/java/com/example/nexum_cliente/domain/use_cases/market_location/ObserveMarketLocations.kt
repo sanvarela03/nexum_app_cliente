@@ -1,8 +1,7 @@
 package com.example.nexum_cliente.domain.use_cases.market_location
 
-import com.example.nexum_cliente.data.market_location.local.MarketLocationEntity
 import com.example.nexum_cliente.domain.repository.MarketLocationRepository
-import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -11,11 +10,8 @@ import kotlinx.coroutines.flow.Flow
  * @since 09/09/2025
  * @version 1.0
  */
-class ObserveMarketLocations (
-    private val marketLocationRepository: MarketLocationRepository
+class ObserveMarketLocations @Inject constructor(
+    private val repository: MarketLocationRepository
 ) {
-    operator fun invoke(): Flow<List<MarketLocationEntity>> {
-        return marketLocationRepository.observeAllLocations()
-    }
-
+    operator fun invoke() = repository.observe()
 }

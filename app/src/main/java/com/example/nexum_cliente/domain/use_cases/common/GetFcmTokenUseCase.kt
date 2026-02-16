@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 package com.example.nexum_trabajador.domain.use_cases.common
+=======
+package com.example.nexum_cliente.domain.use_cases.common
+>>>>>>> Stashed changes
 
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessaging

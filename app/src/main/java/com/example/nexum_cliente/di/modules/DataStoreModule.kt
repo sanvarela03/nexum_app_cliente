@@ -1,8 +1,11 @@
 package com.example.nexum_cliente.di.modules
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import com.example.nexum_cliente.common.dataStore
 import com.example.nexum_cliente.user_preferences.UserPreferences
-import com.example.protapptest.security.TokenManager
+import com.example.nexum_cliente.security.TokenManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,6 +24,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DataStoreModule {
+
+    @Provides
+    @Singleton
+    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> =
+        context.dataStore
+
     @Provides
     @Singleton
     fun provideTokenManager(@ApplicationContext context: Context): TokenManager =

@@ -1,23 +1,18 @@
 package com.example.nexum_cliente.data.client
 
-import android.util.Log
-import com.example.nexum_cliente.common.apiRequestFlow
-import com.example.nexum_cliente.data.client.local.ClientDao
-import com.example.nexum_cliente.data.client.local.ClientEntity
-import com.example.nexum_cliente.data.client.parser.ClientParser
-import com.example.nexum_cliente.data.client.remote.ClientApi
+import com.example.nexum_cliente.common.updateResourceFlow
+import com.example.nexum_cliente.data.client.local.ClientLocalDataSource
+import com.example.nexum_cliente.data.client.mapper.ClientMapper
+import com.example.nexum_cliente.data.client.remote.ClientRemoteDataSource
 import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import com.example.nexum_cliente.di.modules.IoDispatcher
+import com.example.nexum_cliente.domain.model.Client
 import com.example.nexum_cliente.domain.repository.ClientRepository
-import com.example.protapptest.security.TokenManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
-
 
 /**
  * @author Santiago Varela Daza
@@ -28,67 +23,21 @@ import javax.inject.Singleton
  */
 @Singleton
 class ClientRepositoryImpl @Inject constructor(
-    private val clientApi: ClientApi,
-    private val clientDao: ClientDao,
-    private val tokenManager: TokenManager,
+    private val localDataSource: ClientLocalDataSource,
+    private val remoteDataSource: ClientRemoteDataSource,
     @IoDispatcher private val dispatcher: CoroutineDispatcher,
 ) : ClientRepository {
+    override fun observe(): Flow<Client?> =
+        localDataSource
+            .observe()
+            .map { ClientMapper.toDomain(it).firstOrNull() }
 
-    override fun observeClient(userId: Long?): Flow<ClientEntity?> {
-        return clientDao.observeClientByUserId(userId)
-    }
-
-    override fun observeUserId(): Flow<Long?> {
-        return tokenManager.getUserId()
-    }
-
-    override fun updateClient(fetchFromRemote: Boolean): Flow<ApiResponse<Unit>> = flow {
-        emit(ApiResponse.Loading)
-
-        // 1. Intenta leer de la caché
-        val currentUserId = tokenManager.getUserId().firstOrNull()
-        if (currentUserId == null) {
-            emit(ApiResponse.Error("No user id found"))
-            return@flow
-        }
-
-        val localClient = clientDao.getClientByUserId(currentUserId)
-        val cacheExists = localClient != null
-
-        // 2. Si no pide remoto y hay caché, terminamos
-        if (cacheExists && !fetchFromRemote) {
-            emit(ApiResponse.Success(Unit))
-            return@flow
-        }
-
-        // 3. Llamada a API y mapeo
-        apiRequestFlow { clientApi.getClient() }
-            .collect { apiRes ->
-                when (apiRes) {
-                    is ApiResponse.Loading -> {
-                        emit(ApiResponse.Loading)
-                    }
-
-                    is ApiResponse.Failure -> {
-                        emit(ApiResponse.Failure(apiRes.errorMessage, apiRes.code))
-                    }
-
-                    is ApiResponse.Error -> {
-                        emit(ApiResponse.Error(apiRes.errorMessage))
-                    }
-
-                    is ApiResponse.Success -> {
-                        val dto = apiRes.data
-                        Log.d("ClientRepositoryImpl", "DTO: $dto")
-                        if (dto == null) {
-                            emit(ApiResponse.Error("Empty response from server"))
-                        } else {
-                            // 4. Transacción: borrar + guardar
-                            clientDao.replaceClient(ClientParser.toEntity(dto))
-                            emit(ApiResponse.Success(Unit))
-                        }
-                    }
-                }
-            }
-    }.flowOn(dispatcher)
+    override fun update(fetchFromRemote: Boolean): Flow<ApiResponse<Unit>> = updateResourceFlow(
+        fetchFromRemote = fetchFromRemote,
+        checkCache = { localDataSource.hasResource() },
+        remoteCall = { remoteDataSource.getClient() },
+        saveToCache = { localDataSource.replaceAll(listOf(ClientMapper.toEntity(it))) },
+        clearCache = { localDataSource.clearAll() },
+        dispatcher = dispatcher
+    )
 }

@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import com.example.nexum_cliente.domain.repository.MarketLocationRepository
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -12,15 +13,9 @@ import kotlinx.coroutines.flow.Flow
  * @since 09/09/2025
  * @version 1.0
  */
-class UpdateMarketLocations(
-    private val marketLocationRepository: MarketLocationRepository
+class UpdateMarketLocations @Inject constructor(
+    private val repository: MarketLocationRepository
 ) {
-    operator fun invoke(countryCode: String, fetchFromRemote: Boolean): Flow<ApiResponse<Unit>> {
-        Log.d(
-            "UpdateMarketLocations2",
-            "invoke - countryCode ${countryCode} - fetchFromRemote ${fetchFromRemote}"
-        )
-        return marketLocationRepository.updateAllLocations(countryCode, fetchFromRemote)
-    }
+    operator fun invoke(fetchFromRemote: Boolean) = repository.update(fetchFromRemote)
 
 }

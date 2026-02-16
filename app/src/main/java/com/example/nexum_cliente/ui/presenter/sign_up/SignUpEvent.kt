@@ -1,6 +1,8 @@
 package com.example.nexum_cliente.ui.presenter.sign_up
 
 import android.net.Uri
+import com.example.nexum_cliente.domain.model.Country
+import com.example.nexum_cliente.domain.model.MarketLocation
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -13,13 +15,11 @@ sealed class SignUpEvent {
     data class EmailChanged(val email: String) : SignUpEvent()
     data class NameChanged(val name: String) : SignUpEvent()
     data class LastNameChanged(val lastName: String) : SignUpEvent()
-    data class PhoneCodeChanged(val phoneCode: String) : SignUpEvent()
+    data class PhoneCodeChanged(val country: Country?) : SignUpEvent()
     data class CellphoneChanged(val phone: String) : SignUpEvent()
     data class BirthDateDayChanged(val birthDateDay: Int) : SignUpEvent()
     data class BirthDateMonthChanged(val birthDateMonth: Int) : SignUpEvent()
     data class BirthDateYearChanged(val birthDateYear: Int) : SignUpEvent()
-    data class CityChanged(val city: CityState) : SignUpEvent()
-    data class DocumentNumberChanged(val documentNumber: String) : SignUpEvent()
     data class FrontDocumentUriChanged(val frontDocumentUri: Uri) : SignUpEvent()
     data class BackDocumentUriChanged(val backDocumentUri: Uri) : SignUpEvent()
     data class FrontDocumentUrlChanged(val frontDocumentUrl: String) : SignUpEvent()
@@ -28,9 +28,18 @@ sealed class SignUpEvent {
     data class ConfirmPasswordChanged(val confirmPassword: String) : SignUpEvent()
     data class ProfilePictureUriChanged(val profilePictureUri: Uri) : SignUpEvent()
     data class ProfilePictureUrlChanged(val profilePictureUrl: String) : SignUpEvent()
+    data class LoadCountries(val fetchFromRemote: Boolean = false) : SignUpEvent()
+    data class LoadMarketLocations(val fetchFromRemote: Boolean = false) : SignUpEvent()
 
-    data class PhoneCodeRegexChanged(val phoneCodeRegex: String) : SignUpEvent()
-
-    object RegisterButtonClicked : SignUpEvent()
+    object ShowPolicyDialog : SignUpEvent()
+    object ShowTosDialog : SignUpEvent()
+    object DismissPolicyDialog : SignUpEvent()
+    object ConfirmPolicyDialog : SignUpEvent()
+    object DismissTosDialog : SignUpEvent()
+    object ConfirmTosDialog : SignUpEvent()
+    object DismissSignUpSuccessDialog : SignUpEvent()
+    data class CityChanged(val marketLocation: MarketLocation?) : SignUpEvent()
+    data class DocumentNumberChanged(val documentNumber: String) : SignUpEvent()
     object ContinueButtonClicked : SignUpEvent()
+    object RegisterButtonClicked : SignUpEvent()
 }

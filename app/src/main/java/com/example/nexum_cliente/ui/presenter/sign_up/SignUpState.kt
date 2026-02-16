@@ -1,13 +1,8 @@
 package com.example.nexum_cliente.ui.presenter.sign_up
 
 import android.net.Uri
-import android.os.Build
-import androidx.annotation.RequiresApi
-import com.example.nexum_cliente.data.auth.remote.payload.req.ProfileReq
-import com.example.nexum_cliente.data.auth.remote.payload.req.SignUpReq
-import com.example.nexum_cliente.data.country.local.CountryEntity
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import com.example.nexum_cliente.domain.model.Country
+import com.example.nexum_cliente.domain.model.MarketLocation
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -17,94 +12,108 @@ import java.time.format.DateTimeFormatter
  * @version 1.0
  */
 data class SignUpState(
-    var email: String = "",
-    var username: String = "",
-    var name: String = "",
-    var lastName: String = "",
-    var countryFlagEmoji: String = "",
-    var phoneCode: String = "",
-    var phone: String = "",
-    var birthDate: String = "",
-    var birthDateDay: Int = 8,
-    var birthDateMonth: Int = 6,
-    var birthDateYear: Int = 1978,
-    var city: CityState = CityState(),
-    var documentNumber: String = "",
-    var frontDocumentUri: Uri = Uri.EMPTY,
-    var backDocumentUri: Uri = Uri.EMPTY,
-    var frontDocumentUrl: String = "",
-    var backDocumentUrl: String = "",
-    var password: String = "",
-    var confirmPassword: String = "",
-    var profilePictureUri: Uri = Uri.EMPTY,
-    var profilePictureUrl: String = "",
-    var cities: List<CityState> = emptyList(),
-    var countryCode: String = "",
-    var isLoadingCountries: Boolean = false,
-    var countriesError: String? = "",
-    var phoneRegex: String = "",
-    var countries: List<CountryEntity> = emptyList(),
-    var countryCodes: List<String> = listOf(""),
-    var countriesByCountryCode: Map<String, String> = mapOf(
-        "🇨🇴 +57" to "CO",
-        "🇲🇽 +52" to "MX",
-        "🇨🇱 +56" to "CL"
-    ),
-    var emailError: Boolean = false,
-    var nameError: Boolean = false,
-    var lastNameError: Boolean = false,
-    var phoneCodeError: Boolean = false,
-    var phoneError: Boolean = false,
-    var birthDateError: Boolean = false,
-    var cityError: Boolean = false,
-    var documentNumberError: Boolean = false,
-    var frontDocumentUriError: Boolean = false,
-    var backDocumentUriError: Boolean = false,
-    var frontDocumentUrlError: Boolean = false,
-    var backDocumentUrlError: Boolean = false,
-    var passwordError: Boolean = false,
-    var confirmPasswordError: Boolean = false,
-    var profilePictureUriError: Boolean = false,
-    var profilePictureUrlError: Boolean = false,
-    var errorMessage: String = "",
-    var isRefreshing: Boolean = false,
-    var isSignedUp: Boolean = false,
-    var signUpError: Boolean = false,
-    var signUpResponse: String = "",
-    ){
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun toResponse(firebaseToken: String) : SignUpReq {
-        username = "${name[0]}${lastName.split(' ')[0]}${(10..99).random()}"
-        return SignUpReq(
-            username = username,
-            email = email,
-            password = password,
-            phoneCode = phoneCode.split(' ')[0],
-            phoneNumber = phone,
-            marketLocationId = city.id,
-            firebaseToken = firebaseToken,
-            profile = ProfileReq(
-                firstName = name,
-                lastName = lastName,
-                birthDate = LocalDate.of(
-                    birthDateYear.toInt(),
-                    birthDateMonth.toInt(),
-                    birthDateDay.toInt()
-                ).format(DateTimeFormatter.ISO_LOCAL_DATE),
-                profileImageUrl = profilePictureUrl,
-                frontDocumentUrl = frontDocumentUrl,
-                backDocumentUrl = backDocumentUrl,
-            )
-        )
-    }
+    val email: String = "",
+    val username: String = "",
+    val name: String = "",
+    val lastName: String = "",
+    val phoneCode: String = "",
+    val phone: String = "",
+    val birthDate: String = "",
+
+    val birthDateDay: Int = 8,
+    val birthDateMonth: Int = 6,
+    val birthDateYear: Int = 1978,
+    val documentNumber: String = "",
+    val frontDocumentUri: Uri = Uri.EMPTY,
+    val backDocumentUri: Uri = Uri.EMPTY,
+    val frontDocumentUrl: String = "",
+    val backDocumentUrl: String = "",
+    val profilePictureUrl: String = "",
+    val profilePictureUri: Uri = Uri.EMPTY,
+    val password: String = "",
+    val confirmPassword: String = "",
+
+    val marketLocations: List<MarketLocation> = emptyList(),
+
+    val selectedCountry: Country? = null,
+    val selectedMarketLocation: MarketLocation? = null,
+
+    val isLoadingCountries: Boolean = false,
+    val isLoadingMarketLocations: Boolean = false,
+    val countries: List<Country> = emptyList(),
+    val countriesError: String? = null,
+
+    val tosAccepted: Boolean = true,
+    val policyAccepted: Boolean = true,
+
+    val showTosDialog: Boolean = false,
+    val showPolicyDialog: Boolean = false,
+
+    val emailError: Boolean = false,
+    val nameError: Boolean = false,
+    val lastNameError: Boolean = false,
+    val phoneCodeError: Boolean = false,
+    val phoneError: Boolean = false,
+    val birthDateError: Boolean = false,
+    val cityError: Boolean = false,
+    val documentNumberError: Boolean = false,
+    val frontDocumentUrlError: Boolean = false,
+    val backDocumentUrlError: Boolean = false,
+    val profilePictureUrlError: Boolean = false,
+    val profilePictureUriError: Boolean = false,
+    val passwordError: Boolean = false,
+    val confirmPasswordError: Boolean = false,
+
+    val errorMessage: String = "",
+    val frontDocumentUriError: Boolean = false,
+    val backDocumentUriError: Boolean = false,
+
+    val isSignedUp: Boolean = false,
+    val signUpResponse: String = "",
+
+    val signUpError: Boolean = false,
+) {
+    val isValidToContinue: Boolean
+        get() = emailError.not() &&
+                tosAccepted &&
+                policyAccepted &&
+                showPolicyDialog.not() &&
+                showTosDialog.not() &&
+                email.isNotEmpty()
+
+    val isUserDataValid: Boolean
+        get() = nameError.not() &&
+                lastNameError.not() &&
+                name.isNotEmpty() &&
+                lastName.isNotEmpty()
+
+    val isPhoneValid: Boolean
+        get() = phoneError.not() &&
+                phone.isNotEmpty() &&
+                selectedCountry != null
+
+    val isBirthDateValid: Boolean
+        get() = birthDateError.not()
+
+    val isCityValid: Boolean
+        get() = cityError.not() && selectedMarketLocation != null
+
+    val isIdValid: Boolean
+        get() = documentNumberError.not() && documentNumber.isNotEmpty()
+
+    val isDocumentsUploadValid: Boolean
+        get() = frontDocumentUrlError.not() &&
+                backDocumentUrlError.not() &&
+                frontDocumentUrl.isNotEmpty() &&
+                backDocumentUrl.isNotEmpty()
+
+    val isProfilePictureValid: Boolean
+        get() = profilePictureUrlError.not() && profilePictureUrl.isNotEmpty()
+
+    val isPasswordValid: Boolean
+        get() = passwordError.not() &&
+                confirmPasswordError.not() &&
+                password.isNotEmpty() &&
+                confirmPassword.isNotEmpty() &&
+                password == confirmPassword
 }
-
-
-data class CityState(
-    var id: Long = 0,
-    var city: String = "",
-    var state: String = "",
-    var country: String = "",
-    var countryCode: String = "",
-    var flagEmoji: String = ""
-)

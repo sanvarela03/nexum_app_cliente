@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 package com.example.nexum_trabajador.data.market_location.mapper
 
 import com.example.nexum_trabajador.data.mapper.DomainMapper
@@ -8,6 +9,18 @@ import com.example.nexum_trabajador.domain.model.MarketLocation
 
 object MarketLocationMapper : EntityMapper<MarketLocationRes, MarketLocationEntity>,
     DomainMapper<MarketLocationEntity, MarketLocation> {
+=======
+package com.example.nexum_cliente.data.market_location.mapper
+
+import com.example.nexum_cliente.data.mapper.DomainMapper
+import com.example.nexum_cliente.data.mapper.EntityMapper
+import com.example.nexum_cliente.data.market_location.local.MarketLocationEntity
+import com.example.nexum_cliente.data.market_location.remote.payload.res.MarketLocationRes
+import com.example.nexum_cliente.domain.model.MarketLocation
+
+
+object MarketLocationMapper : EntityMapper<MarketLocationRes, MarketLocationEntity>, DomainMapper<MarketLocationEntity, MarketLocation> {
+>>>>>>> Stashed changes
     override fun toEntity(dto: MarketLocationRes): MarketLocationEntity {
         return MarketLocationEntity(
             id = dto.id,

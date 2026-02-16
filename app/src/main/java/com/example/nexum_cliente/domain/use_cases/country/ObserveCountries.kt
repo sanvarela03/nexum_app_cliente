@@ -3,6 +3,7 @@ package com.example.nexum_cliente.domain.use_cases.country
 import com.example.nexum_cliente.data.country.local.CountryEntity
 import com.example.nexum_cliente.domain.repository.CountryRepository
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -11,11 +12,8 @@ import kotlinx.coroutines.flow.Flow
  * @since 02/12/2025
  * @version 1.0
  */
-class ObserveCountries (
-    private val countryRepository: CountryRepository
+class ObserveCountries @Inject constructor (
+    private val repository: CountryRepository
 ) {
-    operator fun invoke(): Flow<List<CountryEntity>> {
-        return countryRepository.observe()
-    }
-
+    operator fun invoke() = repository.observe()
 }

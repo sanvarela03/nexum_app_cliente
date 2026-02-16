@@ -1,8 +1,16 @@
+<<<<<<< Updated upstream
 package com.example.nexum_trabajador.data.market_location.remote
 
 import com.example.nexum_trabajador.common.apiRequestFlow
 import com.example.nexum_trabajador.data.global_payload.res.ApiResponse
 import com.example.nexum_trabajador.data.market_location.remote.payload.res.MarketLocationRes
+=======
+package com.example.nexum_cliente.data.market_location.remote
+
+import com.example.nexum_cliente.common.apiRequestFlow
+import com.example.nexum_cliente.data.global_payload.res.ApiResponse
+import com.example.nexum_cliente.data.market_location.remote.payload.res.MarketLocationRes
+>>>>>>> Stashed changes
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton

@@ -1,10 +1,9 @@
 package com.example.nexum_cliente.data.client.local
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.example.nexum_cliente.data.local_storage.BaseDao
 import kotlinx.coroutines.flow.Flow
 
 
@@ -16,33 +15,26 @@ import kotlinx.coroutines.flow.Flow
  * @version 1.0
  */
 @Dao
-interface ClientDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun save(client: ClientEntity)
+interface ClientDao : BaseDao<ClientEntity> {
+    @Query("SELECT * FROM ClientEntity")
+    fun observe(): Flow<List<ClientEntity>>
 
-    @Query("DELETE FROM cliententity WHERE clientId = :clientId")
-    suspend fun deleteClientById(clientId: Long)
-
-    @Query("SELECT * FROM cliententity WHERE userId = :userId")
-    suspend fun getClientByUserId(userId: Long): ClientEntity?
-
-    @Query("SELECT * FROM cliententity WHERE userId = :userId")
-    fun observeClientByUserId(userId: Long?): Flow<ClientEntity?>
-
-    @Query("SELECT * FROM cliententity")
-    suspend fun getAllClients(): List<ClientEntity>
+    @Query("DELETE FROM ClientEntity ")
+    suspend fun clearAll()
 
     @Transaction
-    @Query("DELETE FROM cliententity")
-    suspend fun clearAll()
+    suspend fun replaceAll(entities: List<ClientEntity>) {
+        clearAll()
+        insertAll(entities)
+    }
+
+    @Query("SELECT * FROM ClientEntity")
+    suspend fun getAll(): List<ClientEntity>
+
+    @Query("SELECT * FROM ClientEntity WHERE clientId = :id")
+    suspend fun getById(id: Long): ClientEntity?
 
     @Transaction
     @Query("SELECT * FROM ClientEntity WHERE clientId = :clientId")
     suspend fun getClientWithRoles(clientId: Long): List<ClientWithRoles>
-
-    @Transaction
-    suspend fun replaceClient(client: ClientEntity) {
-        clearAll()
-        save(client)
-    }
 }

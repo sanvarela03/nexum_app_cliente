@@ -4,9 +4,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.FactCheck
 import androidx.compose.material.icons.automirrored.outlined.FactCheck
 import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.AccountBalanceWallet
+import androidx.compose.material.icons.outlined.ChatBubble
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -50,6 +53,14 @@ enum class BottomNavigation(
         icon = Icons.Default.AccountBalanceWallet,
         selectedIcon = Icons.Filled.AccountBalanceWallet,
         unselectedIcon = Icons.Outlined.AccountBalanceWallet
+    ),
+    CONVERSATIONS(
+        title = "Conversaciones",
+        description = "Home",
+        route = HomeRoutes.ConversationsScreen,
+        icon = Icons.Outlined.ChatBubble,
+        selectedIcon = Icons.Filled.ChatBubble,
+        unselectedIcon = Icons.Outlined.ChatBubbleOutline
     ),
     NOTIFICATIONS(
         title = "Notificaciones",

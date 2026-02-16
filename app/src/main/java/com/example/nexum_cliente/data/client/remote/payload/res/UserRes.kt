@@ -1,5 +1,7 @@
 package com.example.nexum_cliente.data.client.remote.payload.res
 
+import kotlinx.serialization.Serializable
+
 
 /**
  * @author Santiago Varela Daza
@@ -8,6 +10,7 @@ package com.example.nexum_cliente.data.client.remote.payload.res
  * @since 8/2/2025
  * @version 1.0
  */
+@Serializable
 data class UserRes(
     val userId: Long,
     val firstName: String,

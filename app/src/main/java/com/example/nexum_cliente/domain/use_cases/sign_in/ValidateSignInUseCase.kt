@@ -1,7 +1,15 @@
+<<<<<<< Updated upstream
 package com.example.nexum_trabajador.domain.use_cases.sign_in
 
 import com.example.nexum_trabajador.ui.common.ValidationResult
 import com.example.nexum_trabajador.ui.presenter.sign_in.SignInValidator
+=======
+package com.example.nexum_cliente.domain.use_cases.sign_in
+
+
+import com.example.nexum_cliente.ui.common.ValidationResult
+import com.example.nexum_cliente.ui.presenter.sign_in.SignInValidator
+>>>>>>> Stashed changes
 import javax.inject.Inject
 
 class ValidateSignInUseCase @Inject constructor() {

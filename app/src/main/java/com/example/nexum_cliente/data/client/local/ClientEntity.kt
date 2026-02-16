@@ -14,6 +14,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class ClientEntity(
     @PrimaryKey
+    val id: Long = 1L,
     val clientId: Long?,
     val userId: Long?,
     val firstName: String,
@@ -28,5 +29,5 @@ data class ClientEntity(
     val dateJoined: String,
     val lastLogin: String,
     val imgUrl: String?,
+    val profileVerified: Boolean = false
 )
-

@@ -1,5 +1,7 @@
 package com.example.nexum_cliente.domain.use_cases.client
 
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * @author Santiago Varela Daza
@@ -8,8 +10,8 @@ package com.example.nexum_cliente.domain.use_cases.client
  * @since 8/3/2025
  * @version 1.0
  */
-data class ClientUseCases(
+@Singleton
+data class ClientUseCases @Inject constructor(
     val updateClient: UpdateClient,
     val observeClient: ObserveClient,
-    val observeUserId: ObserveUserId
 )

@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.ui.presenter.splash
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,22 +17,31 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.nexum_cliente.R
 import com.example.nexum_cliente.common.UserAuthState
-import kotlinx.coroutines.delay
+import com.example.nexum_cliente.ui.navigation.graphs.Graph
+import com.example.nexum_cliente.ui.navigation.rutes.AuthRoutes
 
 @Composable
 fun SplashScreen(
     navController: NavController,
-    userAuthState: UserAuthState? = null
+    userAuthState: UserAuthState?
 ) {
-    LaunchedEffect(key1 = true) {
-        delay(2000)
-        navController.popBackStack()
-//        navController.navigate(
-//            if (userAuthState == UserAuthState.AUTHENTICATED)
-//                Screen.HomeScreen.route
-//            else
-//                Screen.SignInScreen.route
-//        )
+    Log.d("SplashScreen", "userAuthState: $userAuthState")
+    LaunchedEffect(userAuthState) {
+        when (userAuthState) {
+            UserAuthState.AUTHENTICATED -> {
+                navController.navigate(AuthRoutes.HomeScreen) {
+                    popUpTo(AuthRoutes.SplashScreen) { inclusive = true }
+                }
+            }
+            UserAuthState.UNAUTHENTICATED -> {
+                navController.navigate(Graph.InitialGraph) {
+                    popUpTo(AuthRoutes.SplashScreen) { inclusive = true }
+                }
+            }
+            UserAuthState.UNKNOWN, null -> {
+                // Do nothing, wait for a definitive state.
+            }
+        }
     }
     Splash()
 }
@@ -52,7 +62,7 @@ fun Splash() {
     }
 }
 
-
+//
 @Composable
 @Preview(showBackground = true)
 fun SplashScreenPreview() {

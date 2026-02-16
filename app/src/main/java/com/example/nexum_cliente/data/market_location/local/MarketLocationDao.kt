@@ -16,24 +16,25 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface MarketLocationDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun save(location: MarketLocationEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveAll(locations: List<MarketLocationEntity>)
 
     @Query("SELECT * FROM MarketLocationEntity")
-    fun observeAllLocations(): Flow<List<MarketLocationEntity>>
+    fun observe(): Flow<List<MarketLocationEntity>>
 
     @Query("SELECT * FROM MarketLocationEntity")
-    suspend fun getAllLocations(): List<MarketLocationEntity?>
+    suspend fun getAll(): List<MarketLocationEntity>
 
     @Transaction
     @Query("DELETE FROM MarketLocationEntity")
     suspend fun clearAll()
 
     @Transaction
-    suspend fun replaceLocations(locations: List<MarketLocationEntity>) {
+    suspend fun replaceAll(locations: List<MarketLocationEntity>) {
         clearAll()
         saveAll(locations)
     }
-
 }

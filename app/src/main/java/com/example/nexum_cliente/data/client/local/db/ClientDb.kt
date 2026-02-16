@@ -36,8 +36,5 @@ abstract class ClientDb : RoomDatabase() {
     abstract val roleDao: RoleDao
     abstract val categoryDao: CategoryDao
     abstract val marketLocationDao: MarketLocationDao
-
     abstract val countryDao: CountryDao
-
-
 }

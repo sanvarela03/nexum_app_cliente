@@ -3,6 +3,7 @@ package com.example.nexum_cliente.domain.use_cases.client
 import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import com.example.nexum_cliente.domain.repository.ClientRepository
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
 
 /**
@@ -12,10 +13,10 @@ import kotlinx.coroutines.flow.Flow
  * @since 8/3/2025
  * @version 1.0
  */
-data class UpdateClient(
-    private val clientRepository: ClientRepository
+data class UpdateClient @Inject constructor(
+    private val repository: ClientRepository
 ) {
     operator fun invoke(fetchFromRemote: Boolean): Flow<ApiResponse<Unit>> {
-        return clientRepository.updateClient(fetchFromRemote)
+        return repository.update(fetchFromRemote)
     }
 }

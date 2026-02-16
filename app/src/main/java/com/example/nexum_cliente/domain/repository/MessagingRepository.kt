@@ -1,5 +1,15 @@
 package com.example.nexum_cliente.domain.repository
 
+<<<<<<< Updated upstream
+=======
+import com.example.nexum_cliente.data.message.remote.payload.req.MessageRequest
+import com.example.nexum_cliente.domain.model.ConnectionState
+import com.example.nexum_cliente.domain.model.Conversation
+import com.example.nexum_cliente.domain.model.Message
+import com.example.nexum_cliente.domain.model.PageResponse
+import kotlinx.coroutines.flow.StateFlow
+
+>>>>>>> Stashed changes
 /**
  * @author Santiago Varela Daza
  * @email svarela03@uan.edu.co
@@ -8,4 +18,29 @@ package com.example.nexum_cliente.domain.repository
  * @version 1.0
  */
 interface MessagingRepository {
+<<<<<<< Updated upstream
+=======
+    // WebSocket
+    val connectionState: StateFlow<ConnectionState>
+    val incomingMessages: StateFlow<Message?>
+
+    suspend fun connectWebSocket(serverUrl: String, jwtToken: String)
+    suspend fun disconnectWebSocket()
+    suspend fun subscribeToMessages()
+    suspend fun sendMessageViaWebSocket(message: MessageRequest)
+    suspend fun markAsReadViaWebSocket(conversationId: String)
+    suspend fun notifyTyping(conversationId: String, isTyping: Boolean)
+
+    // REST API
+    suspend fun sendMessageViaRest(message: MessageRequest): Result<Message>
+    suspend fun getConversations(page: Int, size: Int): Result<PageResponse<Conversation>>
+    suspend fun getConversationMessages(
+        conversationId: String,
+        page: Int,
+        size: Int
+    ): Result<PageResponse<Message>>
+
+    suspend fun markAsReadViaRest(conversationId: String): Result<Unit>
+    suspend fun getUnreadCount(): Result<Long>
+>>>>>>> Stashed changes
 }

@@ -1,6 +1,7 @@
 package com.example.nexum_cliente.ui.presenter.sign_up.screens
 
-import android.util.Log
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,14 +16,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.nexum_cliente.ui.presenter.sign_up.SignUpViewModel
+import com.example.nexum_cliente.domain.model.Country
+import com.example.nexum_cliente.domain.model.MarketLocation
 import com.example.nexum_cliente.ui.components.CitiesComponent
 import com.example.nexum_cliente.ui.components.PagerNavigationComponent
 import com.example.nexum_cliente.ui.navigation.rutes.AuthRoutes
-import com.example.nexum_cliente.ui.presenter.sign_up.CityState
 import com.example.nexum_cliente.ui.presenter.sign_up.SignUpEvent
+import com.example.nexum_cliente.ui.presenter.sign_up.SignUpState
+import com.example.nexum_cliente.ui.presenter.sign_up.SignUpViewModel
+import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -31,70 +36,110 @@ import com.example.nexum_cliente.ui.presenter.sign_up.SignUpEvent
  * @since 19/08/2025
  * @version 1.0
  */
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-//@Preview(showBackground = true, showSystemUi = true)
 fun SignUpCityScreen(
     viewModel: SignUpViewModel,
-    go: (Any) -> Unit = {}
+    go: (Any) -> Unit = {},
+    onBack: () -> Boolean
 ) {
-
     val state = viewModel.state
-    val cities = state.cities.filter { it.countryCode == state.countriesByCountryCode[state.phoneCode] }
-    Log.d("cities", cities.toString())
 
     LaunchedEffect(Unit) {
-        viewModel.updateMarketLocations(fetchFromRemote = true)
-
-        if (state.city != null && !state.city.city.isNullOrBlank()) {
-            if (state.city.countryCode != state.countriesByCountryCode[state.phoneCode]) {
-                viewModel.onEvent(SignUpEvent.CityChanged(CityState()))
-            }
-        }
+        viewModel.onEvent(SignUpEvent.LoadMarketLocations(fetchFromRemote = true))
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(
-                start = 20.dp,
-                top = 80.dp,
-                end = 20.dp,
-                bottom = 20.dp
-            ),
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Top
-    ) {
-        Text(
-            "¿Cuál es tu ciudad?",
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 25.sp,
-            textAlign = TextAlign.Start
-        )
-        Text(
-            "Selecciona la ciudad en la que quieres solicitar nuestros servicios.",
-            fontWeight = FontWeight.Medium,
-            fontSize = 14.sp,
-            color = Color(0xFF858191),
-            textAlign = TextAlign.Start
-        )
-        Spacer(modifier = Modifier.height(35.dp))
-        CitiesComponent(
-            initialSelectedCity = state.city,
-            cities = cities,
-            onCitySelected = {
+
+    SignUpCityScreenContent(
+        state = state,
+        onCityChanged = {
+            if (it.id != state.selectedMarketLocation?.id) {
                 viewModel.onEvent(SignUpEvent.CityChanged(it))
-            },
-            maxHeight = 400.dp
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        PagerNavigationComponent(
-            onBack = {
-                go(AuthRoutes.SignUpBirthdayScreen)
-            },
-            onNext = {
-                go(AuthRoutes.SignUpIDScreen)
-            },
-            enableNextButton = viewModel.signUpCityValidationPassed
-        )
+            } else {
+                viewModel.onEvent(SignUpEvent.CityChanged(null))
+            }
+        },
+        onBack = { onBack() },
+        onNext = { go(AuthRoutes.SignUpIDScreen) },
+        enableNextButton = state.isCityValid
+    )
+}
+
+@Composable
+@Preview(showBackground = true, showSystemUi = true)
+private fun SignUpCityScreenContent(
+    state: SignUpState = SignUpState(
+        marketLocations = listOf(
+            MarketLocation(
+                id = 1,
+                city = "Bogotá",
+                state = "Cundinamarca",
+                country = "Colombia",
+                countryCode = "CO"
+            )
+        ),
+        selectedCountry = Country(
+            id = 1,
+            name = "Colombia",
+            code = "CO",
+            phoneCode = "+57",
+            flagEmoji = "🇨🇴",
+            phoneCheckRegex = "[0-9]{7,10}"
+        ),
+    ),
+    onCityChanged: (MarketLocation) -> Unit = {},
+    onBack: () -> Unit = {},
+    onNext: () -> Unit = {},
+    enableNextButton: Boolean = false,
+) {
+    val cities = state.marketLocations.filter { it.countryCode == state.selectedCountry?.code }
+    Nexum_clienteTheme() {
+
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    start = 20.dp,
+                    top = 80.dp,
+                    end = 20.dp,
+                    bottom = 20.dp
+                ),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Top
+        ) {
+            Text(
+                "¿Cuál es tu ciudad?",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 25.sp,
+                textAlign = TextAlign.Start
+            )
+            Text(
+                "Selecciona la ciudad en la que quieres solicitar nuestros servicios.",
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp,
+                color = Color(0xFF858191),
+                textAlign = TextAlign.Start
+            )
+            Spacer(modifier = Modifier.height(35.dp))
+            CitiesComponent(
+                selectedMarketLocation = state.selectedMarketLocation,
+                marketLocations = cities,
+                onCitySelected = {
+                    onCityChanged(it)
+                },
+                maxHeight = 400.dp
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            PagerNavigationComponent(
+                onBack = {
+                    onBack()
+                },
+                onNext = {
+                    onNext()
+                },
+                enableNextButton = enableNextButton
+            )
+        }
     }
 }

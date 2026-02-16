@@ -8,4 +8,11 @@ package com.example.nexum_cliente.domain.model
  * @version 1.0
  */
 enum class ConnectionState {
+<<<<<<< Updated upstream
+=======
+    DISCONNECTED,
+    CONNECTING,
+    CONNECTED,
+    ERROR
+>>>>>>> Stashed changes
 }

@@ -2,10 +2,14 @@ package com.example.nexum_cliente.ui.components
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -14,36 +18,39 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-
 @Composable
 fun ButtonComponent(
     value: String,
-    isEnabled: Boolean = false,
-    onButtonClicked: () -> Unit,
+    isLoading: Boolean = false,
+    isEnabled: Boolean = true,
+    colors: ButtonColors = ButtonDefaults.buttonColors(
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = Color.White
+    ),
+    onButtonClicked: () -> Unit = {},
 ) {
     Button(
+        onClick = onButtonClicked,
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(48.dp)
-            ,
-        onClick = { onButtonClicked() },
+            .height(50.dp),
         contentPadding = PaddingValues(),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Black,
-            disabledContainerColor = Color.Gray,
-            contentColor = Color.White,
-            disabledContentColor = Color.Gray
-        ),
-        shape = RoundedCornerShape(8.dp),
-        enabled = isEnabled
+        colors = colors,
+        shape = RoundedCornerShape(10.dp),
+        enabled = isEnabled && !isLoading
     ) {
-
-        Text(
-            text = value,
-            fontSize = 20.sp,
-            color = Color.White,
-            fontWeight = FontWeight.Medium
-        )
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = MaterialTheme.colorScheme.onPrimary,
+                strokeWidth = 2.dp
+            )
+        } else {
+            Text(
+                text = value,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
-
 }

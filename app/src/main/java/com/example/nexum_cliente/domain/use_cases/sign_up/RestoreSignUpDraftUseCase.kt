@@ -1,6 +1,12 @@
+<<<<<<< Updated upstream
 package com.example.nexum_trabajador.domain.use_cases.sign_up
 
 import com.example.nexum_trabajador.data.local_storage.AsyncStorage
+=======
+package com.example.nexum_cliente.domain.use_cases.sign_up
+
+import com.example.nexum_cliente.data.local_storage.AsyncStorage
+>>>>>>> Stashed changes
 import javax.inject.Inject
 
 data class SignUpDraft(

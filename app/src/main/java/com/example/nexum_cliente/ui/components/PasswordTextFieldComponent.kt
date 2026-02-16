@@ -34,7 +34,7 @@ fun PasswordTextFieldComponent(
     icon: ImageVector,
     onTextSelected: (String) -> Unit,
     errorStatus: Boolean = false,
-    password : String = ""
+    password: String = ""
 ) {
     val localFocusManager = LocalFocusManager.current
     val passwordVisible = rememberSaveable { mutableStateOf(false) }
@@ -62,7 +62,12 @@ fun PasswordTextFieldComponent(
         onValueChange = {
             onTextSelected(it)
         },
-        leadingIcon = {  if (!passwordVisible.value) Icon(icon, contentDescription = "") else Icon(Icons.Outlined.LockOpen, contentDescription = "") },
+        leadingIcon = {
+            if (!passwordVisible.value) Icon(icon, contentDescription = "") else Icon(
+                Icons.Outlined.LockOpen,
+                contentDescription = ""
+            )
+        },
         trailingIcon = {
             val iconImage =
                 if (passwordVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
@@ -74,7 +79,67 @@ fun PasswordTextFieldComponent(
             }
         },
         visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
-        isError = !errorStatus
+        isError = errorStatus
+    )
+
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PasswordTextFieldComponent(
+    labelValue: String,
+    icon: ImageVector,
+    onTextSelected: (String) -> Unit,
+    errorStatus: Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions(
+        keyboardType = KeyboardType.Password,
+        imeAction = ImeAction.Done
+    ),
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    password: String = ""
+) {
+    val localFocusManager = LocalFocusManager.current
+    val passwordVisible = rememberSaveable { mutableStateOf(false) }
+
+    OutlinedTextField(
+        value = password,
+        modifier = Modifier
+            .fillMaxWidth(),
+        label = { Text(text = labelValue) },
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color.Blue,        // cuando está enfocado
+            unfocusedBorderColor = Color(0xFFE6E6E6), // cuando no está enfocado
+            errorBorderColor = Color.Red,
+            unfocusedLabelColor = Color(0xFFE6E6E6),
+            unfocusedLeadingIconColor = Color(0xFFE6E6E6)
+        ),
+        keyboardOptions = keyboardOptions,
+        shape = RoundedCornerShape(8.dp),
+        singleLine = true,
+        keyboardActions = keyboardActions,
+        maxLines = 1,
+        onValueChange = {
+            onTextSelected(it)
+        },
+        leadingIcon = {
+            if (!passwordVisible.value) Icon(icon, contentDescription = "") else Icon(
+                Icons.Outlined.LockOpen,
+                contentDescription = ""
+            )
+        },
+        trailingIcon = {
+            val iconImage =
+                if (passwordVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+            var description =
+                if (passwordVisible.value) "Ocultar contraseña" else "Mostrar contraseña"
+
+            IconButton(onClick = { passwordVisible.value = !passwordVisible.value }) {
+                Icon(imageVector = iconImage, contentDescription = description)
+            }
+        },
+        visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
+        isError = errorStatus
     )
 
 }

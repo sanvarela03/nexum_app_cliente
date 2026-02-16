@@ -10,13 +10,13 @@ import com.example.nexum_cliente.ui.presenter.home.DrawerNavigation
 
 @Composable
 fun NavigationDrawerBody(
-    navigationItems: List<DrawerNavigation>,
+    items: List<DrawerNavigation>,
     navigateTo: (DrawerRoutes) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth()
     ) {
-        items(navigationItems) { navItem: DrawerNavigation ->
+        items(items) { navItem: DrawerNavigation ->
             NavigationItemRow(item = navItem, navigateTo = { navigateTo(navItem.route) })
         }
     }

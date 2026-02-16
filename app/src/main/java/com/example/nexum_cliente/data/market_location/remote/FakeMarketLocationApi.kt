@@ -18,7 +18,7 @@ class FakeMarketLocationApi @Inject constructor(
     override suspend fun getAllLocations(countryCode: String?): Response<List<MarketLocationRes>> {
         // Read from DB (suspend)
         Log.d("FakeMarketLocationApi", "getAllLocations: $countryCode")
-        val entities: List<MarketLocationEntity?> = dao.getAllLocations()
+        val entities: List<MarketLocationEntity?> = dao.getAll()
 
         Log.d("FakeMarketLocationApi", "entities: $entities")
 

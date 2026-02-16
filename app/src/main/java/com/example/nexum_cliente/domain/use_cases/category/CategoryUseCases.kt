@@ -1,5 +1,8 @@
 package com.example.nexum_cliente.domain.use_cases.category
 
+import javax.inject.Inject
+import javax.inject.Singleton
+
 
 /**
  * @author Santiago Varela Daza
@@ -8,7 +11,8 @@ package com.example.nexum_cliente.domain.use_cases.category
  * @since 8/5/2025
  * @version 1.0
  */
-data class CategoryUseCases (
+@Singleton
+data class CategoryUseCases @Inject constructor(
     val updateCategories: UpdateCategories,
     val observeCategories: ObserveCategories
 )

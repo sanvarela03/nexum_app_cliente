@@ -27,6 +27,7 @@ fun MyDialog2(
 ) {
     if (show) {
         AlertDialog(
+            containerColor = Color.White,
             title = {
                 Text(
                     text = title,

@@ -1,8 +1,6 @@
 package com.example.nexum_cliente.ui.presenter.sign_in
 
 import android.util.Log
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,131 +9,148 @@ import androidx.lifecycle.viewModelScope
 import com.example.nexum_cliente.data.auth.remote.payload.res.SignInRes
 import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import com.example.nexum_cliente.domain.use_cases.auth.AuthUseCases
-import com.example.nexum_cliente.ui.global_viewmodels.AuthViewModel
-import com.example.nexum_cliente.ui.presenter.splash.SplashEvent
+import com.example.nexum_cliente.domain.use_cases.common.GetFcmTokenUseCase
+import com.example.nexum_cliente.domain.use_cases.common.SaveSessionUseCase
+import com.example.nexum_cliente.domain.use_cases.sign_in.GetLastUserEmailUseCase
+import com.example.nexum_cliente.domain.use_cases.sign_in.ValidateSignInUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.example.protapptest.security.TokenManager
-import com.google.firebase.messaging.FirebaseMessaging
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.tasks.await
 
 @HiltViewModel
-class SignInViewModel
-@Inject constructor(
+class SignInViewModel @Inject constructor(
     private val authUseCases: AuthUseCases,
-    private val tokenManager: TokenManager,
-    private val authViewModel: AuthViewModel,
-//    private val viewModelScope: CoroutineScope
+    private val validateSignInUseCase: ValidateSignInUseCase,
+    private val saveSessionUseCase: SaveSessionUseCase,
+    private val getFcmTokenUseCase: GetFcmTokenUseCase,
+    private val getLastUserEmailUseCase: GetLastUserEmailUseCase
 ) : ViewModel() {
 
-    private val _signInResponse: MutableState<ApiResponse<SignInRes>> =
-        mutableStateOf(ApiResponse.Loading)
-    val signInResponse: State<ApiResponse<SignInRes>> = _signInResponse
-
-    private var signInJob: Job? = null
-
-    var response by mutableStateOf<SignInRes?>(null)
-
-    private val _signInResponseTest: MutableState<ApiResponse<SignInRes>> =
-        mutableStateOf(ApiResponse.Loading)
-    val signInResponseTest: State<ApiResponse<SignInRes>> = _signInResponseTest
-
-
     var state by mutableStateOf(SignInState())
-    var allValidationsPassed by mutableStateOf(false)
+        private set
+
+    init {
+        loadLastUser()
+    }
+
+    private fun loadLastUser() {
+        viewModelScope.launch {
+            // Solo cargar si el email está vacío (no fue pasado por argumento)
+            if (state.email.isEmpty()) {
+                val lastEmail = getLastUserEmailUseCase()
+                if (!lastEmail.isNullOrBlank()) {
+                    // Actualizamos el estado y validamos para que el UI refleje el estado correcto
+                    onEvent(SignInEvent.UsernameChanged(lastEmail))
+                }
+            }
+        }
+    }
 
     fun onEvent(event: SignInEvent) {
+        state = reduceState(event)
+        handleSideEffects(event)
+    }
 
-        Log.d("SignInViewModel", "onEvent")
-        when (event) {
+    private fun reduceState(event: SignInEvent): SignInState {
+        return when (event) {
             is SignInEvent.UsernameChanged -> {
-                state = state.copy(email = event.username)
+                val emailResult = validateSignInUseCase.executeEmail(event.username)
+                state.copy(email = event.username, emailError = !emailResult.isValid)
             }
 
             is SignInEvent.PasswordChanged -> {
-                state = state.copy(password = event.password)
+                val passwordResult = validateSignInUseCase.executePassword(event.password)
+                state.copy(password = event.password, passwordError = !passwordResult.isValid)
             }
 
-            SignInEvent.LoginButtonClicked -> {
-                signInTest()
-            }
+            SignInEvent.LoginButtonClicked -> state
+            SignInEvent.ForgotPasswordButtonClicked -> state
+        }
+    }
 
+    private fun handleSideEffects(event: SignInEvent) {
+        when (event) {
+            SignInEvent.LoginButtonClicked -> signIn()
             SignInEvent.ForgotPasswordButtonClicked -> {
-
+                // TODO: Navegar a pantalla de recuperar contraseña
             }
+
+            else -> {}
         }
-        validateSignInUIDataWithRules()
     }
 
-    private fun validateSignInUIDataWithRules() {
-        val usernameResult = SignInValidator.validateEmail(
-            email = state.email
-        )
+    private fun signIn() {
+        // Validación final antes de enviar (por seguridad)
+        val emailResult = validateSignInUseCase.executeEmail(state.email)
+        val passwordResult = validateSignInUseCase.executePassword(state.password)
 
-        val passwordResult = SignInValidator.validatePassword(
-            password = state.password
-        )
-
-        state = state.copy(
-            emailError = usernameResult.status,
-            passwordError = passwordResult.status
-        )
-
-        allValidationsPassed = usernameResult.status && passwordResult.status
-    }
-
-    private fun signInTest() {
-        Log.d("SignInViewModel", "onEvent | LoginButtonClicked() | signInTest()")
-
-        signInJob?.cancel()
-        signInJob = CoroutineScope(Dispatchers.Main + CoroutineExceptionHandler { _, error ->
-            viewModelScope.launch(Dispatchers.Main) {
-                Log.d("SignInViewModel", "Ocurrió un error: ${error.localizedMessage}")
-            }
-        }
-        ).launch {
-            val tkn = FirebaseMessaging.getInstance().token.await()
-
-            Log.d(
-                "SignInViewModel",
-                "onEvent | LoginButtonClicked() | signInTest() | viewModelScope.launch  "
+        if (!emailResult.isValid || !passwordResult.isValid) {
+            state = state.copy(
+                emailError = !emailResult.isValid,
+                passwordError = !passwordResult.isValid
             )
-            authUseCases.signIn(state.email, state.password, tkn)
-                .collect {
-                    when (it) {
-                        is ApiResponse.Success -> {
-                            it.data?.let {
-                                tokenManager.saveAccessToken(it.token)
-                                response = it
-                                tokenManager.saveRefreshToken(it.refreshToken)
-                                tokenManager.saveUserId(it.id)
-                                authViewModel.onEvent(SplashEvent.CheckAuthentication)
-                            }
+            return
+        }
+
+        viewModelScope.launch {
+            val tokenResult = getFcmTokenUseCase()
+            val fcmToken = tokenResult.getOrElse {
+                state = state.copy(
+                    signInResponse = ApiResponse.Failure(
+                        "No se pudo obtener el token del dispositivo.", -1
+                    )
+                )
+                return@launch
+            }
+
+            authUseCases.signIn(state.email, state.password, fcmToken)
+                .onStart {
+                    state = state.copy(signInResponse = ApiResponse.Loading)
+                }
+                .catch { e ->
+                    Log.e("SignInViewModel", "Sign-in flow failed", e)
+                    val apiResponse =
+                        ApiResponse.Failure(e.message ?: "Ocurrió un error inesperado", -1)
+                    state = state.copy(signInResponse = apiResponse)
+                }
+                .collect { response ->
+                    when (response) {
+                        is ApiResponse.Error -> {
+                            state = state.copy(isLoading = false)
+                            state = state.copy(errorMessage = response.errorMessage)
                         }
 
-                        is ApiResponse.Failure -> {}
-                        is ApiResponse.Loading -> {}
-                        is ApiResponse.Error -> TODO()
+                        is ApiResponse.Failure -> {
+                            state = state.copy(isLoading = false)
+                            state = state.copy(errorMessage = response.errorMessage)
+                        }
+
+                        ApiResponse.Loading -> {
+                            state = state.copy(isLoading = true)
+                        }
+
+                        is ApiResponse.Success -> {
+                            state = state.copy(isLoading = false)
+                            handleSuccessfulSignIn(response)
+                        }
                     }
-
-
                 }
         }
     }
 
-    override fun onCleared() {
-        Log.d("SignInViewModel", "onCleared")
-        super.onCleared()
-
-        signInJob?.let {
-            if (it.isActive) {
-                it.cancel()
-            }
+    private suspend fun handleSuccessfulSignIn(response: ApiResponse.Success<SignInRes>) {
+        val token = response.data?.token
+        if (token.isNullOrBlank()) {
+            state = state.copy(
+                signInResponse = ApiResponse.Failure(
+                    "Login exitoso pero no se recibió token.", -1
+                )
+            )
+        } else {
+            saveSessionUseCase(response.data)
+            state = state.copy(signInResponse = response)
         }
     }
 }

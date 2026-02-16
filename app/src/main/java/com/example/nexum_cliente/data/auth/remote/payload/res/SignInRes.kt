@@ -1,11 +1,11 @@
 package com.example.nexum_cliente.data.auth.remote.payload.res
 
 data class SignInRes(
-    var id: Long,
+    val id: Long,
     val username: String,
     val email: String,
-    val roles: List<String>,
-    val token: String,
+    val token: String?,
+    val refreshToken: String?,
     val type: String,
-    val refreshToken: String
+    val roles: List<String>
 )

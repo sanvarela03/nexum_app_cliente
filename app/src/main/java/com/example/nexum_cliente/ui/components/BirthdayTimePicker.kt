@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.nexum_cliente.common.capitalizeFirstLetter
 import java.util.Calendar
 import java.util.TimeZone
 
@@ -156,7 +157,7 @@ fun DateOfBirthPicker(
                     "enero", "febrero", "marzo", "abril", "mayo", "junio",
                     "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
                 ).subList(0, if (selectedYear == maxYear) now.get(Calendar.MONTH) + 1 else 12)
-                mutableStateListOf<String>().apply { addAll(monthsArray) }
+                mutableStateListOf<String>().apply { addAll(monthsArray.map { it.capitalizeFirstLetter() }) }
             }
             WheelPicker(
                 items = monthLabels,

@@ -2,6 +2,8 @@ package com.example.nexum_cliente.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -44,6 +46,48 @@ fun FilterChipComponent(
         label = {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = text,
+                    fontSize = fontSize,
+                    fontWeight = fontWeight,
+                    textAlign = TextAlign.Center,
+                    color = if (isSelected) Color.White else Color.Black,
+                )
+            }
+        },
+        selected = isSelected,
+        colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = Color.Black,
+        ),
+        modifier = modifier // <--- ajusta al contenido
+    )
+
+}
+
+@Composable
+@Preview(showBackground = true, showSystemUi = true)
+fun FilterChipComponent2(
+    modifier: Modifier = Modifier
+        .width(106.dp)
+        .height(46.dp),
+    text: String = "Ejemplo",
+    fontSize: TextUnit = 12.sp,
+    fontWeight: FontWeight = FontWeight.Normal,
+    isSelected: Boolean = false,
+    onClick: () -> Unit = {}
+) {
+    FilterChip(
+        onClick = onClick,
+        border = if (!isSelected) BorderStroke(1.dp, Color(0xFFD6D6D6)) else BorderStroke(
+            0.dp,
+            Color.Transparent
+        ),
+        shape = RoundedCornerShape(12.dp),
+        label = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.width(106.dp)
             ) {
                 Text(
                     text = text,

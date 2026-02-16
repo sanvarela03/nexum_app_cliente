@@ -2,20 +2,33 @@ package com.example.nexum_cliente.data.country.mapper
 
 import com.example.nexum_cliente.data.country.local.CountryEntity
 import com.example.nexum_cliente.data.country.remote.payload.res.CountryRes
+import com.example.nexum_cliente.data.mapper.DomainMapper
+import com.example.nexum_cliente.data.mapper.EntityMapper
+import com.example.nexum_cliente.domain.model.Country
 
-object CountryMapper {
-    fun toEntity(countryRes: CountryRes): CountryEntity {
+object CountryMapper : EntityMapper<CountryRes, CountryEntity>, DomainMapper<CountryEntity, Country> {
+
+    // De Red (DTO) a Base de Datos (Entity)
+    override fun toEntity(dto: CountryRes): CountryEntity {
         return CountryEntity(
-            id = countryRes.id,
-            name = countryRes.name,
-            code = countryRes.code,
-            phoneCode = countryRes.phoneCode,
-            flagEmoji = countryRes.flagEmoji,
-            phoneCheckRegex = countryRes.phoneCheckRegex
+            id = dto.id,
+            name = dto.name,
+            code = dto.code,
+            phoneCode = dto.phoneCode,
+            flagEmoji = dto.flagEmoji,
+            phoneCheckRegex = dto.phoneCheckRegex
         )
     }
 
-    fun toEntity(countriesRes: List<CountryRes>): List<CountryEntity> {
-        return countriesRes.map { toEntity(it) }
+    // De Base de Datos (Entity) a Dominio (Modelo para la UI)
+    override fun toDomain(entity: CountryEntity): Country {
+        return Country(
+            id = entity.id,
+            name = entity.name,
+            code = entity.code,
+            phoneCode = entity.phoneCode,
+            flagEmoji = entity.flagEmoji,
+            phoneCheckRegex = entity.phoneCheckRegex
+        )
     }
 }

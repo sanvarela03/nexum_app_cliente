@@ -1,8 +1,7 @@
 package com.example.nexum_cliente.domain.use_cases.client
 
-import com.example.nexum_cliente.data.client.local.ClientEntity
 import com.example.nexum_cliente.domain.repository.ClientRepository
-import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
 
 /**
@@ -12,10 +11,8 @@ import kotlinx.coroutines.flow.Flow
  * @since 8/3/2025
  * @version 1.0
  */
-class ObserveClient(
-    private val clientRepository: ClientRepository
+class ObserveClient @Inject constructor(
+    private val repository: ClientRepository
 ) {
-    operator fun invoke(userId: Long?): Flow<ClientEntity?> {
-        return clientRepository.observeClient(userId)
-    }
+    operator fun invoke() = repository.observe()
 }

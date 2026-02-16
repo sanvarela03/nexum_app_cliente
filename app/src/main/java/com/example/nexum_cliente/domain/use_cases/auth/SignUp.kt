@@ -5,8 +5,9 @@ import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import com.example.nexum_cliente.data.global_payload.res.MessageRes
 import com.example.nexum_cliente.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class SignUp(
+class SignUp @Inject constructor(
     private val repository: AuthRepository
 ) {
     operator fun invoke(signUpRequest: SignUpReq): Flow<ApiResponse<MessageRes>> {

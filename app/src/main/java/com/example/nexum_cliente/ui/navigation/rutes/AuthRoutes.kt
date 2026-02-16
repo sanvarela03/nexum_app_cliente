@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
  @Serializable
 sealed class AuthRoutes {
     @Serializable
-    object SignInScreen : AuthRoutes()
+    data class SignInScreen(var username: String? = null) : AuthRoutes()
 
     @Serializable
     object SignUpScreen : AuthRoutes()
@@ -47,5 +47,7 @@ sealed class AuthRoutes {
 
     @Serializable
     object SignUpProfilePictureScreen : AuthRoutes()
+
+
 
 }

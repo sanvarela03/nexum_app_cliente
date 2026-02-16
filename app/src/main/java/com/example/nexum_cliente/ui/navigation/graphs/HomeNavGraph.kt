@@ -1,5 +1,7 @@
 package com.example.nexum_cliente.ui.navigation.graphs
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -9,6 +11,9 @@ import com.example.nexum_cliente.ui.navigation.rutes.DrawerRoutes
 import com.example.nexum_cliente.ui.navigation.rutes.HomeRoutes
 import com.example.nexum_cliente.ui.navigation.rutes.JobOfferRoutes
 import com.example.nexum_cliente.ui.presenter.categories.CategoriesScreen
+import com.example.nexum_cliente.ui.presenter.chat.ChatScreen
+import com.example.nexum_cliente.ui.presenter.conversations.ConversationsScreen
+import com.example.nexum_cliente.ui.presenter.home.HomeViewModel
 import com.example.nexum_cliente.ui.presenter.job_offer.JobOfferScreen
 import com.example.nexum_cliente.ui.presenter.notifications.NotificationsScreen
 import com.example.nexum_cliente.ui.presenter.profile.ProfileScreen
@@ -23,7 +28,12 @@ import com.example.nexum_cliente.ui.presenter.wallet.WalletScreen
  * @since 8/4/2025
  * @version 1.0
  */
-fun NavGraphBuilder.homeGraph(navController: NavController) {
+@RequiresApi(Build.VERSION_CODES.O)
+fun NavGraphBuilder.homeGraph(
+    navController: NavController,
+    homeViewModel: HomeViewModel,
+    currentUserId: Long? = null
+) {
     navigation<Graph.HomeGraph>(startDestination = HomeRoutes.CategoriesScreen) {
         composable<HomeRoutes.CategoriesScreen> {
             CategoriesScreen(navController = navController)
@@ -39,16 +49,44 @@ fun NavGraphBuilder.homeGraph(navController: NavController) {
             NotificationsScreen()
         }
         composable<DrawerRoutes.ProfileScreen> {
-            ProfileScreen()
+            ProfileScreen(
+                homeViewModel = homeViewModel
+            )
         }
 
         composable<DrawerRoutes.SettingsScreen> {
             SettingsScreen()
+        }
+        composable<HomeRoutes.ConversationsScreen> {
+            ConversationsScreen(
+                currentUserId = currentUserId.toString(),
+                onConversationClick = { conversationId, otherUserId, otherUserRole ->
+                    navController.navigate(
+                        HomeRoutes.ChatScreen(
+                            conversationId = conversationId,
+                            receiverId = otherUserId,
+                            receiverRole = otherUserRole,
+                            currentUserId = currentUserId.toString()
+                        )
+                    )
+                }
+            )
+        }
+        composable<HomeRoutes.ChatScreen> { backStackEntry ->
+            val args = backStackEntry.toRoute<HomeRoutes.ChatScreen>()
+            ChatScreen(
+                conversationId = args.conversationId,
+                receiverId = args.receiverId,
+                receiverRole = args.receiverRole,
+                currentUserId = args.currentUserId,
+                onNavigateBack = { navController.navigateUp() }
+            )
         }
 
         composable<JobOfferRoutes.JobOfferScreen> {
             val args = it.toRoute<JobOfferRoutes.JobOfferScreen>()
             JobOfferScreen(categoryId = args.categoryId)
         }
+
     }
 }

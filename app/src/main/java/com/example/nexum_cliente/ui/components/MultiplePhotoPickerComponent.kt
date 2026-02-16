@@ -26,7 +26,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,26 +35,19 @@ import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 
-/**
- * @author Santiago Varela Daza
- * @email svarela03@uan.edu.co
- * @github https://github.com/sanvarela03
- * @since 8/8/2025
- * @version 1.0
- */
 @OptIn(ExperimentalGlideComposeApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun MultiplePhotoPickerComponent(
-    selectedImages: MutableList<Uri> = mutableStateListOf(),
-    onAddImage: (Uri) -> Unit,
+    selectedImages: List<Uri> = emptyList(),
+    onAddImage: (List<Uri>) -> Unit,
     onRemoveImage: (Int) -> Unit
 ) {
     Log.d("PhotoPickerComponent", "selectedImages: $selectedImages")
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
-        onResult = { uri ->
-            uri?.let {
-                uri.forEach {
+        onResult = { uris ->
+            uris?.let {
+                if (it.isNotEmpty()) {
                     onAddImage(it)
                 }
             }
@@ -69,9 +61,6 @@ fun MultiplePhotoPickerComponent(
         FlowRow(
             modifier =
             Modifier
-//                .border(
-//                    BorderStroke(1.dp, Color(0xFFE6E6E6))
-//                )
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -112,8 +101,6 @@ fun MultiplePhotoPickerComponent(
             }
         }
     }
-
-
 }
 
 @Composable
@@ -128,12 +115,57 @@ fun ImagePreview(
         .fillMaxSize()
 ) {
     Box(modifier = Modifier.size(100.dp)) {
+        if (uri != null && uri.toString().isNotEmpty()) {
+            GlideImage(
+                model = uri,
+                contentDescription = "Selected Image",
+                modifier = modifier,
+                contentScale = contentScale
+            )
+
+            IconButton(
+                onClick = { onRemoveImage(index) },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(3.dp)
+                    .clip(RoundedCornerShape(50))
+                    .size(24.dp)
+                    .background(Color.Black.copy(alpha = 0.6f))
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Remove",
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalGlideComposeApi::class)
+fun ImagePreview(
+    uri: Any?,
+    onRemoveImage: (Int) -> Unit,
+    index: Int,
+    contentScale: ContentScale = ContentScale.Crop,
+    containerModifier: Modifier = Modifier
+        .size(100.dp),
+    contentModifier: Modifier = Modifier
+        .clip(RoundedCornerShape(12.dp))
+        .fillMaxSize()
+) {
+    Box(
+        modifier = containerModifier,
+//        contentAlignment = Alignment.Center
+    ) {
         // Show image only if we actually have one
         if (uri != null && uri != "") {
             GlideImage(
                 model = uri,
                 contentDescription = "Selected Image",
-                modifier = modifier,
+                modifier = contentModifier,
                 contentScale = contentScale
             )
 
@@ -157,4 +189,3 @@ fun ImagePreview(
         }
     }
 }
-

@@ -1,15 +1,13 @@
 package com.example.nexum_cliente.domain.use_cases.auth
 
-import android.util.Log
 import com.example.nexum_cliente.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class Authenticate(
+class Authenticate @Inject constructor(
     private val repository: AuthRepository
 ) {
-    val TAG = Authenticate::class.simpleName
     operator fun invoke(): Flow<Boolean> {
-        Log.d(TAG, "INSIDE INVOKE")
         return repository.authenticate()
     }
 }

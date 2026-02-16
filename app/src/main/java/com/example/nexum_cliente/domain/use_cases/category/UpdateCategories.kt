@@ -1,6 +1,8 @@
 package com.example.nexum_cliente.domain.use_cases.category
 
 import com.example.nexum_cliente.domain.repository.CategoryRepository
+import javax.inject.Inject
+import javax.inject.Singleton
 
 
 /**
@@ -10,7 +12,7 @@ import com.example.nexum_cliente.domain.repository.CategoryRepository
  * @since 8/5/2025
  * @version 1.0
  */
-class UpdateCategories(
+class UpdateCategories @Inject constructor(
     private val categoryRepository: CategoryRepository
 ) {
     suspend operator fun invoke(fetchFromRemote: Boolean) =
