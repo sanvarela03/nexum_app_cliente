@@ -1,4 +1,4 @@
 package com.example.nexum_cliente.di.modules
 
-object RepositoryModule {
+object WebSocketNetworkModule {
 }
