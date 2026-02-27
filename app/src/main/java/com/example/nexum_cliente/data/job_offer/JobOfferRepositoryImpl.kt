@@ -1,7 +1,5 @@
 package com.example.nexum_cliente.data.job_offer
 
-<<<<<<< Updated upstream
-=======
 import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import com.example.nexum_cliente.data.job_offer.local.JobOfferLocalDataSource
 import com.example.nexum_cliente.data.job_offer.mapper.JobOfferMapper
@@ -13,8 +11,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
->>>>>>> Stashed changes
-
 /**
  * @author Santiago Varela Daza
  * @email svarela03@uan.edu.co
@@ -22,9 +18,6 @@ import javax.inject.Inject
  * @since 1/14/2026
  * @version 1.0
  */
-<<<<<<< Updated upstream
-class JobOfferRepositoryImpl {
-=======
 class JobOfferRepositoryImpl @Inject constructor(
     private val remoteDataSource: JobOfferRemoteDataSource,
     private val localDataSource: JobOfferLocalDataSource
@@ -36,6 +29,4 @@ class JobOfferRepositoryImpl @Inject constructor(
         return flow {
         }
     }
-
->>>>>>> Stashed changes
 }

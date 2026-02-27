@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream
-package com.example.nexum_trabajador.data.local_storage
-=======
 package com.example.nexum_cliente.data.local_storage
->>>>>>> Stashed changes
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences

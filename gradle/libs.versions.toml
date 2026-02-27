@@ -1,8 +1,9 @@
 [versions]
 accompanistSwiperefresh = "0.24.2-alpha"
-agp = "8.7.3"
+agp = "8.6.0"
 composeVersion = "1.0.0-beta01"
 kotlin = "2.0.0"
+ksp = "2.0.0-1.0.21"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -138,3 +139,4 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 dagger-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hiltVersion" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 googleServices = { id = "com.google.gms.google-services", version.ref = "google" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

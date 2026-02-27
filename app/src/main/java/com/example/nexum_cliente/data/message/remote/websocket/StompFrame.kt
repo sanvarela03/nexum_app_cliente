@@ -8,9 +8,6 @@ package com.example.nexum_cliente.data.message.remote.websocket
  * @since 2/14/2026
  * @version 1.0
  */
-<<<<<<< Updated upstream
-class StompFrame {
-=======
 data class StompFrame(
     val command: String,
     val headers: Map<String, String> = emptyMap(),
@@ -58,5 +55,4 @@ data class StompFrame(
             return StompFrame(command, headers, body)
         }
     }
->>>>>>> Stashed changes
 }

@@ -34,12 +34,12 @@ fun SplashScreen(
                 }
             }
             UserAuthState.UNAUTHENTICATED -> {
-                navController.navigate(Graph.InitialGraph) {
+                navController.navigate(Graph.Auth) {
                     popUpTo(AuthRoutes.SplashScreen) { inclusive = true }
                 }
             }
             UserAuthState.UNKNOWN, null -> {
-                // Do nothing, wait for a definitive state.
+
             }
         }
     }

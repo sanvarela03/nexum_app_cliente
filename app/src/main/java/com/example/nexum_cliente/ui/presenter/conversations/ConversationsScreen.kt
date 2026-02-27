@@ -1,7 +1,5 @@
 package com.example.nexum_cliente.ui.presenter.conversations
 
-<<<<<<< Updated upstream
-=======
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,7 +45,6 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
->>>>>>> Stashed changes
 /**
  * @author Santiago Varela Daza
  * @email svarela03@uan.edu.co
@@ -55,8 +52,6 @@ import java.util.Locale
  * @since 2/14/2026
  * @version 1.0
  */
-<<<<<<< Updated upstream
-=======
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConversationsScreen(
@@ -130,9 +125,18 @@ fun ConversationsScreen(
                                     conversation = conversation,
                                     currentUserId = currentUserId,
                                     onClick = {
-                                        Log.d("ConversationsScreen", "Conversation clicked: ${conversation.id}")
-                                        Log.d("ConversationsScreen", "Current user ID: $currentUserId")
-                                        Log.d("ConversationsScreen", "Participant IDs: ${conversation.participantIds}")
+                                        Log.d(
+                                            "ConversationsScreen",
+                                            "Conversation clicked: ${conversation.id}"
+                                        )
+                                        Log.d(
+                                            "ConversationsScreen",
+                                            "Current user ID: $currentUserId"
+                                        )
+                                        Log.d(
+                                            "ConversationsScreen",
+                                            "Participant IDs: ${conversation.participantIds}"
+                                        )
                                         val otherUserId = conversation.participantIds
                                             .first { it != currentUserId }
                                         Log.d("ConversationsScreen", "Other user ID: $otherUserId")
@@ -314,4 +318,3 @@ fun formatDateTime(timestamp: String): String {
         timestamp
     }
 }
->>>>>>> Stashed changes

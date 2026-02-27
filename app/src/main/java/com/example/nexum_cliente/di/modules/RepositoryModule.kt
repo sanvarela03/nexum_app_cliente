@@ -1,8 +1,5 @@
 package com.example.nexum_cliente.di.modules
 
-<<<<<<< Updated upstream
-object RepositoryModule {
-=======
 import com.example.nexum_cliente.data.auth.AuthRepositoryImpl
 import com.example.nexum_cliente.data.category.CategoryRepositoryImpl
 import com.example.nexum_cliente.data.client.ClientRepositoryImpl
@@ -53,5 +50,4 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindMessagingRepository(messagingRepositoryImpl: MessagingRepositoryImpl): MessagingRepository
->>>>>>> Stashed changes
 }

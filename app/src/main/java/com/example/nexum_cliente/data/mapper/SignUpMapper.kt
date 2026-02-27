@@ -1,12 +1,3 @@
-<<<<<<< Updated upstream
-package com.example.nexum_trabajador.data.mapper
-
-import android.os.Build
-import androidx.annotation.RequiresApi
-import com.example.nexum_trabajador.data.auth.remote.payload.req.ProfileReq
-import com.example.nexum_trabajador.data.auth.remote.payload.req.SignUpReq
-import com.example.nexum_trabajador.ui.presenter.sign_up.SignUpState
-=======
 package com.example.nexum_cliente.data.mapper
 
 import android.os.Build
@@ -14,16 +5,12 @@ import androidx.annotation.RequiresApi
 import com.example.nexum_cliente.data.auth.remote.payload.req.ProfileReq
 import com.example.nexum_cliente.data.auth.remote.payload.req.SignUpReq
 import com.example.nexum_cliente.ui.presenter.sign_up.SignUpState
->>>>>>> Stashed changes
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 class SignUpMapper @Inject constructor() {
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
     @RequiresApi(Build.VERSION_CODES.O)
     fun mapStateToRequest(state: SignUpState, firebaseToken: String, generatedUsername: String): SignUpReq {
         return SignUpReq(

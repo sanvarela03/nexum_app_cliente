@@ -1,8 +1,5 @@
 package com.example.nexum_cliente.data.client.mapper
 
-<<<<<<< Updated upstream
-object ClientMapper {
-=======
 import com.example.nexum_cliente.data.auth.remote.payload.req.ProfileReq
 import com.example.nexum_cliente.data.auth.remote.payload.req.SignUpReq
 import com.example.nexum_cliente.data.client.local.ClientEntity
@@ -76,16 +73,6 @@ object ClientMapper : EntityMapper<ClientRes, ClientEntity>, DomainMapper<Client
             phoneCode = state.phoneCode.split(' ').firstOrNull() ?: "",
             phoneNumber = state.phone,
             marketLocationId = state.selectedMarketLocation?.id ?: 0 ,
-            // Firebase token might need to be passed separately or handled differently if not in state
-            // Assuming for now it's handled elsewhere or has a default, as toRequest doesn't take extra args usually
-            // However, looking at SignUpState.toResponse, it takes firebaseToken as arg.
-            // RequestMapper usually maps State -> Request.
-            // If the token is not in State, we might need to put a placeholder or update State to include it.
-            // Based on SignUpViewModel, token is fetched in signUp().
-            // Ideally, the token should be part of the state if we want a pure mapping.
-            // For now, I will use a placeholder or empty string, as it's not in the state properties directly shown (except via toResponse arg).
-            // Wait, toResponse uses it as an argument.
-            // I will use "NaN" or similar default as seen in SignUpReq default, or empty.
             firebaseToken = "NaN", // Placeholder, as token is likely injected later or should be in state
             profile = ProfileReq(
                 firstName = state.name,
@@ -98,5 +85,4 @@ object ClientMapper : EntityMapper<ClientRes, ClientEntity>, DomainMapper<Client
         )
     }
 
->>>>>>> Stashed changes
 }

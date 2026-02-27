@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream
-package com.example.nexum_trabajador.ui.presenter.sign_up.screens
-=======
 package com.example.nexum_cliente.ui.presenter.sign_up.screens
->>>>>>> Stashed changes
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column

@@ -1,7 +1,5 @@
 package com.example.nexum_cliente.ui.presenter.chat
 
-<<<<<<< Updated upstream
-=======
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,7 +17,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
->>>>>>> Stashed changes
 
 /**
  * @author Santiago Varela Daza
@@ -28,9 +25,6 @@ import javax.inject.Inject
  * @since 2/14/2026
  * @version 1.0
  */
-<<<<<<< Updated upstream
-class ChatViewModel {
-=======
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val repository: MessagingRepository,
@@ -206,5 +200,4 @@ sealed class ChatUiState {
     object LoadingMore : ChatUiState()
     object Success : ChatUiState()
     data class Error(val message: String) : ChatUiState()
->>>>>>> Stashed changes
 }

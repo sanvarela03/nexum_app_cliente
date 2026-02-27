@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream
-package com.example.nexum_trabajador.data.mapper
-=======
 package com.example.nexum_cliente.data.mapper
->>>>>>> Stashed changes
 
 /**
  * Interfaz genérica para realizar mapeos entre un objeto de transferencia de datos (DTO) y una Entidad.
@@ -10,10 +6,6 @@ package com.example.nexum_cliente.data.mapper
  * @param <ENTITY> El tipo de objeto de entidad de salida (generalmente para la base de datos local).
  */
 interface EntityMapper<DTO, ENTITY> {
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
     fun toEntity(dto: DTO): ENTITY
 
     fun toEntity(dtos: List<DTO>): List<ENTITY> = dtos.map { toEntity(it) }
@@ -25,16 +17,10 @@ interface EntityMapper<DTO, ENTITY> {
  * @param <DOMAIN_MODEL> El tipo de objeto de dominio de salida (para ser usado en la UI).
  */
 interface DomainMapper<ENTITY, DOMAIN_MODEL> {
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
     fun toDomain(entity: ENTITY): DOMAIN_MODEL
 
     fun toDomain(entities: List<ENTITY>): List<DOMAIN_MODEL> = entities.map { toDomain(it) }
 }
-<<<<<<< Updated upstream
-=======
 
 
 /**
@@ -64,4 +50,3 @@ interface StateToDomainMapper<STATE, DOMAIN_MODEL> {
     fun stateToDomain(state: STATE): DOMAIN_MODEL
     fun stateToDomain(states: List<STATE>): List<DOMAIN_MODEL> = states.map { stateToDomain(it) }
 }
->>>>>>> Stashed changes

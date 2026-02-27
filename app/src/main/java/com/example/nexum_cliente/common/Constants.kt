@@ -9,6 +9,7 @@ package com.example.nexum_cliente.common
  */
 // Local IP address for the Android Emulator to connect to the host machine's localhost
 private val IP = "10.0.2.2"
+//private val IP = "192.168.1.34"
 private val PORT = "8080"
 val HOST_URL = "http://$IP:$PORT"
 

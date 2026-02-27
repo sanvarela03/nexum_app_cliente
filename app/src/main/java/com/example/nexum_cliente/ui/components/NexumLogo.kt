@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream
-package com.example.nexum_trabajador.ui.components
-=======
 package com.example.nexum_cliente.ui.components
->>>>>>> Stashed changes
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
@@ -12,11 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-<<<<<<< Updated upstream
-import com.example.nexum_trabajador.R
-=======
 import com.example.nexum_cliente.R
->>>>>>> Stashed changes
 
 /**
  * @author Santiago Varela Daza

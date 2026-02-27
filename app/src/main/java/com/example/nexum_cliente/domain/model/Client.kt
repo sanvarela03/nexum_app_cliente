@@ -1,6 +1,5 @@
 package com.example.nexum_cliente.domain.model
 
-
 /**
  * @author Santiago Varela Daza
  * @email svarela03@uan.edu.co
@@ -8,10 +7,6 @@ package com.example.nexum_cliente.domain.model
  * @since 1/6/2026
  * @version 1.0
  */
-<<<<<<< Updated upstream
-class Client {
-}
-=======
 data class Client(
     val id: Long,
     val firstName: String,
@@ -28,4 +23,3 @@ data class Client(
     val dateJoined: String,
     val lastLogin: String,
 )
->>>>>>> Stashed changes

@@ -1,11 +1,7 @@
 package com.example.nexum_cliente.data.message.remote.payload.req
 
-<<<<<<< Updated upstream
-=======
 import com.example.nexum_cliente.domain.model.MessageType
 import kotlinx.serialization.Serializable
-
->>>>>>> Stashed changes
 
 /**
  * @author Santiago Varela Daza
@@ -14,12 +10,8 @@ import kotlinx.serialization.Serializable
  * @since 2/14/2026
  * @version 1.0
  */
-<<<<<<< Updated upstream
-class MessageRequest {
-}
-=======
 @Serializable
-data class MessageRequest (
+data class MessageRequest(
     val receiverId: String,
     val receiverRole: String,
     val type: MessageType,
@@ -28,4 +20,3 @@ data class MessageRequest (
     val metadata: Map<String, String>? = null,
     val jobOfferId: String? = null
 )
->>>>>>> Stashed changes

@@ -1,7 +1,5 @@
 package com.example.nexum_cliente.ui.presenter.conversations
 
-<<<<<<< Updated upstream
-=======
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,7 +9,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
->>>>>>> Stashed changes
 
 /**
  * @author Santiago Varela Daza
@@ -20,9 +17,6 @@ import javax.inject.Inject
  * @since 2/14/2026
  * @version 1.0
  */
-<<<<<<< Updated upstream
-class ConversationsViewModel {
-=======
 @HiltViewModel
 class ConversationsViewModel @Inject constructor(
     private val repository: MessagingRepository
@@ -124,5 +118,4 @@ sealed class ConversationsUiState {
     object Refreshing : ConversationsUiState()
     object Success : ConversationsUiState()
     data class Error(val message: String) : ConversationsUiState()
->>>>>>> Stashed changes
 }

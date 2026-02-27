@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream
-package com.example.nexum_trabajador.common
-=======
 package com.example.nexum_cliente.common
->>>>>>> Stashed changes
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -10,8 +6,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-<<<<<<< Updated upstream
-=======
 import kotlin.collections.joinToString
 import kotlin.text.contains
 import kotlin.text.isLowerCase
@@ -19,7 +13,7 @@ import kotlin.text.lowercase
 import kotlin.text.replaceFirstChar
 import kotlin.text.split
 import kotlin.text.titlecase
->>>>>>> Stashed changes
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun String.toLocalDateTime(): LocalDateTime {

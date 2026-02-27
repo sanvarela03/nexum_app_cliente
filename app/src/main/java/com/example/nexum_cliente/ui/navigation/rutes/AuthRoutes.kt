@@ -10,44 +10,41 @@ import kotlinx.serialization.Serializable
  * @since 7/23/2025
  * @version 1.0
  */
- @Serializable
-sealed class AuthRoutes {
+@Serializable
+sealed interface AuthRoutes {
     @Serializable
-    data class SignInScreen(var username: String? = null) : AuthRoutes()
-
-    @Serializable
-    object SignUpScreen : AuthRoutes()
+    data class SignInScreen(var username: String? = null) : AuthRoutes
 
     @Serializable
-    object SplashScreen : AuthRoutes()
+    object SignUpScreen : AuthRoutes
 
     @Serializable
-    object HomeScreen : AuthRoutes()
+    object SplashScreen : AuthRoutes
 
     @Serializable
-    object SignUpBirthdayScreen : AuthRoutes()
+    object HomeScreen : AuthRoutes
 
     @Serializable
-    object SignUpCellphoneScreen : AuthRoutes()
+    object SignUpBirthdayScreen : AuthRoutes
 
     @Serializable
-    object SignUpUserDataScreen : AuthRoutes()
+    object SignUpCellphoneScreen : AuthRoutes
 
     @Serializable
-    object SignUpCityScreen : AuthRoutes()
+    object SignUpUserDataScreen : AuthRoutes
 
     @Serializable
-    object SignUpIDScreen : AuthRoutes()
+    object SignUpCityScreen : AuthRoutes
 
     @Serializable
-    object SignUpUploadDocumentScreen : AuthRoutes()
+    object SignUpIDScreen : AuthRoutes
 
     @Serializable
-    object SignUpPasswordScreen : AuthRoutes()
+    object SignUpUploadDocumentScreen : AuthRoutes
 
     @Serializable
-    object SignUpProfilePictureScreen : AuthRoutes()
+    object SignUpPasswordScreen : AuthRoutes
 
-
-
+    @Serializable
+    object SignUpProfilePictureScreen : AuthRoutes
 }

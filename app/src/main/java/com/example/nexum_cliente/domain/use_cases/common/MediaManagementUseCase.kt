@@ -1,25 +1,14 @@
-<<<<<<< Updated upstream
-package com.example.nexum_trabajador.domain.use_cases.common
-
-import android.net.Uri
-import com.example.nexum_trabajador.data.local_storage.AsyncStorage
-import com.example.nexum_trabajador.service.FirebaseStorageService
-=======
 package com.example.nexum_cliente.domain.use_cases.common
 
 import android.net.Uri
 import android.util.Log
 import com.example.nexum_cliente.data.local_storage.AsyncStorage
 import com.example.nexum_cliente.service.FirebaseStorageService
->>>>>>> Stashed changes
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
-<<<<<<< Updated upstream
-=======
 import kotlin.coroutines.resumeWithException
->>>>>>> Stashed changes
 
 /**
  * Caso de uso para manejar la lógica de subida, reemplazo y eliminación de imágenes.
@@ -58,26 +47,12 @@ class MediaManagementUseCase @Inject constructor(
     suspend fun deleteImage(currentUrl: String, storageKey: String): Result<Unit> {
         return try {
             if (currentUrl.isNotEmpty()) {
-<<<<<<< Updated upstream
-                val deleted = deleteImageFromFirebase(currentUrl)
-                if (deleted) {
-                    asyncStorage.setItem(storageKey, "")
-                    Result.success(Unit)
-                } else {
-                    Result.failure(Exception("Failed to delete remote image"))
-                }
-            } else {
-                Result.success(Unit)
-            }
-        } catch (e: Exception) {
-=======
                 deleteImageFromFirebase(currentUrl)
                 asyncStorage.setItem(storageKey, "")
             }
             Result.success(Unit)
         } catch (e: Exception) {
             Log.e("MediaManagementUseCase", "Error deleting image", e)
->>>>>>> Stashed changes
             Result.failure(e)
         }
     }
@@ -97,13 +72,6 @@ class MediaManagementUseCase @Inject constructor(
         }
 
     // Wrapper para convertir Callback a Suspend Function
-<<<<<<< Updated upstream
-    private suspend fun deleteImageFromFirebase(url: String): Boolean =
-        suspendCancellableCoroutine { continuation ->
-            FirebaseStorageService.deleteImage(url) { success ->
-                if (continuation.isActive) {
-                    continuation.resume(success)
-=======
     private suspend fun deleteImageFromFirebase(url: String): Unit =
         suspendCancellableCoroutine { continuation ->
             FirebaseStorageService.deleteImage(url) { success, exception ->
@@ -113,7 +81,6 @@ class MediaManagementUseCase @Inject constructor(
                     } else {
                         continuation.resumeWithException(exception ?: Exception("Unknown error deleting image"))
                     }
->>>>>>> Stashed changes
                 }
             }
         }

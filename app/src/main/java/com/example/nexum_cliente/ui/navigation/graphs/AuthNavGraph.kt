@@ -81,10 +81,11 @@ inline fun <reified T : Any> NavGraphBuilder.composableWithTransitions(
 @RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.authGraph(
     navController: NavController,
-    viewModel: SignUpViewModel
+    viewModel: SignUpViewModel,
+    startDestination: AuthRoutes
 ) {
-    navigation<Graph.InitialGraph>(
-        startDestination = AuthRoutes.SignUpScreen,
+    navigation<Graph.Auth>(
+        startDestination = startDestination,
     ) {
         val firstScreenTransitions = ScreenTransitions(
             enterTransition = { fadeIn(animationSpec = tween(ANIMATION_DURATION)) },

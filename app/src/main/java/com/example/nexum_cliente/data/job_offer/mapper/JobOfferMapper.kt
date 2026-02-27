@@ -1,8 +1,5 @@
 package com.example.nexum_cliente.data.job_offer.mapper
 
-<<<<<<< Updated upstream
-object JobOfferMapper {
-=======
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.nexum_cliente.data.job_offer.local.JobOfferEntity
@@ -68,5 +65,4 @@ object JobOfferMapper :
             location = listOf(state.longitude, state.latitude) // Cuidado, con este orden
         )
     }
->>>>>>> Stashed changes
 }

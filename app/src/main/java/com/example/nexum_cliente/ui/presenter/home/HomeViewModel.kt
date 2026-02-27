@@ -110,9 +110,9 @@ class HomeViewModel @Inject constructor(
 
     fun signOut() {
         signOutJob = viewModelScope.launch {
-            state.client?.email?.let {
-                saveLastUserEmailUseCase(it)
-            }
+//            state.client?.email?.let {
+//                saveLastUserEmailUseCase(it)
+//            }
             authUseCases.signOut().collect { response ->
                 when (response) {
                     ApiResponse.Loading -> {

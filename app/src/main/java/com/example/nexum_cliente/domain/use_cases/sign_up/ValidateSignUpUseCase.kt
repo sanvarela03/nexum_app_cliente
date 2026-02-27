@@ -1,12 +1,3 @@
-<<<<<<< Updated upstream
-package com.example.nexum_trabajador.domain.use_cases.sign_up
-
-import android.net.Uri
-import com.example.nexum_trabajador.domain.model.Country
-import com.example.nexum_trabajador.domain.model.MarketLocation
-import com.example.nexum_trabajador.ui.common.ValidationResult
-import com.example.nexum_trabajador.ui.presenter.sign_up.SignUpValidator
-=======
 package com.example.nexum_cliente.domain.use_cases.sign_up
 
 import android.net.Uri
@@ -14,8 +5,6 @@ import com.example.nexum_cliente.domain.model.Country
 import com.example.nexum_cliente.domain.model.MarketLocation
 import com.example.nexum_cliente.ui.common.ValidationResult
 import com.example.nexum_cliente.ui.presenter.sign_up.SignUpValidator
->>>>>>> Stashed changes
-//import com.example.nexum_trabajador.ui.presenter.sign_up.ValidationResult
 import javax.inject.Inject
 
 /**
@@ -82,8 +71,4 @@ class ValidateSignUpUseCase @Inject constructor() {
     fun executeConfirmPassword(password: String, confirm: String): ValidationResult {
         return SignUpValidator.validateConfirmPassword(confirm, password)
     }
-<<<<<<< Updated upstream
 }
-=======
-}
->>>>>>> Stashed changes

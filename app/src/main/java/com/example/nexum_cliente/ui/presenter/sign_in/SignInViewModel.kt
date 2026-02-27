@@ -12,6 +12,7 @@ import com.example.nexum_cliente.domain.use_cases.auth.AuthUseCases
 import com.example.nexum_cliente.domain.use_cases.common.GetFcmTokenUseCase
 import com.example.nexum_cliente.domain.use_cases.common.SaveSessionUseCase
 import com.example.nexum_cliente.domain.use_cases.sign_in.GetLastUserEmailUseCase
+import com.example.nexum_cliente.domain.use_cases.sign_in.SaveLastUserEmailUseCase
 import com.example.nexum_cliente.domain.use_cases.sign_in.ValidateSignInUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.catch
@@ -25,6 +26,7 @@ class SignInViewModel @Inject constructor(
     private val validateSignInUseCase: ValidateSignInUseCase,
     private val saveSessionUseCase: SaveSessionUseCase,
     private val getFcmTokenUseCase: GetFcmTokenUseCase,
+    private val saveLastUserEmailUseCase: SaveLastUserEmailUseCase,
     private val getLastUserEmailUseCase: GetLastUserEmailUseCase
 ) : ViewModel() {
 
@@ -150,6 +152,7 @@ class SignInViewModel @Inject constructor(
             )
         } else {
             saveSessionUseCase(response.data)
+            saveLastUserEmailUseCase(state.email)
             state = state.copy(signInResponse = response)
         }
     }

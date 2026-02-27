@@ -62,7 +62,7 @@ fun ProfileScreen(
     homeViewModel: HomeViewModel,
 ) {
     val state = homeViewModel.state
-    val worker: Client? = state.client
+    val client: Client? = state.client
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -72,7 +72,7 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ProfileScreenContent(worker)
+            ProfileScreenContent(client)
         }
     }
 }

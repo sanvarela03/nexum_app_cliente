@@ -1,7 +1,3 @@
-<<<<<<< Updated upstream
-package com.example.nexum_cliente.data.message.remote.websocket 
-
-=======
 package com.example.nexum_cliente.data.message.remote.websocket
 
 import android.util.Log
@@ -238,4 +234,3 @@ class WebSocketManager @Inject constructor(
         }
     }
 }
->>>>>>> Stashed changes

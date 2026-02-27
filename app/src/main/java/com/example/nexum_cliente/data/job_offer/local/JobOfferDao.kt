@@ -1,14 +1,11 @@
 package com.example.nexum_cliente.data.job_offer.local
 
-<<<<<<< Updated upstream
-=======
 import androidx.room.Dao
 import androidx.room.Query
 import com.example.nexum_cliente.data.local_storage.BaseDao
 import com.example.nexum_cliente.data.local_storage.ReadableDao
 import kotlinx.coroutines.flow.Flow
 
->>>>>>> Stashed changes
 /**
  * @author Santiago Varela Daza
  * @email svarela03@uan.edu.co
@@ -16,9 +13,6 @@ import kotlinx.coroutines.flow.Flow
  * @since 1/14/2026
  * @version 1.0
  */
-<<<<<<< Updated upstream
-interface JobOfferDao {
-=======
 @Dao
 interface JobOfferDao : BaseDao<JobOfferEntity>, ReadableDao<JobOfferEntity, Long> {
     @Query("SELECT * FROM job_offers")
@@ -39,5 +33,4 @@ interface JobOfferDao : BaseDao<JobOfferEntity>, ReadableDao<JobOfferEntity, Lon
     override suspend fun replaceAll(entities: List<JobOfferEntity>) {
         TODO("Not yet implemented")
     }
->>>>>>> Stashed changes
 }

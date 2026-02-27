@@ -209,7 +209,7 @@ private fun HomeScreenContent(
                 NavHost(
                     modifier = Modifier.background(Color.White),
                     navController = navController,
-                    startDestination = Graph.HomeGraph,
+                    startDestination = Graph.Home,
                     builder = homeGraph
                 )
             }

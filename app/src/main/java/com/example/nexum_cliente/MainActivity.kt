@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import com.example.nexum_cliente.app.CustomerApp
 import com.example.nexum_cliente.data.local.AppDatabase
@@ -30,10 +31,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val userAuthState = authViewModel.isAuthenticated.collectAsState().value
+            val destination = authViewModel.startDestinationData.collectAsState().value
+
+            LaunchedEffect(destination) { }
             Log.d("MainActivity", "userAuthState: $userAuthState")
 
             CustomerApp(
-                userAuthState = userAuthState
+                userAuthState = userAuthState,
+                startDestination = destination,
             )
         }
 //        appDatabaseProvider.get()

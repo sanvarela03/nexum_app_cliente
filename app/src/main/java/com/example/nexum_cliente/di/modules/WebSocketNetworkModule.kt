@@ -1,21 +1,19 @@
 package com.example.nexum_cliente.di.modules
 
-<<<<<<< Updated upstream
-object WebSocketNetworkModule {
-=======
 import com.example.nexum_cliente.BuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -33,14 +31,17 @@ object WebSocketNetworkModule {
 
     @Provides
     @Singleton
-    fun provideHttpClient(json: Json): HttpClient { // 1. Inyectamos la instancia de Json
-        return HttpClient(CIO) {
+    fun provideHttpClient(json: Json, okHttpClient: OkHttpClient): HttpClient {
+        return HttpClient(OkHttp) {
+            engine {
+                preconfigured = okHttpClient
+            }
             install(Logging) {
                 level = LogLevel.ALL
             }
             install(WebSockets)
             install(ContentNegotiation) {
-                json(json) // 2. Usamos la instancia de Json personalizada
+                json(json)
             }
         }
     }
@@ -66,5 +67,4 @@ object WebSocketNetworkModule {
     @Singleton
     @BaseUrl
     fun provideBaseUrl(): String = BuildConfig.BASE_URL
->>>>>>> Stashed changes
 }

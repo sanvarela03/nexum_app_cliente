@@ -1,10 +1,7 @@
 package com.example.nexum_cliente.domain.model
 
-<<<<<<< Updated upstream
-=======
 import kotlinx.serialization.Serializable
 
->>>>>>> Stashed changes
 
 /**
  * @author Santiago Varela Daza
@@ -13,10 +10,6 @@ import kotlinx.serialization.Serializable
  * @since 2/14/2026
  * @version 1.0
  */
-<<<<<<< Updated upstream
-class Conversation {
-}
-=======
 @Serializable
 data class Conversation(
     val id: String,
@@ -45,4 +38,3 @@ data class PageResponse<T>(
 data class UnreadCountResponse(
     val unreadCount: Long
 )
->>>>>>> Stashed changes

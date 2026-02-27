@@ -1,5 +1,5 @@
 plugins {
-    kotlin("kapt")
+    alias(libs.plugins.ksp)
     alias(libs.plugins.dagger.hilt.android)
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -22,6 +22,8 @@ android {
 
         buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8081\"")
         buildConfigField("String", "WS_URL", "\"ws://10.0.2.2:8081\"")
+//        buildConfigField("String", "BASE_URL", "\"http://192.168.1.34:8081\"")
+//        buildConfigField("String", "WS_URL", "\"ws://192.168.1.34:8081\"")
     }
 
     buildTypes {
@@ -70,7 +72,7 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
+    ksp(libs.hilt.android.compiler)
 
     // Hilt Nav
     implementation(libs.androidx.hilt.navigation.compose)
@@ -116,9 +118,8 @@ dependencies {
     implementation(libs.firebase.storage)
 
     //Room
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.runtime)
-    annotationProcessor(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
 
     //Glide
@@ -140,7 +141,4 @@ dependencies {
     // Constraint layout
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.constraintlayout.compose)
-}
-kapt {
-    correctErrorTypes = true
 }

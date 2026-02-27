@@ -34,7 +34,7 @@ fun NavGraphBuilder.homeGraph(
     homeViewModel: HomeViewModel,
     currentUserId: Long? = null
 ) {
-    navigation<Graph.HomeGraph>(startDestination = HomeRoutes.CategoriesScreen) {
+    navigation<Graph.Home>(startDestination = HomeRoutes.CategoriesScreen) {
         composable<HomeRoutes.CategoriesScreen> {
             CategoriesScreen(navController = navController)
         }

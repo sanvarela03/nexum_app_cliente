@@ -1,14 +1,5 @@
 package com.example.nexum_cliente.ui.presenter.chat
 
-/**
- * @author Santiago Varela Daza
- * @email svarela03@uan.edu.co
- * @github https://github.com/sanvarela03
- * @since 2/14/2026
- * @version 1.0
- */
-<<<<<<< Updated upstream
-=======
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,6 +50,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ * @author Santiago Varela Daza
+ * @email svarela03@uan.edu.co
+ * @github https://github.com/sanvarela03
+ * @since 2/14/2026
+ * @version 1.0
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
@@ -98,7 +96,7 @@ fun ChatScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text("Chat")
+                        Text("Chat con el Usuario: ${receiverId}")
                         Text(
                             text = when (connectionState) {
                                 ConnectionState.CONNECTED -> "Conectado"
@@ -343,4 +341,3 @@ fun formatTime(timestamp: String): String {
         timestamp
     }
 }
->>>>>>> Stashed changes

@@ -1,17 +1,9 @@
-<<<<<<< Updated upstream
-package com.example.nexum_trabajador.data.market_location.local
-=======
 package com.example.nexum_cliente.data.market_location.local
->>>>>>> Stashed changes
 
 import com.example.nexum_trabajador.data.local_data_source.LocalDataSource
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
-<<<<<<< Updated upstream
-=======
-import kotlin.collections.isNotEmpty
->>>>>>> Stashed changes
 
 
 /**
@@ -23,11 +15,7 @@ import kotlin.collections.isNotEmpty
  */
 @Singleton
 class MarketLocationLocalDataSource @Inject constructor(
-<<<<<<< Updated upstream
-    private val marketLocationDao: MarketLocationDao
-=======
     private val dao: MarketLocationDao
->>>>>>> Stashed changes
 ) : LocalDataSource<MarketLocationEntity> {
 
     override suspend fun hasResource(): Boolean {
@@ -35,21 +23,6 @@ class MarketLocationLocalDataSource @Inject constructor(
     }
 
     override suspend fun getAll(): List<MarketLocationEntity> {
-<<<<<<< Updated upstream
-        return marketLocationDao.getAll()
-    }
-
-    override fun observe(): Flow<List<MarketLocationEntity>> {
-        return marketLocationDao.observe()
-    }
-
-    override suspend fun replaceAll(resources: List<MarketLocationEntity>) {
-        marketLocationDao.replaceAll(resources)
-    }
-
-    override suspend fun clearAll() {
-        marketLocationDao.clearAll()
-=======
         return dao.getAll()
     }
 
@@ -63,6 +36,5 @@ class MarketLocationLocalDataSource @Inject constructor(
 
     override suspend fun clearAll() {
         dao.clearAll()
->>>>>>> Stashed changes
     }
 }

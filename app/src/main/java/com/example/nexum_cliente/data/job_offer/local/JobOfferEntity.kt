@@ -1,11 +1,8 @@
 package com.example.nexum_cliente.data.job_offer.local
 
-<<<<<<< Updated upstream
-=======
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
->>>>>>> Stashed changes
 
 /**
  * @author Santiago Varela Daza
@@ -14,10 +11,6 @@ import androidx.room.PrimaryKey
  * @since 1/14/2026
  * @version 1.0
  */
-<<<<<<< Updated upstream
-class JobOfferEntity {
-}
-=======
 @Entity(tableName = "job_offers")
 data class JobOfferEntity(
     @PrimaryKey val id: Long,
@@ -27,4 +20,3 @@ data class JobOfferEntity(
     val requestedDate: String,
 )
 
->>>>>>> Stashed changes

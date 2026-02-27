@@ -1,19 +1,5 @@
 package com.example.nexum_cliente.data.message.remote.api
 
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
-/**
- * @author Santiago Varela Daza
- * @email svarela03@uan.edu.co
- * @github https://github.com/sanvarela03
- * @since 2/14/2026
- * @version 1.0
- */
-<<<<<<< Updated upstream
-class MessagingApiService {
-=======
 import com.example.nexum_cliente.data.message.remote.payload.req.MessageRequest
 import com.example.nexum_cliente.di.modules.BaseUrl
 import com.example.nexum_cliente.domain.model.Conversation
@@ -33,6 +19,13 @@ import io.ktor.http.contentType
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * @author Santiago Varela Daza
+ * @email svarela03@uan.edu.co
+ * @github https://github.com/sanvarela03
+ * @since 2/14/2026
+ * @version 1.0
+ */
 @Singleton
 class MessagingApiService @Inject constructor(
     private val httpClient: HttpClient,
@@ -89,5 +82,4 @@ class MessagingApiService @Inject constructor(
             bearerAuth(token)
         }.body()
     }
->>>>>>> Stashed changes
 }

@@ -1,16 +1,5 @@
 package com.example.nexum_cliente.data.message
 
-
-/**
- * @author Santiago Varela Daza
- * @email svarela03@uan.edu.co
- * @github https://github.com/sanvarela03
- * @since 2/14/2026
- * @version 1.0
- */
-<<<<<<< Updated upstream
-class MessagingRepositoryImpl {
-=======
 import android.util.Log
 import com.example.nexum_cliente.data.message.remote.api.MessagingApiService
 import com.example.nexum_cliente.data.message.remote.payload.req.MessageRequest
@@ -135,5 +124,4 @@ class MessagingRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
->>>>>>> Stashed changes
 }

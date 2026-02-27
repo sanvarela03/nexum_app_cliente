@@ -1,11 +1,7 @@
 package com.example.nexum_cliente.domain.model
 
-<<<<<<< Updated upstream
-=======
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
-
->>>>>>> Stashed changes
 
 /**
  * @author Santiago Varela Daza
@@ -14,10 +10,6 @@ import kotlinx.serialization.json.JsonElement
  * @since 2/14/2026
  * @version 1.0
  */
-<<<<<<< Updated upstream
-class Message {
-}
-=======
 @Serializable
 enum class MessageType {
     TEXT, IMAGE, FILE, LOCATION, AUDIO, SYSTEM
@@ -45,4 +37,3 @@ data class Message(
     val metadata: Map<String, JsonElement>? = null,
     val replyToMessageId: String? = null
 )
->>>>>>> Stashed changes

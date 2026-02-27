@@ -1,14 +1,11 @@
 package com.example.nexum_cliente.common
 
-<<<<<<< Updated upstream
-=======
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 
->>>>>>> Stashed changes
 /**
  * @author Santiago Varela Daza
  * @email svarela03@uan.edu.co
@@ -16,8 +13,6 @@ import androidx.navigation.compose.composable
  * @since 2/3/2026
  * @version 1.0
  */
-<<<<<<< Updated upstream
-=======
 inline fun <reified T : Any> NavGraphBuilder.protectedComposable(
     isAuthenticated: Boolean,
     noinline onUnauthorized: () -> Unit,
@@ -33,4 +28,3 @@ inline fun <reified T : Any> NavGraphBuilder.protectedComposable(
         }
     }
 }
->>>>>>> Stashed changes

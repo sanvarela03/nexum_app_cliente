@@ -1,7 +1,5 @@
 package com.example.nexum_cliente.domain.repository
 
-<<<<<<< Updated upstream
-=======
 import com.example.nexum_cliente.data.message.remote.payload.req.MessageRequest
 import com.example.nexum_cliente.domain.model.ConnectionState
 import com.example.nexum_cliente.domain.model.Conversation
@@ -9,7 +7,6 @@ import com.example.nexum_cliente.domain.model.Message
 import com.example.nexum_cliente.domain.model.PageResponse
 import kotlinx.coroutines.flow.StateFlow
 
->>>>>>> Stashed changes
 /**
  * @author Santiago Varela Daza
  * @email svarela03@uan.edu.co
@@ -18,8 +15,6 @@ import kotlinx.coroutines.flow.StateFlow
  * @version 1.0
  */
 interface MessagingRepository {
-<<<<<<< Updated upstream
-=======
     // WebSocket
     val connectionState: StateFlow<ConnectionState>
     val incomingMessages: StateFlow<Message?>
@@ -42,5 +37,4 @@ interface MessagingRepository {
 
     suspend fun markAsReadViaRest(conversationId: String): Result<Unit>
     suspend fun getUnreadCount(): Result<Long>
->>>>>>> Stashed changes
 }

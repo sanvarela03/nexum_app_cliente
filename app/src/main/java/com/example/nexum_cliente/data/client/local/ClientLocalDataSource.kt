@@ -1,13 +1,10 @@
 package com.example.nexum_cliente.data.client.local
 
-<<<<<<< Updated upstream
-=======
+
 import com.example.nexum_trabajador.data.local_data_source.LocalDataSource
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
-
->>>>>>> Stashed changes
 
 /**
  * @author Santiago Varela Daza
@@ -16,9 +13,6 @@ import javax.inject.Singleton
  * @since 1/6/2026
  * @version 1.0
  */
-<<<<<<< Updated upstream
-class ClientLocalDataSource {
-=======
 @Singleton
 class ClientLocalDataSource @Inject constructor(
     private val clientDao: ClientDao
@@ -42,5 +36,4 @@ class ClientLocalDataSource @Inject constructor(
     override suspend fun clearAll() {
         clientDao.clearAll()
     }
->>>>>>> Stashed changes
 }

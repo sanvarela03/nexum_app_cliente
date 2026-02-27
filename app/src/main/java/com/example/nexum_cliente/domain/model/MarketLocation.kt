@@ -1,9 +1,4 @@
-<<<<<<< Updated upstream
-package com.example.nexum_trabajador.domain.model
-=======
 package com.example.nexum_cliente.domain.model
->>>>>>> Stashed changes
-
 
 /**
  * @author Santiago Varela Daza

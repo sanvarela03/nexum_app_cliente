@@ -1,6 +1,5 @@
 package com.example.nexum_cliente.data.job_offer.remote.payload.req
 
-
 /**
  * @author Santiago Varela Daza
  * @email svarela03@uan.edu.co
@@ -8,10 +7,6 @@ package com.example.nexum_cliente.data.job_offer.remote.payload.req
  * @since 1/14/2026
  * @version 1.0
  */
-<<<<<<< Updated upstream
-class AddJobOfferReq {
-}
-=======
 data class AddJobOfferReq(
     val title: String,
     val description: String,
@@ -20,4 +15,3 @@ data class AddJobOfferReq(
     val photos: List<String>,
     val location: List<Double>,
 )
->>>>>>> Stashed changes

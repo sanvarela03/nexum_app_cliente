@@ -16,10 +16,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-<<<<<<< Updated upstream
-=======
-import androidx.compose.ui.graphics.Color
->>>>>>> Stashed changes
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -34,12 +30,7 @@ fun TimePickerDialog(
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(
-<<<<<<< Updated upstream
             usePlatformDefaultWidth = false
-=======
-            usePlatformDefaultWidth = false,
-
->>>>>>> Stashed changes
         ),
     ) {
         Surface(
@@ -50,19 +41,11 @@ fun TimePickerDialog(
                 .height(IntrinsicSize.Min)
                 .background(
                     shape = MaterialTheme.shapes.extraLarge,
-<<<<<<< Updated upstream
                     color = MaterialTheme.colorScheme.surface
                 ),
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
-=======
-                    color = Color.White
-                ),
-        ) {
-            Column(
-                modifier = Modifier.padding(24.dp).background(Color.White),
->>>>>>> Stashed changes
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(

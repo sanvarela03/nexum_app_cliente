@@ -1,6 +1,7 @@
 package com.example.nexum_cliente.data.client.remote
 
 import com.example.nexum_cliente.data.client.remote.payload.res.ClientRes
+import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import retrofit2.Response
 import retrofit2.http.GET
 
@@ -13,5 +14,5 @@ import retrofit2.http.GET
  */
 interface ClientApi {
     @GET("/api/v1/clients")
-    suspend fun getClient(): Response<ClientRes>
+    suspend fun getClient(): Response<ClientRes?>
 }
