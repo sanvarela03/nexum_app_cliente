@@ -47,7 +47,7 @@ class HomeViewModel @Inject constructor(
         Log.d("HomeViewModel", " init ")
         observeClient()
         Log.d("HomeViewModel", " init 2")
-        clientUseCases.updateClient(fetchFromRemote = true)
+//        clientUseCases.updateClient(fetchFromRemote = true)
     }
 
 

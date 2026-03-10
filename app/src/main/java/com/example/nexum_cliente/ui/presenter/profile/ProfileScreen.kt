@@ -154,6 +154,12 @@ fun ProfileScreenContent(
             )
             HorizontalDivider(modifier = Modifier.fillMaxWidth())
             InLineItem(
+                name = "Usuario",
+                value = client?.username ?: "",
+                painter = painterResource(R.drawable.vector_back),
+            )
+            HorizontalDivider(modifier = Modifier.fillMaxWidth())
+            InLineItem(
                 name = "Documento de identidad o NIT:",
                 value = client?.id.toString(),
                 icon = Icons.Outlined.Shield

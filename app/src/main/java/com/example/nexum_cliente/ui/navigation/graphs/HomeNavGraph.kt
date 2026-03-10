@@ -15,6 +15,7 @@ import com.example.nexum_cliente.ui.presenter.chat.ChatScreen
 import com.example.nexum_cliente.ui.presenter.conversations.ConversationsScreen
 import com.example.nexum_cliente.ui.presenter.home.HomeViewModel
 import com.example.nexum_cliente.ui.presenter.job_offer.JobOfferScreen
+import com.example.nexum_cliente.ui.presenter.mercado_pago_checkout.MercadoPagoCheckout
 import com.example.nexum_cliente.ui.presenter.notifications.NotificationsScreen
 import com.example.nexum_cliente.ui.presenter.profile.ProfileScreen
 import com.example.nexum_cliente.ui.presenter.requests.RequestsScreen
@@ -46,7 +47,8 @@ fun NavGraphBuilder.homeGraph(
         }
 
         composable<HomeRoutes.NotificationsScreen> {
-            NotificationsScreen()
+//            NotificationsScreen()
+            MercadoPagoCheckout()
         }
         composable<DrawerRoutes.ProfileScreen> {
             ProfileScreen(

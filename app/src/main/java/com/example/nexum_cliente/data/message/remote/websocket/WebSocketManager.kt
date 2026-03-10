@@ -10,26 +10,37 @@ import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.min
 
 /**
  * @author Santiago Varela Daza
  * @email svarela03@uan.edu.co
  * @github https://github.com/sanvarela03
  * @since 2/14/2026
- * @version 1.0
+ * @version 2.0
  */
 @Singleton
 class WebSocketManager @Inject constructor(
@@ -38,27 +49,49 @@ class WebSocketManager @Inject constructor(
 ) {
     companion object {
         private const val TAG = "WebSocketManager"
+        private const val MAX_RECONNECT_ATTEMPTS = 10
+        private const val INITIAL_RECONNECT_DELAY = 1000L
+        private const val MAX_RECONNECT_DELAY = 30000L
     }
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val connectionMutex = Mutex()
 
     private var webSocketSession: DefaultClientWebSocketSession? = null
     private var connectionJob: Job? = null
+    private var reconnectJob: Job? = null
+    private var heartbeatJob: Job? = null
     private val subscriptionId = AtomicInteger(0)
+
+    private var subscribed = false
+    private var reconnectAttempts = 0
+    private var manuallyDisconnected = false
+    private var currentServerUrl: String? = null
+    private var currentJwtToken: String? = null
 
     private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
     val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
 
-    private val _messages = MutableStateFlow<Message?>(null)
-    val messages: StateFlow<Message?> = _messages.asStateFlow()
+    private val _messages = MutableSharedFlow<Message>(extraBufferCapacity = 64)
+    val messages: SharedFlow<Message> = _messages.asSharedFlow()
 
-    suspend fun connect(serverUrl: String, jwtToken: String) {
-        if (_connectionState.value == ConnectionState.CONNECTED) {
-            Log.d(TAG, "Already connected")
-            return
-        }
+    // Flujo de eventos para notificaciones globales
+    val webSocketEvents = MutableSharedFlow<WebSocketEvent>()
+
+    suspend fun connect(serverUrl: String, jwtToken: String) = connectionMutex.withLock {
+        reconnectJob?.cancel()
+        reconnectJob = null
+
+        currentServerUrl = serverUrl
+        currentJwtToken = jwtToken
+        manuallyDisconnected = false
+
+        if (connectionJob?.isActive == true) return@withLock
 
         _connectionState.value = ConnectionState.CONNECTING
 
-        connectionJob = CoroutineScope(Dispatchers.IO).launch {
+        connectionJob = scope.launch {
+            var exitState = ConnectionState.DISCONNECTED
             try {
                 httpClient.webSocket(urlString = "$serverUrl/ws/websocket") {
                     webSocketSession = this
@@ -66,171 +99,183 @@ class WebSocketManager @Inject constructor(
 
                     sendStompConnect(jwtToken)
 
-                    try {
-                        for (frame in incoming) {
-                            when (frame) {
-                                is Frame.Text -> {
-                                    handleIncomingFrame(frame.readText())
-                                }
-
-                                is Frame.Close -> {
-                                    Log.d(TAG, "🔌 Connection closed")
-                                    _connectionState.value = ConnectionState.DISCONNECTED
-                                }
-
-                                else -> {}
-                            }
+                    for (frame in incoming) {
+                        when (frame) {
+                            is Frame.Text -> handleIncomingFrame(frame.readText())
+                            is Frame.Close -> Log.d(TAG, "🔌 Connection closed by server")
+                            else -> {}
                         }
-                    } catch (e: ClosedReceiveChannelException) {
-                        Log.d(TAG, "Channel closed")
-                        _connectionState.value = ConnectionState.DISCONNECTED
-                    } catch (e: Exception) {
-                        Log.e(TAG, "❌ Error: ${e.message}", e)
-                        _connectionState.value = ConnectionState.ERROR
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Connection error: ${e.message}", e)
-                _connectionState.value = ConnectionState.ERROR
+                if (e !is ClosedReceiveChannelException && e !is CancellationException) {
+                    Log.e(TAG, "❌ Connection/Session error: ${e.message}", e)
+                    exitState = ConnectionState.ERROR
+                }
+            } finally {
+                val sessionWasActive = webSocketSession != null
+                if (sessionWasActive) {
+                    cleanupSession(exitState)
+                }
+
+                if (sessionWasActive && !manuallyDisconnected && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    attemptReconnect()
+                }
             }
         }
     }
 
-    private suspend fun sendStompConnect(jwtToken: String) {
-        val connectFrame = StompFrame(
-            command = "CONNECT",
-            headers = mapOf(
-                "Authorization" to "Bearer $jwtToken",
-                "accept-version" to "1.2",
-                "heart-beat" to "10000,10000"
-            )
-        )
-        webSocketSession?.send(Frame.Text(connectFrame.toRawString()))
-        Log.d(TAG, "📤 CONNECT sent")
-    }
+    private fun attemptReconnect() {
+        if (reconnectJob?.isActive == true || manuallyDisconnected) return
 
-    suspend fun subscribeToMessages() {
-        val subId = subscriptionId.incrementAndGet().toString()
-        val subscribeFrame = StompFrame(
-            command = "SUBSCRIBE",
-            headers = mapOf(
-                "id" to subId,
-                "destination" to "/user/queue/messages"
-            )
-        )
-        webSocketSession?.send(Frame.Text(subscribeFrame.toRawString()))
-        Log.d(TAG, "📥 Subscribed to messages with ID: $subId")
-    }
+        reconnectJob = scope.launch {
+            _connectionState.value = ConnectionState.RECONNECTING
 
-    suspend fun sendMessage(message: MessageRequest) {
-        try {
-            val messageJson = json.encodeToString(MessageRequest.serializer(), message)
-            val sendFrame = StompFrame(
-                command = "SEND",
-                headers = mapOf(
-                    "destination" to "/app/chat.send",
-                    "content-type" to "application/json"
-                ),
-                body = messageJson
-            )
-            webSocketSession?.send(Frame.Text(sendFrame.toRawString()))
-            Log.d(TAG, "📤 Message sent")
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Error sending message: ${e.message}", e)
+            reconnectAttempts++
+            val exponentialDelay = INITIAL_RECONNECT_DELAY shl min(reconnectAttempts - 1, 10)
+            val baseDelay = min(exponentialDelay, MAX_RECONNECT_DELAY)
+            val jitter = (baseDelay * 0.1).toLong().let { if (it > 0) (0..it).random() else 0L }
+            val delayMillis = min(baseDelay + jitter, MAX_RECONNECT_DELAY)
+
+            Log.d(TAG, "🔄 Reconnecting in ${delayMillis}ms... (Attempt $reconnectAttempts/$MAX_RECONNECT_ATTEMPTS)")
+            delay(delayMillis)
+
+            currentServerUrl?.let { url ->
+                currentJwtToken?.let { token ->
+                    connect(url, token)
+                }
+            }
         }
     }
 
+    private fun cleanupSession(targetState: ConnectionState) {
+        heartbeatJob?.cancel()
+        heartbeatJob = null
+        webSocketSession = null
+        subscribed = false
+        _connectionState.value = targetState
+        Log.d(TAG, "🧹 Session cleaned. State: $targetState")
+    }
+
+    private suspend fun sendStompConnect(jwtToken: String) {
+        val session = webSocketSession ?: run {
+            throw IllegalStateException("Cannot send CONNECT frame: WebSocket session is null")
+        }
+        val connectFrame = StompFrame("CONNECT", mapOf(
+            "Authorization" to "Bearer $jwtToken",
+            "accept-version" to "1.2",
+            "heart-beat" to "10000,10000"
+        ))
+        session.send(Frame.Text(connectFrame.toRawString()))
+    }
+
+    suspend fun subscribeToMessages() {
+        if (_connectionState.value != ConnectionState.CONNECTED || subscribed) return
+        val subId = subscriptionId.incrementAndGet().toString()
+        safeSend(StompFrame("SUBSCRIBE", mapOf("id" to subId, "destination" to "/user/queue/messages")))
+        subscribed = true
+        Log.d(TAG, "📥 Subscribed to messages (ID: $subId)")
+    }
+
+    suspend fun sendMessage(message: MessageRequest) {
+        val frame = StompFrame("SEND", mapOf("destination" to "/app/chat.send", "content-type" to "application/json"), json.encodeToString(message))
+        safeSend(frame)
+    }
+
     suspend fun markAsRead(conversationId: String) {
-        val payload = """{"conversationId":"$conversationId"}"""
-        val sendFrame = StompFrame(
-            command = "SEND",
-            headers = mapOf(
-                "destination" to "/app/chat.read",
-                "content-type" to "application/json"
-            ),
-            body = payload
-        )
-        webSocketSession?.send(Frame.Text(sendFrame.toRawString()))
-        Log.d(TAG, "✅ Marked as read: $conversationId")
+        val payload = json.encodeToString(ReadPayload(conversationId))
+        safeSend(StompFrame("SEND", mapOf("destination" to "/app/chat.read", "content-type" to "application/json"), payload))
     }
 
     suspend fun notifyTyping(conversationId: String, isTyping: Boolean) {
-        val payload = """{"conversationId":"$conversationId","isTyping":$isTyping}"""
-        val sendFrame = StompFrame(
-            command = "SEND",
-            headers = mapOf(
-                "destination" to "/app/chat.typing",
-                "content-type" to "application/json"
-            ),
-            body = payload
-        )
-        webSocketSession?.send(Frame.Text(sendFrame.toRawString()))
+        val payload = json.encodeToString(TypingPayload(conversationId, isTyping))
+        safeSend(StompFrame("SEND", mapOf("destination" to "/app/chat.typing", "content-type" to "application/json"), payload))
     }
 
     private suspend fun confirmDelivery(messageId: String) {
-        val payload = """{"messageId":"$messageId"}"""
-        val sendFrame = StompFrame(
-            command = "SEND",
-            headers = mapOf(
-                "destination" to "/app/chat.delivered",
-                "content-type" to "application/json"
-            ),
-            body = payload
-        )
-        webSocketSession?.send(Frame.Text(sendFrame.toRawString()))
+        val payload = json.encodeToString(DeliveryPayload(messageId))
+        safeSend(StompFrame("SEND", mapOf("destination" to "/app/chat.delivered", "content-type" to "application/json"), payload))
     }
 
-    private fun handleIncomingFrame(rawFrame: String) {
-        val frame = StompFrame.fromRawString(rawFrame) ?: return
+    private suspend fun safeSend(frame: StompFrame) {
+        if (_connectionState.value != ConnectionState.CONNECTED) return
+        try {
+            webSocketSession?.send(Frame.Text(frame.toRawString()))
+        } catch (e: Exception) {
+            Log.e(TAG, "Error sending frame: ${e.message}", e)
+        }
+    }
 
+    private suspend fun handleIncomingFrame(rawFrame: String) {
+        val frame = StompFrame.fromRawString(rawFrame) ?: return
         when (frame.command) {
             "CONNECTED" -> {
                 Log.d(TAG, "✅ STOMP connected")
                 _connectionState.value = ConnectionState.CONNECTED
+                reconnectAttempts = 0
+                startHeartbeat()
+                scope.launch { subscribeToMessages() }
             }
-
             "MESSAGE" -> {
                 try {
                     val message = json.decodeFromString<Message>(frame.body)
-                    Log.d(TAG, "📨 Message received: ${message.id}")
-                    _messages.value = message
-
-                    // Auto-confirm delivery
-                    CoroutineScope(Dispatchers.IO).launch {
+                    if (!_messages.tryEmit(message)) {
+                        Log.w(TAG, "Message dropped: SharedFlow buffer full")
+                    }
+                    scope.launch { 
+                        webSocketEvents.emit(WebSocketEvent.MessageReceived(message))
                         confirmDelivery(message.id)
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error parsing message: ${e.message}", e)
                 }
             }
+            "ERROR" -> _connectionState.value = ConnectionState.ERROR
+        }
+    }
 
-            "ERROR" -> {
-                Log.e(TAG, "❌ STOMP error: ${frame.body}")
-                _connectionState.value = ConnectionState.ERROR
-            }
-
-            "RECEIPT" -> {
-                Log.d(TAG, "📬 Receipt: ${frame.headers}")
-            }
-
-            else -> {
-                Log.d(TAG, "Frame received: ${frame.command}")
+    private fun startHeartbeat() {
+        heartbeatJob?.cancel()
+        heartbeatJob = scope.launch {
+            while (true) {
+                delay(30000)
+                safeSend(StompFrame("\n")) // STOMP heartbeat is just a newline
             }
         }
+        Log.d(TAG, "❤️ Heartbeat started")
     }
 
     suspend fun disconnect() {
-        try {
-            val disconnectFrame = StompFrame(command = "DISCONNECT")
-            webSocketSession?.send(Frame.Text(disconnectFrame.toRawString()))
-            delay(100) // Give time to send
-            webSocketSession?.close()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error disconnecting: ${e.message}")
-        } finally {
-            connectionJob?.cancel()
-            _connectionState.value = ConnectionState.DISCONNECTED
-            Log.d(TAG, "🔌 Disconnected")
+        manuallyDisconnected = true
+        reconnectJob?.cancel()
+        reconnectJob = null
+        if (webSocketSession != null) {
+            try {
+                safeSend(StompFrame("DISCONNECT"))
+                delay(100)
+                webSocketSession?.close()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during disconnect: ${e.message}")
+            } finally {
+                connectionJob?.cancel()
+                cleanupSession(ConnectionState.DISCONNECTED)
+                Log.d(TAG, "🔌 Disconnected manually")
+            }
         }
     }
+
+    fun destroy() {
+        scope.cancel("WebSocketManager destroyed")
+    }
 }
+
+// --- Eventos y Payloads ---
+
+sealed class WebSocketEvent {
+    data class MessageReceived(val message: Message) : WebSocketEvent()
+    data class MessageRead(val conversationId: String) : WebSocketEvent()
+}
+
+@Serializable private data class ReadPayload(val conversationId: String)
+@Serializable private data class TypingPayload(val conversationId: String, val isTyping: Boolean)
+@Serializable private data class DeliveryPayload(val messageId: String)

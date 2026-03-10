@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -93,7 +94,7 @@ fun JobOfferScreen(
                 }
             }
         ) {
-            androidx.compose.material3.DatePicker(state = datePickerState)
+            DatePicker(state = datePickerState)
         }
     }
 

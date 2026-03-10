@@ -10,6 +10,7 @@ import com.example.nexum_cliente.domain.model.Message
 import com.example.nexum_cliente.domain.model.PageResponse
 import com.example.nexum_cliente.domain.repository.MessagingRepository
 import com.example.nexum_cliente.security.TokenManager
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
@@ -23,10 +24,10 @@ class MessagingRepositoryImpl @Inject constructor(
 ) : MessagingRepository {
 
     // WebSocket
-    override val connectionState: StateFlow<ConnectionState> =
+    override val connectionState: SharedFlow<ConnectionState> =
         webSocketManager.connectionState
 
-    override val incomingMessages: StateFlow<Message?> =
+    override val incomingMessages: SharedFlow<Message?> =
         webSocketManager.messages
 
     override suspend fun connectWebSocket(serverUrl: String, jwtToken: String) {

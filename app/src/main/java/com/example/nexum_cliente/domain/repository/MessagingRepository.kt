@@ -5,6 +5,7 @@ import com.example.nexum_cliente.domain.model.ConnectionState
 import com.example.nexum_cliente.domain.model.Conversation
 import com.example.nexum_cliente.domain.model.Message
 import com.example.nexum_cliente.domain.model.PageResponse
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -16,18 +17,17 @@ import kotlinx.coroutines.flow.StateFlow
  */
 interface MessagingRepository {
     // WebSocket
-    val connectionState: StateFlow<ConnectionState>
-    val incomingMessages: StateFlow<Message?>
+    val connectionState: SharedFlow<ConnectionState>
+    val incomingMessages: SharedFlow<Message?>
 
     suspend fun connectWebSocket(serverUrl: String, jwtToken: String)
     suspend fun disconnectWebSocket()
     suspend fun subscribeToMessages()
     suspend fun sendMessageViaWebSocket(message: MessageRequest)
+    suspend fun sendMessageViaRest(message: MessageRequest): Result<Message>
+    suspend fun markAsReadViaRest(conversationId: String): Result<Unit>
     suspend fun markAsReadViaWebSocket(conversationId: String)
     suspend fun notifyTyping(conversationId: String, isTyping: Boolean)
-
-    // REST API
-    suspend fun sendMessageViaRest(message: MessageRequest): Result<Message>
     suspend fun getConversations(page: Int, size: Int): Result<PageResponse<Conversation>>
     suspend fun getConversationMessages(
         conversationId: String,
@@ -35,6 +35,5 @@ interface MessagingRepository {
         size: Int
     ): Result<PageResponse<Message>>
 
-    suspend fun markAsReadViaRest(conversationId: String): Result<Unit>
     suspend fun getUnreadCount(): Result<Long>
 }

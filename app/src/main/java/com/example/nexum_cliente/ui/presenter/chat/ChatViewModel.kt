@@ -12,6 +12,7 @@ import com.example.nexum_cliente.domain.repository.MessagingRepository
 import com.example.nexum_cliente.security.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -23,7 +24,7 @@ import javax.inject.Inject
  * @email svarela03@uan.edu.co
  * @github https://github.com/sanvarela03
  * @since 2/14/2026
- * @version 1.0
+ * @version 1.6
  */
 @HiltViewModel
 class ChatViewModel @Inject constructor(
@@ -38,7 +39,7 @@ class ChatViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<ChatUiState>(ChatUiState.Loading)
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
-    val connectionState: StateFlow<ConnectionState> = repository.connectionState
+    val connectionState: SharedFlow<ConnectionState> = repository.connectionState
 
     private var currentConversationId: String? = null
     private var currentPage = 0
@@ -53,13 +54,13 @@ class ChatViewModel @Inject constructor(
         viewModelScope.launch {
             tokenManager.getAccessToken().firstOrNull()?.let { token ->
                 repository.connectWebSocket(wsUrl, token)
-
-                connectionState.collect { state ->
-                    if (state == ConnectionState.CONNECTED) {
-                        repository.subscribeToMessages()
-                    }
-                }
             }
+        }
+    }
+
+    fun disconnectWebSocket() {
+        viewModelScope.launch {
+            repository.disconnectWebSocket()
         }
     }
 
@@ -87,14 +88,17 @@ class ChatViewModel @Inject constructor(
                     currentPage++
                     canLoadMore = response.content.size == pageSize
                     _uiState.value = ChatUiState.Success
+
+                    // Marcar como leído al cargar los mensajes iniciales
+                    if (!loadMore) {
+                        markAsRead()
+                    }
                 }
                 .onFailure { error ->
                     Log.e("ChatViewModel", "Error loading messages", error)
-
                     _uiState.value = ChatUiState.Error(
                         error.message ?: "Error loading messages"
                     )
-
                 }
         }
     }
@@ -116,35 +120,14 @@ class ChatViewModel @Inject constructor(
                 metadata = metadata,
                 replyToMessageId = replyToMessageId
             )
-
-            // Enviar por WebSocket (más rápido)
-            if (connectionState.value == ConnectionState.CONNECTED) {
-                repository.sendMessageViaWebSocket(request)
-            } else {
-                // Fallback a REST si no hay WebSocket
-                repository.sendMessageViaRest(request)
-                    .onSuccess { message ->
-                        // Agregar mensaje localmente
-                        addMessageToList(message)
-                    }
-                    .onFailure { error ->
-                        _uiState.value = ChatUiState.Error(
-                            error.message ?: "Error sending message"
-                        )
-                        Log.e("ChatViewModel", "Error sending message", error)
-                    }
-            }
+            repository.sendMessageViaWebSocket(request)
         }
     }
 
     fun markAsRead() {
         currentConversationId?.let { conversationId ->
             viewModelScope.launch {
-                if (connectionState.value == ConnectionState.CONNECTED) {
-                    repository.markAsReadViaWebSocket(conversationId)
-                } else {
-                    repository.markAsReadViaRest(conversationId)
-                }
+                repository.markAsReadViaWebSocket(conversationId)
             }
         }
     }
@@ -159,13 +142,11 @@ class ChatViewModel @Inject constructor(
 
     private fun observeIncomingMessages() {
         viewModelScope.launch {
-            repository.incomingMessages.collect { newMessage ->
-                newMessage?.let { message ->
-                    // Solo agregar si es de la conversación actual
-                    if (message.conversationId == currentConversationId) {
-                        addMessageToList(message)
-
-                        // Marcar como leído automáticamente
+            repository.incomingMessages.collect { message ->
+                message?.let { msg ->
+                    val activeId = currentConversationId
+                    if (activeId != null && msg.conversationId == activeId) {
+                        addMessageToList(msg)
                         markAsRead()
                     }
                 }
@@ -175,8 +156,6 @@ class ChatViewModel @Inject constructor(
 
     private fun addMessageToList(message: Message) {
         val currentList = _messages.value.toMutableList()
-
-        // Evitar duplicados
         if (!currentList.any { it.id == message.id }) {
             currentList.add(0, message)
             _messages.value = currentList
@@ -189,9 +168,7 @@ class ChatViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        viewModelScope.launch {
-            repository.disconnectWebSocket()
-        }
+        disconnectWebSocket()
     }
 }
 

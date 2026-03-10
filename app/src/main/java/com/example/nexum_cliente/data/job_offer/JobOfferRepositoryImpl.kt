@@ -27,6 +27,7 @@ class JobOfferRepositoryImpl @Inject constructor(
 
     override fun getJobOffers(): Flow<List<JobOffer>> {
         return flow {
+            // TODO: Implementar lógica para obtener las ofertas de trabajo desde el servidor
         }
     }
 }

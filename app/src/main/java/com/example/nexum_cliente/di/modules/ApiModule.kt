@@ -7,25 +7,19 @@ import com.example.nexum_cliente.data.client.remote.ClientApi
 import com.example.nexum_cliente.data.country.remote.CountryApi
 import com.example.nexum_cliente.data.job_offer.remote.JobOfferApi
 import com.example.nexum_cliente.data.market_location.remote.MarketLocationApi
+import com.example.nexum_cliente.data.mercado_pago.remote.MercadoPagoApi
 import com.example.protapptest.security.AuthAuthenticator
 import com.example.protapptest.security.AuthInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.plugins.websocket.WebSockets
-import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.json.Json
 
 
 /**
@@ -52,6 +46,9 @@ object ApiModule {
             .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
             .authenticator(authAuthenticator)
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
             .build()
     }
 
@@ -99,5 +96,15 @@ object ApiModule {
     @Singleton
     fun provideJobOfferApi(retrofit: Retrofit.Builder, okHttpClient: OkHttpClient): JobOfferApi =
         retrofit.client(okHttpClient).build().create(JobOfferApi::class.java)
+
+
+    @Provides
+    @Singleton
+    fun provideMercadoPagoApi(
+        retrofit: Retrofit.Builder,
+        okHttpClient: OkHttpClient
+    ): MercadoPagoApi =
+        retrofit.client(okHttpClient).build().create(MercadoPagoApi::class.java)
+
 
 }

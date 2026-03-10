@@ -28,7 +28,6 @@ annotation class WebSocketUrl
 @Module
 @InstallIn(SingletonComponent::class)
 object WebSocketNetworkModule {
-
     @Provides
     @Singleton
     fun provideHttpClient(json: Json, okHttpClient: OkHttpClient): HttpClient {

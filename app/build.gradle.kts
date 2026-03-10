@@ -141,4 +141,7 @@ dependencies {
     // Constraint layout
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.constraintlayout.compose)
+    
+    // Mercado Pago
+    implementation("androidx.browser:browser:1.8.0")
 }

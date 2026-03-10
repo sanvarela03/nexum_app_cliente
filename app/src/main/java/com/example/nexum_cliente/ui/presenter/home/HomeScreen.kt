@@ -7,6 +7,9 @@ import android.view.Gravity
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -28,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -47,17 +49,9 @@ import com.example.nexum_cliente.ui.navigation.graphs.Graph
 import com.example.nexum_cliente.ui.navigation.graphs.homeGraph
 import com.example.nexum_cliente.ui.navigation.rutes.DrawerRoutes
 import com.example.nexum_cliente.ui.navigation.rutes.HomeRoutes
-import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
-/**
- * @author Santiago Varela Daza
- * @email svarela03@uan.edu.co
- * @github https://github.com/sanvarela03
- * @since 7/30/2025
- * @version 1.0
- */
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("RestrictedApi")
 @Composable
@@ -70,19 +64,16 @@ fun HomeScreen(
         currentUserId = homeViewModel.getUserId().firstOrNull()
     }
 
-
     val homeNavController = rememberNavController()
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val state = homeViewModel.state
     val context = LocalContext.current
 
-    // Carga inicial de datos
     LaunchedEffect(key1 = Unit) {
         homeViewModel.refreshClient(fetchFromRemote = true)
     }
 
-    // Manejo de errores con Toast
     LaunchedEffect(state.errorMessage) {
         if (state.errorMessage.isNotEmpty()) {
             val toast = Toast.makeText(context, "Error: ${state.errorMessage}", Toast.LENGTH_SHORT)
@@ -113,9 +104,6 @@ fun HomeScreen(
             },
             onNavButtonClicked = {
                 scope.launch { drawerState.apply { if (isClosed) open() else close() } }
-//            scope.launch {
-//                if (drawerState.isClosed) drawerState.open() else drawerState.close()
-//            }
             },
             onSignOut = {
                 homeViewModel.onEvent(HomeEvent.SignOutBtnClicked)
@@ -144,8 +132,6 @@ private fun HomeScreenContent(
 ) {
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-
-    // Observamos el backstack para determinar si mostrar la TopBar/Drawer
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
@@ -156,18 +142,15 @@ private fun HomeScreenContent(
         HomeRoutes.NotificationsScreen
     )
 
-    // Lógica para mostrar barras solo en las pantallas principales y en modo retrato
     val showBars = mainScreens.any { route ->
         currentDestination?.hierarchy?.any { it.hasRoute(route::class) } == true
     } && isPortrait
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = showBars, // Deshabilitar gesto si no estamos en pantallas principales
+        gesturesEnabled = showBars,
         drawerContent = {
-            ModalDrawerSheet(
-                modifier = Modifier.width(200.dp)
-            ) {
+            ModalDrawerSheet(modifier = Modifier.width(200.dp)) {
                 NavigationDrawerHeader(
                     value = "${state.client?.firstName} ${state.client?.lastName}",
                     name = state.client?.email,
@@ -192,19 +175,22 @@ private fun HomeScreenContent(
                 }
             },
             bottomBar = {
-                // Mantenemos la BottomBar visible para navegación rápida
                 HomeBottomBar(
                     navigationItems = BottomNavigation.entries,
                     currentDestination = currentDestination,
                     navigateTo = onBottomNavigate
                 )
-            }
+            },
+            // IMPORTANTE: Evita que la BottomBar suba con el teclado
+            contentWindowInsets = WindowInsets(0)
         ) { contentPadding ->
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.White)
                     .padding(contentPadding)
+                    // Consumimos el padding para que el chat no lo duplique
+                    .consumeWindowInsets(contentPadding)
             ) {
                 NavHost(
                     modifier = Modifier.background(Color.White),
@@ -214,24 +200,5 @@ private fun HomeScreenContent(
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun HomeScreenPreview() {
-    val navController = rememberNavController()
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    Nexum_clienteTheme {
-        HomeScreenContent(
-            navController = navController,
-            drawerState = drawerState,
-            state = HomeState(),
-            onDrawerNavigate = {},
-            onBottomNavigate = {},
-            onNavButtonClicked = {},
-            onSignOut = {},
-            homeGraph = {}
-        )
     }
 }
