@@ -1,6 +1,7 @@
 package com.example.nexum_cliente.common
 
 
+import android.util.Log
 import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -33,6 +34,7 @@ inline fun <RemoteType> updateResourceFlow(
     crossinline clearCache: suspend () -> Unit = {},
     dispatcher: CoroutineDispatcher
 ): Flow<ApiResponse<Unit>> = flow {
+    Log.d("updateResourceFlow", "fetchFromRemote: $fetchFromRemote")
     val cacheExists = checkCache()
     if (cacheExists && !fetchFromRemote) {
         emit(ApiResponse.Success(Unit))
@@ -45,10 +47,12 @@ inline fun <RemoteType> updateResourceFlow(
         when (apiRes) {
             is ApiResponse.Success -> {
                 val data = apiRes.data
+                Log.d("updateResourceFlow", "Data: $data")
                 // Asumimos que si los datos son una colección, podemos verificar si está vacía.
                 if (data is Collection<*> && data.isEmpty()) {
                     clearCache()
                 } else {
+                    Log.d("updateResourceFlow", "saveToCache: $data")
                     saveToCache(data)
                 }
                 emit(ApiResponse.Success(Unit))

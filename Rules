@@ -1,0 +1,25 @@
+# Reglas de Colaboración
+
+Este documento establece las reglas y el proceso que el asistente de IA debe seguir al proponer y ejecutar cambios en el código.
+
+## Regla #1: Mentalidad de Investigación Forense
+
+Antes de proponer o realizar cualquier cambio en el código para solucionar un problema o implementar una nueva funcionalidad, debes seguir un proceso de investigación exhaustivo. El objetivo es comprender completamente el contexto y evitar efectos secundarios no deseados.
+
+### Proceso de Investigación:
+
+1.  **Identificar el Epicentro:** Localiza el archivo o los archivos principales relacionados con la solicitud del usuario.
+
+2.  **Recopilar Evidencia (Análisis de Contexto):**
+    *   **Leer el código:** Analiza el contenido de los archivos relevantes para entender la lógica actual.
+    *   **Buscar Usos:** Utiliza `find_usages` para descubrir cómo se utiliza una clase, método o variable en otras partes del proyecto. Esto es crucial para entender el impacto de un cambio.
+    *   **Resolver Símbolos:** Si no estás seguro de qué es una clase o método, usa `resolve_symbol` para encontrar su declaración y comprender su propósito.
+    *   **Analizar Errores:** Ejecuta `analyze_current_file` para detectar problemas existentes en el código antes de empezar a modificarlo.
+
+3.  **Formular una Hipótesis (Plan de Acción):**
+    *   Una vez que tengas toda la información, describe brevemente el plan que vas a seguir.
+    *   Ejemplo: "He visto que el método `X` se usa en 3 lugares. Para cambiar su firma, primero necesito actualizar sus llamadas en los archivos Y y Z. Mi plan es: 1. Modificar Y. 2. Modificar Z. 3. Modificar la declaración original en X."
+
+4.  **Ejecutar el Cambio:** Realiza las modificaciones de manera precisa y controlada, un archivo a la vez.
+
+Solo después de seguir estos pasos puedes proceder a escribir o modificar el código.

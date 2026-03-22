@@ -3,8 +3,10 @@ package com.example.nexum_cliente.ui.presenter.conversations
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import com.example.nexum_cliente.domain.model.Conversation
 import com.example.nexum_cliente.domain.repository.MessagingRepository
+import com.example.nexum_cliente.domain.use_cases.profile.ProfileUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -15,12 +17,15 @@ import javax.inject.Inject
  * @email svarela03@uan.edu.co
  * @github https://github.com/sanvarela03
  * @since 2/14/2026
- * @version 1.0
+ * @version 1.1
  */
 @HiltViewModel
 class ConversationsViewModel @Inject constructor(
-    private val repository: MessagingRepository
+    private val repository: MessagingRepository,
+    private val profileUseCases: ProfileUseCases
 ) : ViewModel() {
+
+    val profiles = profileUseCases.observeProfile()
 
     private val _conversations = MutableStateFlow<List<Conversation>>(emptyList())
     val conversations: StateFlow<List<Conversation>> = _conversations.asStateFlow()
@@ -30,6 +35,12 @@ class ConversationsViewModel @Inject constructor(
 
     private val _unreadCount = MutableStateFlow(0L)
     val unreadCount: StateFlow<Long> = _unreadCount.asStateFlow()
+
+    private val _showNewChatDialog = MutableStateFlow(false)
+    val showNewChatDialog: StateFlow<Boolean> = _showNewChatDialog.asStateFlow()
+
+    private val _isSearchingProfiles = MutableStateFlow(false)
+    val isSearchingProfiles: StateFlow<Boolean> = _isSearchingProfiles.asStateFlow()
 
     private var currentPage = 0
     private val pageSize = 20
@@ -45,7 +56,6 @@ class ConversationsViewModel @Inject constructor(
         if (refresh) {
             currentPage = 0
             canLoadMore = true
-            _conversations.value = emptyList()
         }
 
         if (!canLoadMore && !refresh) return
@@ -59,12 +69,19 @@ class ConversationsViewModel @Inject constructor(
 
             repository.getConversations(currentPage, pageSize)
                 .onSuccess { response ->
-                    val newConversations = if (refresh) {
-                        response.content
-                    } else {
-                        _conversations.value + response.content
+                    _conversations.update { current ->
+                        val newContent = response.content
+                        if (refresh) {
+                            newContent.distinctBy { it.id }
+                        } else {
+                            (current + newContent).distinctBy { it.id }
+                        }
                     }
-                    _conversations.value = newConversations
+                    
+                    val updatedConversations = _conversations.value
+                    // Obtener perfiles para los participantes de las conversaciones cargadas
+                    fetchProfilesForConversations(updatedConversations)
+
                     currentPage++
                     canLoadMore = response.content.size == pageSize
                     _uiState.value = ConversationsUiState.Success
@@ -75,6 +92,44 @@ class ConversationsViewModel @Inject constructor(
                         error.message ?: "Error loading conversations"
                     )
                 }
+        }
+    }
+
+    private fun fetchProfilesForConversations(conversations: List<Conversation>) {
+        val userIds = conversations
+            .flatMap { it.participantIds }
+            .mapNotNull { it.toLongOrNull() }
+            .distinct()
+
+        if (userIds.isNotEmpty()) {
+            viewModelScope.launch {
+                profileUseCases.updateProfile(userIds, fetchFromRemote = true).collect { response ->
+                    if (response is ApiResponse.Error || response is ApiResponse.Failure) {
+                        Log.e("ConversationsViewModel", "Error updating profiles")
+                    }
+                }
+            }
+        }
+    }
+
+    fun onOpenNewChatDialog() {
+        _showNewChatDialog.value = true
+        loadAllAvailableProfiles()
+    }
+
+    fun onCloseNewChatDialog() {
+        _showNewChatDialog.value = false
+    }
+
+    private fun loadAllAvailableProfiles() {
+        viewModelScope.launch {
+            _isSearchingProfiles.value = true
+            // Al pasar lista vacía, tu API trae todos los perfiles
+            profileUseCases.updateProfile(emptyList(), fetchFromRemote = true).collect { response ->
+                if (response !is ApiResponse.Loading) {
+                    _isSearchingProfiles.value = false
+                }
+            }
         }
     }
 

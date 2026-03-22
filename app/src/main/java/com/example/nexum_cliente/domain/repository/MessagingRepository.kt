@@ -1,6 +1,7 @@
 package com.example.nexum_cliente.domain.repository
 
 import com.example.nexum_cliente.data.message.remote.payload.req.MessageRequest
+import com.example.nexum_cliente.data.message.remote.websocket.WebSocketEvent
 import com.example.nexum_cliente.domain.model.ConnectionState
 import com.example.nexum_cliente.domain.model.Conversation
 import com.example.nexum_cliente.domain.model.Message
@@ -16,9 +17,9 @@ import kotlinx.coroutines.flow.StateFlow
  * @version 1.0
  */
 interface MessagingRepository {
-    // WebSocket
     val connectionState: SharedFlow<ConnectionState>
     val incomingMessages: SharedFlow<Message?>
+    val webSocketEvents: SharedFlow<WebSocketEvent>
 
     suspend fun connectWebSocket(serverUrl: String, jwtToken: String)
     suspend fun disconnectWebSocket()

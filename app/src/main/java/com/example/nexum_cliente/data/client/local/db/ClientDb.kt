@@ -12,6 +12,8 @@ import com.example.nexum_cliente.data.country.local.CountryDao
 import com.example.nexum_cliente.data.country.local.CountryEntity
 import com.example.nexum_cliente.data.market_location.local.MarketLocationDao
 import com.example.nexum_cliente.data.market_location.local.MarketLocationEntity
+import com.example.nexum_cliente.data.profile.local.ProfileDao
+import com.example.nexum_cliente.data.profile.local.ProfileEntity
 
 
 /**
@@ -28,6 +30,7 @@ import com.example.nexum_cliente.data.market_location.local.MarketLocationEntity
         CategoryEntity::class,
         MarketLocationEntity::class,
         CountryEntity::class,
+        ProfileEntity::class
     ],
     version = 1
 )
@@ -37,4 +40,5 @@ abstract class ClientDb : RoomDatabase() {
     abstract val categoryDao: CategoryDao
     abstract val marketLocationDao: MarketLocationDao
     abstract val countryDao: CountryDao
+    abstract val profileDao: ProfileDao
 }

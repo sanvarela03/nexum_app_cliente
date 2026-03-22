@@ -11,7 +11,6 @@ import com.example.nexum_cliente.domain.model.PageResponse
 import com.example.nexum_cliente.domain.repository.MessagingRepository
 import com.example.nexum_cliente.security.TokenManager
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,15 +22,40 @@ class MessagingRepositoryImpl @Inject constructor(
     private val tokenManager: TokenManager
 ) : MessagingRepository {
 
-    // WebSocket
-    override val connectionState: SharedFlow<ConnectionState> =
-        webSocketManager.connectionState
+    init {
+        // Configuramos el provider para que intente obtener un token válido
+        webSocketManager.setTokenProvider {
+            ensureValidToken()
+        }
+    }
 
-    override val incomingMessages: SharedFlow<Message?> =
-        webSocketManager.messages
+    /**
+     * Esta función intenta obtener el token. 
+     * Si el token está a punto de expirar o ya expiró, podríamos forzar 
+     * una llamada REST simple (como getUnreadCount) para que el AuthAuthenticator actúe.
+     */
+    private suspend fun ensureValidToken(): String? {
+        val currentToken = tokenManager.getAccessToken().firstOrNull()
+        
+        // Intentamos una petición ligera para disparar el Authenticator de OkHttp si el token es inválido
+        return try {
+            // Si el token falla, el Authenticator inyectado en apiService (vía OkHttpClient)
+            // se encargará de refrescarlo en el DataStore.
+            apiService.getUnreadCount(currentToken ?: "")
+            // Después de la llamada (exitosa o refrescada), obtenemos el token actualizado
+            tokenManager.getAccessToken().firstOrNull()
+        } catch (e: Exception) {
+            Log.e("MessagingRepository", "Error ensuring valid token, returning current", e)
+            currentToken
+        }
+    }
+    override val connectionState: SharedFlow<ConnectionState> = webSocketManager.connectionState
+    override val incomingMessages: SharedFlow<Message?> = webSocketManager.messages
+    override val webSocketEvents = webSocketManager.webSocketEvents
 
     override suspend fun connectWebSocket(serverUrl: String, jwtToken: String) {
-        webSocketManager.connect(serverUrl, jwtToken)
+        val validToken = ensureValidToken() ?: jwtToken
+        webSocketManager.connect(serverUrl, validToken)
     }
 
     override suspend fun disconnectWebSocket() {
@@ -54,12 +78,9 @@ class MessagingRepositoryImpl @Inject constructor(
         webSocketManager.notifyTyping(conversationId, isTyping)
     }
 
-    // REST API
     override suspend fun sendMessageViaRest(message: MessageRequest): Result<Message> {
         return try {
-            val token = tokenManager.getAccessToken().firstOrNull()
-                ?: return Result.failure(Exception("No token found"))
-
+            val token = ensureValidToken() ?: return Result.failure(Exception("No token found"))
             val response = apiService.sendMessage(token, message)
             Result.success(response)
         } catch (e: Exception) {
@@ -67,35 +88,20 @@ class MessagingRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getConversations(
-        page: Int,
-        size: Int
-    ): Result<PageResponse<Conversation>> {
+    override suspend fun getConversations(page: Int, size: Int): Result<PageResponse<Conversation>> {
         return try {
-            val token = tokenManager.getAccessToken().firstOrNull()
-                ?: return Result.failure(Exception("No token found"))
-
-            Log.d("MessagingRepositoryImpl", "token: $token")
+            val token = ensureValidToken() ?: return Result.failure(Exception("No token found"))
             val response = apiService.getConversations(token, page, size)
-            Log.d("MessagingRepositoryImpl", "Response: $response")
             Result.success(response)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    override suspend fun getConversationMessages(
-        conversationId: String,
-        page: Int,
-        size: Int
-    ): Result<PageResponse<Message>> {
+    override suspend fun getConversationMessages(conversationId: String, page: Int, size: Int): Result<PageResponse<Message>> {
         return try {
-            val token = tokenManager.getAccessToken().firstOrNull()
-                ?: return Result.failure(Exception("No token found"))
-
-            val response = apiService.getConversationMessages(
-                token, conversationId, page, size
-            )
+            val token = ensureValidToken() ?: return Result.failure(Exception("No token found"))
+            val response = apiService.getConversationMessages(token, conversationId, page, size)
             Result.success(response)
         } catch (e: Exception) {
             Result.failure(e)
@@ -104,9 +110,7 @@ class MessagingRepositoryImpl @Inject constructor(
 
     override suspend fun markAsReadViaRest(conversationId: String): Result<Unit> {
         return try {
-            val token = tokenManager.getAccessToken().firstOrNull()
-                ?: return Result.failure(Exception("No token found"))
-
+            val token = ensureValidToken() ?: return Result.failure(Exception("No token found"))
             apiService.markAsRead(token, conversationId)
             Result.success(Unit)
         } catch (e: Exception) {
@@ -116,9 +120,7 @@ class MessagingRepositoryImpl @Inject constructor(
 
     override suspend fun getUnreadCount(): Result<Long> {
         return try {
-            val token = tokenManager.getAccessToken().firstOrNull()
-                ?: return Result.failure(Exception("No token found"))
-
+            val token = ensureValidToken() ?: return Result.failure(Exception("No token found"))
             val response = apiService.getUnreadCount(token)
             Result.success(response.unreadCount)
         } catch (e: Exception) {

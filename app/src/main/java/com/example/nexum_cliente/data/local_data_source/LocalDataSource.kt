@@ -15,5 +15,4 @@ interface LocalDataSource<T> {
     fun observe(): Flow<List<T>>
     suspend fun replaceAll(resources: List<T>)
     suspend fun clearAll()
-
 }

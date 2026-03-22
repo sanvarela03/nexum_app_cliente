@@ -8,6 +8,7 @@ import com.example.nexum_cliente.data.job_offer.JobOfferRepositoryImpl
 import com.example.nexum_cliente.data.market_location.MarketLocationRepositoryImpl
 import com.example.nexum_cliente.data.mercado_pago.MercadoPagoRepositoryImpl
 import com.example.nexum_cliente.data.message.MessagingRepositoryImpl
+import com.example.nexum_cliente.data.profile.ProfileRepositoryImpl
 import com.example.nexum_cliente.domain.repository.AuthRepository
 import com.example.nexum_cliente.domain.repository.CategoryRepository
 import com.example.nexum_cliente.domain.repository.ClientRepository
@@ -16,6 +17,7 @@ import com.example.nexum_cliente.domain.repository.JobOfferRepository
 import com.example.nexum_cliente.domain.repository.MarketLocationRepository
 import com.example.nexum_cliente.domain.repository.MercadoPagoRepository
 import com.example.nexum_cliente.domain.repository.MessagingRepository
+import com.example.nexum_cliente.domain.repository.ProfileRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -56,4 +58,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindMercadoPagoRepository(mercadoPagoRepositoryImpl: MercadoPagoRepositoryImpl): MercadoPagoRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindProfileRepository(profileRepositoryImpl: ProfileRepositoryImpl): ProfileRepository
 }

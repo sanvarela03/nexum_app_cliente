@@ -1,5 +1,7 @@
 package com.example.nexum_cliente.ui.presenter.job_offer
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -67,6 +69,24 @@ class JobOfferViewModel @Inject constructor(
 
             is JobOfferEvent.TimeOptionSelected -> {
                 state = state.copy(selectedTimeOption = event.option)
+                when (event.option) {
+                    "Mañana" -> {
+                        val calendar = Calendar.getInstance()
+                        calendar.set(Calendar.HOUR_OF_DAY, 10)
+
+                    }
+
+                    "Tarde" -> {
+                        val calendar = Calendar.getInstance()
+                        calendar.set(Calendar.HOUR_OF_DAY, 18)
+                    }
+
+                    "Noche" -> {
+                        val calendar = Calendar.getInstance()
+                        calendar.set(Calendar.HOUR_OF_DAY, 22)
+                    }
+
+                }
                 state =
                     state.copy(requestedTime = if (event.option != "Elegir") event.option else state.requestedTime)
                 if (event.option == "Elegir") {
@@ -98,17 +118,22 @@ class JobOfferViewModel @Inject constructor(
             JobOfferEvent.ConfirmSuccessDialog -> {
                 state = state.copy(isJobOfferSubmitted = false)
             }
+
             JobOfferEvent.DismissSuccessDialog -> {
                 state = state.copy(isJobOfferSubmitted = false)
             }
         }
     }
 
+    private fun updateHour(){
+
+    }
     private fun updateDate(dateMillis: Long) {
         val dateFormatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
         state = state.copy(requestedDate = dateFormatter.format(Date(dateMillis)))
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun submitJobOffer() {
         viewModelScope.launch {
             val jobOffer = JobOfferMapper.stateToDomain(state)

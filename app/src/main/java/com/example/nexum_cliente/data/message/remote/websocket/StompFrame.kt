@@ -1,41 +1,41 @@
 package com.example.nexum_cliente.data.message.remote.websocket
 
-
 /**
  * @author Santiago Varela Daza
  * @email svarela03@uan.edu.co
  * @github https://github.com/sanvarela03
  * @since 2/14/2026
- * @version 1.0
+ * @version 1.1
  */
 data class StompFrame(
     val command: String,
     val headers: Map<String, String> = emptyMap(),
     val body: String = ""
 ) {
-    fun toRawString(): String {
-        val sb = StringBuilder()
-        sb.append(command).append("\n")
+    fun toRawString(): String = buildString {
+        append(command.trim()).append('\n')
         headers.forEach { (key, value) ->
-            sb.append("$key:$value\n")
+            append(key.trim()).append(':').append(value.trim()).append('\n')
         }
-        sb.append("\n")
-        sb.append(body)
-        sb.append("\u0000") // NULL terminator
-        return sb.toString()
+        append('\n')
+        append(body)
+        append('\u0000') // NULL terminator
     }
 
     companion object {
         fun fromRawString(raw: String): StompFrame? {
-            val lines = raw.split("\n")
-            if (lines.isEmpty()) return null
+            if (raw.isBlank() || raw == "\n" || raw == "\r\n") return null
 
-            val command = lines[0]
+            val lines = raw.split("\n")
+            val command = lines.firstOrNull()?.trim() ?: return null
+            if (command.isEmpty()) return null
+
             val headers = mutableMapOf<String, String>()
             var bodyStartIndex = 1
 
             for (i in 1 until lines.size) {
-                if (lines[i].isEmpty()) {
+                val line = lines[i].trim()
+                if (line.isEmpty()) {
                     bodyStartIndex = i + 1
                     break
                 }

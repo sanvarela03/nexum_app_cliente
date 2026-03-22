@@ -58,7 +58,7 @@ import timber.log.Timber
  * @email svarela03@uan.edu.co
  * @github https://github.com/sanvarela03
  * @since 8/4/2025
- * @version 1.0
+ * @version 1.1
  */
 @OptIn(ExperimentalGlideComposeApi::class, ExperimentalLayoutApi::class)
 @Composable
@@ -79,7 +79,10 @@ fun CategoriesScreen(
     val options = listOf("Todos", "24 horas", "Remodelación", "Construcción")
     val filteredCategories = categoryEntityList(selectedServiceType, categories)
 
-    ErrorMsg(state)
+    ErrorMsg(
+        state = state,
+        onClearError = { viewModel.onEvent(CategoriesEvent.ClearError) }
+    )
 
     Timber.tag("CategoriesScreen").d("isRefreshing: ${viewModel.state.isRefreshing}")
 
@@ -158,7 +161,8 @@ private fun categoryEntityList(
 
 @Composable
 private fun ErrorMsg(
-    state: CategoriesState
+    state: CategoriesState,
+    onClearError: () -> Unit
 ) {
     val context = LocalContext.current
     Log.d("CategoriesScreen", "Recomposing. ErrorMessage: ${state.errorMessage}")
@@ -170,7 +174,7 @@ private fun ErrorMsg(
         if (state.errorMessage.isNotEmpty()) { // Comprueba si hay un mensaje de error
             Log.d("CategoriesScreen", "Showing toast for error: ${state.errorMessage}")
             errorMsgToast(state.errorMessage, context)
-            state.errorMessage = ""
+            onClearError()
         } else {
             Log.d("CategoriesScreen", "LAUNCHED_EFFECT: ErrorMessage is empty. No toast.")
         }

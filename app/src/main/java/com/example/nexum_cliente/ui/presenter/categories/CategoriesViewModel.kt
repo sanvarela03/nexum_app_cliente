@@ -21,7 +21,7 @@ import javax.inject.Inject
  * @email svarela03@uan.edu.co
  * @github https://github.com/sanvarela03
  * @since 8/5/2025
- * @version 1.0
+ * @version 1.1
  */
 @HiltViewModel
 class CategoriesViewModel @Inject constructor(
@@ -42,6 +42,9 @@ class CategoriesViewModel @Inject constructor(
             is CategoriesEvent.Refresh -> {
                 updateCategories(fetchFromRemote = true)
             }
+            is CategoriesEvent.ClearError -> {
+                state = state.copy(errorMessage = "")
+            }
         }
 
     }
@@ -55,6 +58,7 @@ class CategoriesViewModel @Inject constructor(
                     state = state.copy(errorMessage = e.message ?: "Unknown error")
                 }
                 .collect { categories ->
+                    Log.d("CategoriesViewModel", "Categorías observadas: $categories")
                     state = state.copy(categories = categories)
                 }
 
@@ -75,7 +79,7 @@ class CategoriesViewModel @Inject constructor(
         updateCategoriesJob = viewModelScope.launch {
             categoryUseCases.updateCategories(fetchFromRemote).catch {
                 Log.d("CategoriesViewModel", "Error actualizando categorias: ${it.message}")
-                state = state.copy(errorMessage = it.message ?: "Unknown error")
+                state = state.copy(errorMessage = it.message ?: "Unknown error", isRefreshing = false)
             }.collect {
                 when (it) {
                     is ApiResponse.Error -> {
@@ -83,20 +87,11 @@ class CategoriesViewModel @Inject constructor(
                             "CategoriesViewModel",
                             "Error actualizando categorias: ${it.errorMessage}"
                         )
-                        state = state.copy(isRefreshing = false)
-                        state = state.copy(errorMessage = it.errorMessage)
-                        Log.d(
-                            "CategoriesViewModel",
-                            "Error actualizando categorias: ${state.errorMessage}"
-                        )
-                        Log.d(
-                            "CategoriesViewModel",
-                            "Error actualizando isNotEmpty: ${state.errorMessage.isNotEmpty()}"
-                        )
+                        state = state.copy(isRefreshing = false, errorMessage = it.errorMessage)
                     }
 
                     is ApiResponse.Failure -> {
-                        state = state.copy(isRefreshing = false)
+                        state = state.copy(isRefreshing = false, errorMessage = it.errorMessage)
                     }
 
                     ApiResponse.Loading -> {
@@ -105,7 +100,6 @@ class CategoriesViewModel @Inject constructor(
 
                     is ApiResponse.Success -> {
                         state = state.copy(isRefreshing = false)
-
                     }
                 }
             }

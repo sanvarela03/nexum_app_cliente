@@ -126,8 +126,6 @@ fun JobOfferScreen(
         }
     }
 
-
-
     JobOfferScreenContent(
         state = state,
         onEvent = viewModel::onEvent,

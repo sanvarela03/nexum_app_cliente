@@ -8,8 +8,9 @@ import com.example.nexum_cliente.data.country.remote.CountryApi
 import com.example.nexum_cliente.data.job_offer.remote.JobOfferApi
 import com.example.nexum_cliente.data.market_location.remote.MarketLocationApi
 import com.example.nexum_cliente.data.mercado_pago.remote.MercadoPagoApi
+import com.example.nexum_cliente.data.profile.remote.ProfileApi
 import com.example.protapptest.security.AuthAuthenticator
-import com.example.protapptest.security.AuthInterceptor
+import com.example.nexum_cliente.security.AuthInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -105,6 +106,16 @@ object ApiModule {
         okHttpClient: OkHttpClient
     ): MercadoPagoApi =
         retrofit.client(okHttpClient).build().create(MercadoPagoApi::class.java)
+
+
+    @Provides
+    @Singleton
+    fun provideProfileApi(
+        retrofit: Retrofit.Builder,
+        okHttpClient: OkHttpClient
+    ): ProfileApi =
+        retrofit.client(okHttpClient).build().create(ProfileApi::class.java)
+
 
 
 }

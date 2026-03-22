@@ -4,18 +4,19 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nexum_cliente.data.message.remote.payload.req.MessageRequest
+import com.example.nexum_cliente.data.message.remote.websocket.WebSocketEvent
 import com.example.nexum_cliente.di.modules.WebSocketUrl
 import com.example.nexum_cliente.domain.model.ConnectionState
 import com.example.nexum_cliente.domain.model.Message
+import com.example.nexum_cliente.domain.model.MessageStatus
 import com.example.nexum_cliente.domain.model.MessageType
 import com.example.nexum_cliente.domain.repository.MessagingRepository
+import com.example.nexum_cliente.domain.use_cases.profile.ProfileUseCases
 import com.example.nexum_cliente.security.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,12 +25,13 @@ import javax.inject.Inject
  * @email svarela03@uan.edu.co
  * @github https://github.com/sanvarela03
  * @since 2/14/2026
- * @version 1.6
+ * @version 1.9
  */
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val repository: MessagingRepository,
     private val tokenManager: TokenManager,
+    private val profileUseCases: ProfileUseCases,
     @WebSocketUrl private val wsUrl: String
 ) : ViewModel() {
 
@@ -41,7 +43,13 @@ class ChatViewModel @Inject constructor(
 
     val connectionState: SharedFlow<ConnectionState> = repository.connectionState
 
-    private var currentConversationId: String? = null
+    val profiles = profileUseCases.observeProfile()
+
+    private val _isReceiverTyping = MutableStateFlow(false)
+    val isReceiverTyping: StateFlow<Boolean> = _isReceiverTyping.asStateFlow()
+
+    private var currentConversationId = MutableStateFlow<String?>(null)
+    private var targetReceiverId: String? = null
     private var currentPage = 0
     private val pageSize = 50
     private var canLoadMore = true
@@ -64,12 +72,18 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    fun loadConversationMessages(conversationId: String, loadMore: Boolean = false) {
+    fun loadConversationMessages(conversationId: String, receiverId: String? = null, loadMore: Boolean = false) {
         if (!loadMore) {
-            currentConversationId = conversationId
+            currentConversationId.value = conversationId
+            targetReceiverId = receiverId
             currentPage = 0
             canLoadMore = true
             _messages.value = emptyList()
+            
+            if (conversationId == "new") {
+                _uiState.value = ChatUiState.Success
+                return
+            }
         }
 
         if (!canLoadMore) return
@@ -80,26 +94,28 @@ class ChatViewModel @Inject constructor(
             repository.getConversationMessages(conversationId, currentPage, pageSize)
                 .onSuccess { response ->
                     val newMessages = if (loadMore) {
-                        _messages.value + response.content
+                        (_messages.value + response.content).distinctBy { it.id }
                     } else {
-                        response.content
+                        response.content.distinctBy { it.id }
                     }
                     _messages.value = newMessages
                     currentPage++
                     canLoadMore = response.content.size == pageSize
                     _uiState.value = ChatUiState.Success
 
-                    // Marcar como leído al cargar los mensajes iniciales
-                    if (!loadMore) {
-                        markAsRead()
-                    }
+                    if (!loadMore) { markAsRead() }
                 }
                 .onFailure { error ->
                     Log.e("ChatViewModel", "Error loading messages", error)
-                    _uiState.value = ChatUiState.Error(
-                        error.message ?: "Error loading messages"
-                    )
+                    _uiState.value = ChatUiState.Error(error.message ?: "Error loading messages")
                 }
+        }
+    }
+
+    fun fetchReceiverProfile(receiverId: String) {
+        val userId = receiverId.toLongOrNull() ?: return
+        viewModelScope.launch {
+            profileUseCases.updateProfile(listOf(userId), fetchFromRemote = true).collect()
         }
     }
 
@@ -112,6 +128,13 @@ class ChatViewModel @Inject constructor(
         replyToMessageId: String? = null
     ) {
         viewModelScope.launch {
+            // BUG FIX: Esperar a que el WebSocket esté realmente conectado
+            if (repository.connectionState.first() != ConnectionState.CONNECTED) {
+                connectWebSocket()
+                // Esperar un máximo de 3 segundos a que conecte
+                repository.connectionState.filter { it == ConnectionState.CONNECTED }.take(1).collect()
+            }
+
             val request = MessageRequest(
                 receiverId = receiverId,
                 receiverRole = receiverRole,
@@ -125,30 +148,86 @@ class ChatViewModel @Inject constructor(
     }
 
     fun markAsRead() {
-        currentConversationId?.let { conversationId ->
-            viewModelScope.launch {
-                repository.markAsReadViaWebSocket(conversationId)
-            }
+        val id = currentConversationId.value
+        if (id != null && id != "new") {
+            viewModelScope.launch { repository.markAsReadViaWebSocket(id) }
         }
     }
 
-    fun notifyTyping(isTyping: Boolean) {
-        currentConversationId?.let { conversationId ->
+    private var typingJob: Job? = null
+    private var isCurrentlyTyping = false
+
+    fun setTyping() {
+        val id = currentConversationId.value
+        if (id == null || id == "new") return
+
+        typingJob?.cancel()
+
+        if (!isCurrentlyTyping) {
+            isCurrentlyTyping = true
             viewModelScope.launch {
-                repository.notifyTyping(conversationId, isTyping)
+                repository.notifyTyping(id, true)
             }
+        }
+
+        typingJob = viewModelScope.launch {
+            delay(3000)
+            isCurrentlyTyping = false
+            repository.notifyTyping(id, false)
         }
     }
 
     private fun observeIncomingMessages() {
+        // Observer for new incoming messages
         viewModelScope.launch {
             repository.incomingMessages.collect { message ->
                 message?.let { msg ->
-                    val activeId = currentConversationId
+                    val activeId = currentConversationId.value
+                    val receiverId = targetReceiverId
+
                     if (activeId != null && msg.conversationId == activeId) {
                         addMessageToList(msg)
                         markAsRead()
+                    } 
+                    // BUG FIX: Transición de "new" a ID real
+                    else if (activeId == "new" && receiverId != null) {
+                        if (msg.senderId == receiverId || msg.receiverId == receiverId) {
+                            Log.d("ChatViewModel", "Switching from 'new' to real ID: ${msg.conversationId}")
+                            currentConversationId.value = msg.conversationId
+                            addMessageToList(msg)
+                            markAsRead()
+                        }
                     }
+                }
+            }
+        }
+
+        // Observer for global WebSocket events (like Read receipts)
+        viewModelScope.launch {
+            repository.webSocketEvents.collect { event ->
+                val activeId = currentConversationId.value
+                when (event) {
+                    is WebSocketEvent.MessageRead -> {
+                        if (activeId != null && event.conversationId == activeId) {
+                            // Update all my sent messages to READ
+                            val updatedMessages = _messages.value.map { msg ->
+                                // If I am the sender, mark it as read when the other person reads the conversation
+                                if (msg.senderId != targetReceiverId && msg.status != MessageStatus.READ) {
+                                    msg.copy(status = MessageStatus.READ)
+                                } else {
+                                    msg
+                                }
+                            }
+                            _messages.value = updatedMessages
+                            Log.d("ChatViewModel", "Updated read receipts locally for conversation: $activeId")
+                        }
+                    }
+                    is WebSocketEvent.TypingEvent -> {
+                        if (activeId != null && event.conversationId == activeId) {
+                            _isReceiverTyping.value = event.isTyping
+                        }
+                    }
+                    else -> {}
                 }
             }
         }
@@ -162,9 +241,7 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    fun clearError() {
-        _uiState.value = ChatUiState.Success
-    }
+    fun clearError() { _uiState.value = ChatUiState.Success }
 
     override fun onCleared() {
         super.onCleared()

@@ -1,7 +1,9 @@
 package com.example.nexum_cliente.data.profile.remote
 
+import com.example.nexum_cliente.data.profile.remote.payload.res.ProfileRes
 import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.Query
 
 /**
  * @author Santiago Varela Daza
@@ -11,6 +13,6 @@ import retrofit2.http.GET
  * @version 1.0
  */
 interface ProfileApi {
-    @GET("/api/v1/categories")
-    suspend fun getCategories() : Response<List<CategoryRes>>
+    @GET("/api/v1/users/profiles")
+    suspend fun getProfile(@Query("user-ids") userIds: List<Long>): Response<List<ProfileRes>>
 }

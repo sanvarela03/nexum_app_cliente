@@ -1,6 +1,7 @@
 package com.example.nexum_cliente.di.modules
 
-import com.example.nexum_cliente.BuildConfig
+import com.example.nexum_cliente.common.BASE_URL
+import com.example.nexum_cliente.common.WS_URL
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -60,10 +61,10 @@ object WebSocketNetworkModule {
     @Provides
     @Singleton
     @WebSocketUrl
-    fun provideWebSocketUrl(): String = BuildConfig.WS_URL
+    fun provideWebSocketUrl(): String = WS_URL
 
     @Provides
     @Singleton
     @BaseUrl
-    fun provideBaseUrl(): String = BuildConfig.BASE_URL
+    fun provideBaseUrl(): String = BASE_URL
 }

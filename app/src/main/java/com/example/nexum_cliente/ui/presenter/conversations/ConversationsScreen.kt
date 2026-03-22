@@ -14,37 +14,46 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddComment
 import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
+import com.bumptech.glide.signature.ObjectKey
 import com.example.nexum_cliente.domain.model.Conversation
-import com.example.nexum_cliente.ui.presenter.chat.ChatUiState
+import com.example.nexum_cliente.domain.model.Profile
 import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -60,7 +69,7 @@ import java.util.Locale
  * @email svarela03@uan.edu.co
  * @github https://github.com/sanvarela03
  * @since 2/14/2026
- * @version 1.5
+ * @version 2.4
  */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -70,19 +79,50 @@ fun ConversationsScreen(
     viewModel: ConversationsViewModel = hiltViewModel()
 ) {
     val conversations by viewModel.conversations.collectAsState()
+    val profiles by viewModel.profiles.collectAsState(initial = emptyList())
     val uiState by viewModel.uiState.collectAsState()
     val unreadCount by viewModel.unreadCount.collectAsState()
+    
+    val showNewChatDialog by viewModel.showNewChatDialog.collectAsState()
+    val isSearchingProfiles by viewModel.isSearchingProfiles.collectAsState()
+    
     Nexum_clienteTheme {
         ConversationsScreenContent(
             currentUserId = currentUserId,
             conversations = conversations,
+            profiles = profiles,
             uiState = uiState,
             unreadCount = unreadCount,
             onRefresh = { viewModel.loadConversations(refresh = true) },
             onUpdateUnread = { viewModel.loadUnreadCount() },
             onConversationClick = onConversationClick,
-            onNewChatClick = { /* TODO: Implementar lógica de nuevo chat */ }
+            onNewChatClick = { viewModel.onOpenNewChatDialog() }
         )
+        
+        if (showNewChatDialog) {
+            NewChatDialog(
+                profiles = profiles.filter { it.id.toString() != currentUserId },
+                isLoading = isSearchingProfiles,
+                onDismiss = { viewModel.onCloseNewChatDialog() },
+                onUserSelected = { profile ->
+                    viewModel.onCloseNewChatDialog()
+                    
+                    val existingConversation = conversations.find { conv ->
+                        conv.participantIds.contains(profile.id.toString())
+                    }
+
+                    if (existingConversation != null) {
+                        onConversationClick(
+                            existingConversation.id,
+                            profile.id.toString(),
+                            "TRABAJADOR"
+                        )
+                    } else {
+                        onConversationClick("new", profile.id.toString(), "TRABAJADOR")
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -92,6 +132,7 @@ fun ConversationsScreen(
 private fun ConversationsScreenContent(
     currentUserId: String,
     conversations: List<Conversation>,
+    profiles: List<Profile>,
     uiState: ConversationsUiState,
     unreadCount: Long,
     onRefresh: () -> Unit,
@@ -100,6 +141,11 @@ private fun ConversationsScreenContent(
     onNewChatClick: () -> Unit
 ) {
     val isRefreshing = uiState is ConversationsUiState.Refreshing
+
+    LaunchedEffect(Unit) {
+        onUpdateUnread()
+        onRefresh() // Also refresh conversations to clear the UI count on individual items
+    }
 
     Scaffold(
         topBar = {
@@ -154,7 +200,7 @@ private fun ConversationsScreenContent(
 
                 is ConversationsUiState.Error -> {
                     ErrorMessage(
-                        message = (uiState as ChatUiState.Error).message,
+                        message = uiState.message,
                         onRetry = onRefresh
                     )
                 }
@@ -168,19 +214,26 @@ private fun ConversationsScreenContent(
                             contentPadding = PaddingValues(bottom = 80.dp)
                         ) {
                             items(items = conversations, key = { it.id }) { conversation ->
+                                val otherUserId = conversation.participantIds
+                                    .firstOrNull { it != currentUserId }
+
+                                val otherUserProfile = profiles.find {
+                                    it.id.toString() == otherUserId
+                                }
+
                                 ConversationItem(
                                     conversation = conversation,
+                                    profile = otherUserProfile,
                                     currentUserId = currentUserId,
                                     onClick = {
-                                        val otherUserId = conversation.participantIds
-                                            .first { it != currentUserId }
-                                        val otherUserRole = conversation.participantRoles
-                                            .first()
-                                        onConversationClick(
-                                            conversation.id,
-                                            otherUserId,
-                                            otherUserRole
-                                        )
+                                        if (otherUserId != null) {
+                                            val otherUserRole = conversation.participantRoles.first()
+                                            onConversationClick(
+                                                conversation.id,
+                                                otherUserId,
+                                                otherUserRole
+                                            )
+                                        }
                                     }
                                 )
                             }
@@ -192,13 +245,98 @@ private fun ConversationsScreenContent(
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+private fun NewChatDialog(
+    profiles: List<Profile>,
+    isLoading: Boolean,
+    onDismiss: () -> Unit,
+    onUserSelected: (Profile) -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Nueva Conversación") },
+        text = {
+            Box(modifier = Modifier.height(400.dp).fillMaxWidth()) {
+                if (isLoading) {
+                    CircularProgressIndicator(Modifier.align(Alignment.Center))
+                } else {
+                    LazyColumn {
+                        items(profiles) { profile ->
+                            val fallbackName = "${profile.firstName.trim()} ${profile.lastName.trim()}".replace("\\s+".toRegex(), "+")
+                            val fallbackUrl = "https://ui-avatars.com/api/?name=$fallbackName&background=random&format=png"
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onUserSelected(profile) }
+                                    .padding(vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                val validImgUrl = profile.imgUrl.takeIf {
+                                    it.isNotBlank() && it != "NaN" && it != "null" && it.startsWith("http") && !it.contains("localhost") && !it.contains("127.0.0.1")
+                                }
+
+                                GlideImage(
+                                    model = validImgUrl ?: fallbackUrl,
+                                    contentDescription = "Avatar",
+                                    modifier = Modifier.size(40.dp).clip(CircleShape),
+                                    contentScale = ContentScale.Crop,
+                                    requestBuilderTransform = {
+                                        it.signature(ObjectKey(profile.id))
+                                          .error(it.clone().load(fallbackUrl))
+                                    }
+                                )
+                                Spacer(Modifier.width(12.dp))
+                                Text("${profile.firstName} ${profile.lastName}")
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Cancelar") }
+        }
+    )
+}
+
+@Composable
+private fun EmptyState() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("No hay conversaciones aún")
+    }
+}
+
+@Composable
+private fun ErrorMessage(message: String, onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = message, color = Color.Red)
+        Spacer(Modifier.height(8.dp))
+        Button(onClick = onRetry) { Text("Reintentar") }
+    }
+}
+
 @RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun ConversationItem(
     conversation: Conversation,
+    profile: Profile?,
     currentUserId: String,
     onClick: () -> Unit
 ) {
+    val fallbackUrl = remember(profile) {
+        val name = profile?.let { 
+            "${it.firstName.trim()} ${it.lastName.trim()}".replace("\\s+".toRegex(), "+")
+        } ?: "U"
+        "https://ui-avatars.com/api/?name=$name&background=random&format=png"
+    }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -209,121 +347,103 @@ private fun ConversationItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Conversación ${conversation.id.take(8)}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = if (conversation.unreadCount > 0) FontWeight.Bold else FontWeight.Normal
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                conversation.lastMessageContent?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+            val validImgUrl = profile?.imgUrl?.takeIf {
+                it.isNotBlank() && it != "NaN" && it != "null" && it.startsWith("http") && !it.contains("localhost") && !it.contains("127.0.0.1")
             }
 
-            Column(horizontalAlignment = Alignment.End) {
-                conversation.lastMessageAt?.let {
+            GlideImage(
+                model = validImgUrl ?: fallbackUrl,
+                contentDescription = "Avatar",
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop,
+                requestBuilderTransform = {
+                    // BUG FIX: Firma única por perfil para evitar conflictos de caché si comparten URL
+                    it.signature(ObjectKey(profile?.id ?: conversation.id))
+                      .error(it.clone().load(fallbackUrl))
+                }
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text(
-                        text = formatDateTime(it),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = profile?.let { "${it.firstName} ${it.lastName}" } ?: "Usuario",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = if (conversation.unreadCount > 0) FontWeight.Bold else FontWeight.Normal
                     )
+                    conversation.lastMessageAt?.let {
+                        Text(
+                            text = formatDate(it),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                    }
                 }
 
-                if (conversation.unreadCount > 0) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Surface(
-                        shape = MaterialTheme.shapes.small,
-                        color = MaterialTheme.colorScheme.primary
-                    ) {
-                        Text(
-                            text = conversation.unreadCount.toString(),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = conversation.lastMessageContent ?: "No hay mensajes",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (conversation.unreadCount > 0) Color.Black else Color.Gray,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (conversation.unreadCount > 0) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = CircleShape,
+                            modifier = Modifier.size(20.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = conversation.unreadCount.toString(),
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
     }
-    HorizontalDivider()
-}
-
-@Composable
-private fun EmptyState() {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(
-                Icons.Default.Chat,
-                null,
-                Modifier.size(64.dp),
-                MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(Modifier.height(16.dp))
-            Text(
-                "No hay conversaciones",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-private fun ErrorMessage(message: String, onRetry: () -> Unit) {
-    Column(
-        Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            message,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.error
-        )
-        Spacer(Modifier.height(16.dp))
-        Button(onClick = onRetry) { Text("Reintentar") }
-    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-private fun formatDateTime(timestamp: String): String {
+private fun formatDate(timestamp: String): String {
     return try {
         val instant = Instant.parse(timestamp)
-        val messageDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+        val dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
         val now = LocalDateTime.now()
-        val today = now.toLocalDate()
-        val messageDate = messageDateTime.toLocalDate()
+
+        // Patrón para 12 horas con AM/PM
+        val timeFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.getDefault())
 
         when {
-            messageDate.isEqual(today) -> DateTimeFormatter.ofPattern("h:mm a", Locale.getDefault())
-                .format(messageDateTime)
-
-            messageDate.year == today.year && messageDate.get(
-                WeekFields.of(Locale.getDefault()).weekOfWeekBasedYear()
-            ) == today.get(
-                WeekFields.of(Locale.getDefault()).weekOfWeekBasedYear()
-            ) -> DateTimeFormatter.ofPattern("EEE h:mm a", Locale.getDefault())
-                .format(messageDateTime)
-
-            else -> DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault())
-                .format(messageDateTime)
+            dateTime.toLocalDate() == now.toLocalDate() -> {
+                dateTime.format(timeFormatter)
+            }
+            dateTime.toLocalDate() == now.minusDays(1).toLocalDate() -> {
+                "Ayer"
+            }
+            dateTime.get(WeekFields.of(Locale.getDefault()).weekOfWeekBasedYear()) ==
+                now.get(WeekFields.of(Locale.getDefault()).weekOfWeekBasedYear()) -> {
+                dateTime.format(DateTimeFormatter.ofPattern("EEE", Locale.getDefault()))
+            }
+            else -> {
+                dateTime.format(DateTimeFormatter.ofPattern("dd/MM/yy"))
+            }
         }
     } catch (e: Exception) {
-        timestamp
+        ""
     }
 }

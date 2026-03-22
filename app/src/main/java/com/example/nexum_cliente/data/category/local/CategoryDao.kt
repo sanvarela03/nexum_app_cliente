@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.data.category.local
 
+import android.util.Log
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -26,7 +27,7 @@ interface CategoryDao {
     @Query("SELECT * FROM Categoryentity") fun observeCategories(): Flow<List<CategoryEntity>>
 
     @Query("SELECT * FROM Categoryentity")
-    suspend fun getAllCategories(): List<CategoryEntity?>
+    suspend fun getAllCategories(): List<CategoryEntity>
 
     @Transaction
     @Query("DELETE FROM Categoryentity")
@@ -34,6 +35,7 @@ interface CategoryDao {
 
     @Transaction
     suspend fun replaceCategories(categories: List<CategoryEntity>) {
+        Log.d("CategoryDao", "replaceAll: $categories")
         clearAll()
         saveAll(categories)
     }

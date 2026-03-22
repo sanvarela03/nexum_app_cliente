@@ -1,5 +1,7 @@
 package com.example.nexum_cliente.data.profile.remote.payload.res
 
+import com.google.gson.annotations.SerializedName
+
 
 /**
  * @author Santiago Varela Daza
@@ -9,14 +11,15 @@ package com.example.nexum_cliente.data.profile.remote.payload.res
  * @version 1.0
  */
 data class ProfileRes(
-    val id: String,
+    val id: Long,
     val firstName: String,
     val lastName: String,
     val username: String,
     val email: String,
-    val phone: String,
-    val imgUrl: String,
+    val phone: String?,
+    val imgUrl: String?,
     val dateJoined: String,
     val lastLogin: String,
-    val isEnabled: String,
+    @SerializedName("enabled")
+    val isEnabled: Boolean,
 )

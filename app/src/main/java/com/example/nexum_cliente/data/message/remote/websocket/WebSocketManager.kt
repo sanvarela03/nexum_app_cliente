@@ -40,7 +40,7 @@ import kotlin.math.min
  * @email svarela03@uan.edu.co
  * @github https://github.com/sanvarela03
  * @since 2/14/2026
- * @version 2.0
+ * @version 2.1
  */
 @Singleton
 class WebSocketManager @Inject constructor(
@@ -68,6 +68,8 @@ class WebSocketManager @Inject constructor(
     private var manuallyDisconnected = false
     private var currentServerUrl: String? = null
     private var currentJwtToken: String? = null
+    
+    private var tokenProvider: (suspend () -> String?)? = null
 
     private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
     val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
@@ -77,6 +79,10 @@ class WebSocketManager @Inject constructor(
 
     // Flujo de eventos para notificaciones globales
     val webSocketEvents = MutableSharedFlow<WebSocketEvent>()
+
+    fun setTokenProvider(provider: suspend () -> String?) {
+        this.tokenProvider = provider
+    }
 
     suspend fun connect(serverUrl: String, jwtToken: String) = connectionMutex.withLock {
         reconnectJob?.cancel()
@@ -141,8 +147,9 @@ class WebSocketManager @Inject constructor(
             delay(delayMillis)
 
             currentServerUrl?.let { url ->
-                currentJwtToken?.let { token ->
-                    connect(url, token)
+                val freshToken = tokenProvider?.invoke() ?: currentJwtToken
+                if (freshToken != null) {
+                    connect(url, freshToken)
                 }
             }
         }
@@ -166,15 +173,23 @@ class WebSocketManager @Inject constructor(
             "accept-version" to "1.2",
             "heart-beat" to "10000,10000"
         ))
-        session.send(Frame.Text(connectFrame.toRawString()))
+        sendRaw(connectFrame.toRawString())
     }
 
     suspend fun subscribeToMessages() {
         if (_connectionState.value != ConnectionState.CONNECTED || subscribed) return
-        val subId = subscriptionId.incrementAndGet().toString()
-        safeSend(StompFrame("SUBSCRIBE", mapOf("id" to subId, "destination" to "/user/queue/messages")))
+        
+        val subIdMsg = subscriptionId.incrementAndGet().toString()
+        safeSend(StompFrame("SUBSCRIBE", mapOf("id" to subIdMsg, "destination" to "/user/queue/messages")))
+        
+        val subIdRead = subscriptionId.incrementAndGet().toString()
+        safeSend(StompFrame("SUBSCRIBE", mapOf("id" to subIdRead, "destination" to "/user/queue/read")))
+        
+        val subIdTyping = subscriptionId.incrementAndGet().toString()
+        safeSend(StompFrame("SUBSCRIBE", mapOf("id" to subIdTyping, "destination" to "/user/queue/typing")))
+        
         subscribed = true
-        Log.d(TAG, "📥 Subscribed to messages (ID: $subId)")
+        Log.d(TAG, "📥 Subscribed to messages (ID: $subIdMsg), read (ID: $subIdRead), typing (ID: $subIdTyping)")
     }
 
     suspend fun sendMessage(message: MessageRequest) {
@@ -199,10 +214,14 @@ class WebSocketManager @Inject constructor(
 
     private suspend fun safeSend(frame: StompFrame) {
         if (_connectionState.value != ConnectionState.CONNECTED) return
+        sendRaw(frame.toRawString())
+    }
+    
+    private suspend fun sendRaw(data: String) {
         try {
-            webSocketSession?.send(Frame.Text(frame.toRawString()))
+            webSocketSession?.send(Frame.Text(data))
         } catch (e: Exception) {
-            Log.e(TAG, "Error sending frame: ${e.message}", e)
+            Log.e(TAG, "Error sending raw data: ${e.message}")
         }
     }
 
@@ -217,8 +236,39 @@ class WebSocketManager @Inject constructor(
                 scope.launch { subscribeToMessages() }
             }
             "MESSAGE" -> {
+                Log.d(TAG, "📥 INCOMING MESSAGE FRAME: ${frame.body}")
                 try {
+                    // Check if it's a Read receipt payload or a full Message
+                    if (frame.body.contains("\"conversationId\"") && !frame.body.contains("\"senderId\"")) {
+                        // Check if it's a TypingPayload
+                        if (frame.body.contains("\"isTyping\"")) {
+                            Log.d(TAG, "Detected Typing payload")
+                            val typingPayload = json.decodeFromString<TypingPayload>(frame.body)
+                            scope.launch {
+                                webSocketEvents.emit(WebSocketEvent.TypingEvent(typingPayload.conversationId, typingPayload.isTyping))
+                            }
+                            return
+                        }
+
+                        // Otherwise it's likely a ReadPayload
+                        Log.d(TAG, "Detected Read payload")
+                        val readPayload = json.decodeFromString<ReadPayload>(frame.body)
+                        scope.launch {
+                            webSocketEvents.emit(WebSocketEvent.MessageRead(readPayload.conversationId))
+                        }
+                        return
+                    }
+
                     val message = json.decodeFromString<Message>(frame.body)
+                    
+                    // Sometimes backends send status updates as the message itself.
+                    // If the backend resends the message with status == READ, we should also trigger it.
+                    if (message.status == com.example.nexum_cliente.domain.model.MessageStatus.READ) {
+                        scope.launch {
+                            webSocketEvents.emit(WebSocketEvent.MessageRead(message.conversationId))
+                        }
+                    }
+
                     if (!_messages.tryEmit(message)) {
                         Log.w(TAG, "Message dropped: SharedFlow buffer full")
                     }
@@ -238,8 +288,10 @@ class WebSocketManager @Inject constructor(
         heartbeatJob?.cancel()
         heartbeatJob = scope.launch {
             while (true) {
-                delay(30000)
-                safeSend(StompFrame("\n")) // STOMP heartbeat is just a newline
+                delay(10000)
+                if (_connectionState.value == ConnectionState.CONNECTED) {
+                    sendRaw("\n") // Correct STOMP heartbeat (just LF)
+                }
             }
         }
         Log.d(TAG, "❤️ Heartbeat started")
@@ -274,6 +326,7 @@ class WebSocketManager @Inject constructor(
 sealed class WebSocketEvent {
     data class MessageReceived(val message: Message) : WebSocketEvent()
     data class MessageRead(val conversationId: String) : WebSocketEvent()
+    data class TypingEvent(val conversationId: String, val isTyping: Boolean) : WebSocketEvent()
 }
 
 @Serializable private data class ReadPayload(val conversationId: String)

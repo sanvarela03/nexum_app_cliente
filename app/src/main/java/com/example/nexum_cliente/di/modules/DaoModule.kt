@@ -6,6 +6,7 @@ import com.example.nexum_cliente.data.client.local.db.ClientDb
 import com.example.nexum_cliente.data.client.local.role.RoleDao
 import com.example.nexum_cliente.data.country.local.CountryDao
 import com.example.nexum_cliente.data.market_location.local.MarketLocationDao
+import com.example.nexum_cliente.data.profile.local.ProfileDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -43,5 +44,10 @@ object DaoModule {
     @Provides
     @Singleton
     fun provideCountryDao(clientDb: ClientDb): CountryDao = clientDb.countryDao
+
+    @Provides
+    @Singleton
+    fun provideProfileDao(clientDb: ClientDb): ProfileDao = clientDb.profileDao
+
 
 }
