@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import com.example.nexum_cliente.domain.model.Conversation
-import com.example.nexum_cliente.domain.repository.MessagingRepository
+import com.example.nexum_cliente.domain.use_cases.conversation.ConversationUseCases
 import com.example.nexum_cliente.domain.use_cases.profile.ProfileUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -21,7 +21,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class ConversationsViewModel @Inject constructor(
-    private val repository: MessagingRepository,
+    private val conversationUseCases: ConversationUseCases,
     private val profileUseCases: ProfileUseCases
 ) : ViewModel() {
 
@@ -67,7 +67,7 @@ class ConversationsViewModel @Inject constructor(
                 ConversationsUiState.Loading
             }
 
-            repository.getConversations(currentPage, pageSize)
+            conversationUseCases.getConversations(currentPage, pageSize)
                 .onSuccess { response ->
                     _conversations.update { current ->
                         val newContent = response.content
@@ -135,7 +135,7 @@ class ConversationsViewModel @Inject constructor(
 
     fun loadUnreadCount() {
         viewModelScope.launch {
-            repository.getUnreadCount()
+            conversationUseCases.getUnreadCount()
                 .onSuccess { count ->
                     _unreadCount.value = count
                 }
@@ -144,7 +144,7 @@ class ConversationsViewModel @Inject constructor(
 
     private fun observeIncomingMessages() {
         viewModelScope.launch {
-            repository.incomingMessages.collect { newMessage ->
+            conversationUseCases.observeIncomingMessages().collect { newMessage ->
                 newMessage?.let {
                     // Actualizar la conversación correspondiente
                     updateConversationWithNewMessage(it.conversationId)
