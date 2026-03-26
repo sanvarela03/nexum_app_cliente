@@ -5,15 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nexum_cliente.data.message.remote.payload.req.MessageRequest
 import com.example.nexum_cliente.data.message.remote.websocket.WebSocketEvent
-import com.example.nexum_cliente.di.modules.WebSocketUrl
 import com.example.nexum_cliente.domain.model.ConnectionState
 import com.example.nexum_cliente.domain.model.Message
 import com.example.nexum_cliente.domain.model.MessageStatus
 import com.example.nexum_cliente.domain.model.MessageType
-import com.example.nexum_cliente.domain.repository.MessagingRepository
 import com.example.nexum_cliente.domain.use_cases.chat.ChatUseCases
 import com.example.nexum_cliente.domain.use_cases.profile.ProfileUseCases
-import com.example.nexum_cliente.security.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -65,7 +62,7 @@ class ChatViewModel @Inject constructor(
 
     fun disconnectWebSocket() {
         viewModelScope.launch {
-            chatUseCases.disconnectWebSocketUseCase()
+            chatUseCases.disconnectWebSocket()
         }
     }
 
@@ -76,7 +73,7 @@ class ChatViewModel @Inject constructor(
             currentPage = 0
             canLoadMore = true
             _messages.value = emptyList()
-            
+
             if (conversationId == "new") {
                 _uiState.value = ChatUiState.Success
                 return
@@ -90,18 +87,20 @@ class ChatViewModel @Inject constructor(
 
             chatUseCases.loadConversationMessages(conversationId, currentPage, pageSize)
                 .onSuccess { response ->
-                val newMessages = if (loadMore) {
-                    (_messages.value + response.content).distinctBy { it.id }
-                } else {
-                    response.content.distinctBy { it.id }
-                }
-                _messages.value = newMessages
-                currentPage++
-                canLoadMore = response.content.size == pageSize
-                _uiState.value = ChatUiState.Success
+                    val newMessages = if (loadMore) {
+                        (_messages.value + response.content).distinctBy { it.id }
+                    } else {
+                        response.content.distinctBy { it.id }
+                    }
+                    _messages.value = newMessages
+                    currentPage++
+                    canLoadMore = response.content.size == pageSize
+                    _uiState.value = ChatUiState.Success
 
-                if (!loadMore) { markAsRead() }
-            }
+                    if (!loadMore) {
+                        markAsRead()
+                    }
+                }
                 .onFailure { error ->
                     Log.e("ChatViewModel", "Error loading messages", error)
                     _uiState.value = ChatUiState.Error(error.message ?: "Error loading messages")
@@ -187,7 +186,7 @@ class ChatViewModel @Inject constructor(
                     if (activeId != null && msg.conversationId == activeId) {
                         addMessageToList(msg)
                         markAsRead()
-                    } 
+                    }
                     // BUG FIX: Transición de "new" a ID real
                     else if (activeId == "new" && receiverId != null) {
                         if (msg.senderId == receiverId || msg.receiverId == receiverId) {

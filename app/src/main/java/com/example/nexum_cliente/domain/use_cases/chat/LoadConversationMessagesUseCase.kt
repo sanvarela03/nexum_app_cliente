@@ -9,6 +9,6 @@ class LoadConversationMessagesUseCase @Inject constructor (
     private val msgRepository: MessagingRepository
 ) {
     suspend operator fun invoke(conversationId: String, currentPage: Int, pageSize: Int): Result<PageResponse<Message>> {
-        return msgRepository.getConversationMessages(conversationId, currentPage, pageSize);
+        return msgRepository.getConversationMessages(conversationId, currentPage, pageSize)
     }
 }

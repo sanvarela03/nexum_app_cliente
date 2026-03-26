@@ -6,7 +6,7 @@ import javax.inject.Singleton
 @Singleton
 class ChatUseCases @Inject constructor(
     val connectWebSocket: ConnectWebSocketUseCase,
-    val disconnectWebSocketUseCase: DisconnectWebSocketUseCase,
+    val disconnectWebSocket: DisconnectWebSocketUseCase,
     val loadConversationMessages : LoadConversationMessagesUseCase,
     val getConnectionState : GetConnectionStateUseCase,
     val sendMessage: SendMessageUseCase,
