@@ -5,14 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nexum_cliente.data.message.remote.payload.req.MessageRequest
 import com.example.nexum_cliente.data.message.remote.websocket.WebSocketEvent
-import com.example.nexum_cliente.di.modules.WebSocketUrl
 import com.example.nexum_cliente.domain.model.ConnectionState
 import com.example.nexum_cliente.domain.model.Message
 import com.example.nexum_cliente.domain.model.MessageStatus
 import com.example.nexum_cliente.domain.model.MessageType
-import com.example.nexum_cliente.domain.repository.MessagingRepository
+import com.example.nexum_cliente.domain.use_cases.chat.ChatUseCases
 import com.example.nexum_cliente.domain.use_cases.profile.ProfileUseCases
-import com.example.nexum_cliente.security.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -29,10 +27,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class ChatViewModel @Inject constructor(
-    private val repository: MessagingRepository,
-    private val tokenManager: TokenManager,
     private val profileUseCases: ProfileUseCases,
-    @WebSocketUrl private val wsUrl: String
+    private val chatUseCases: ChatUseCases,
 ) : ViewModel() {
 
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
@@ -41,7 +37,7 @@ class ChatViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<ChatUiState>(ChatUiState.Loading)
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
-    val connectionState: SharedFlow<ConnectionState> = repository.connectionState
+    val connectionState: SharedFlow<ConnectionState> = chatUseCases.getConnectionState()
 
     val profiles = profileUseCases.observeProfile()
 
@@ -60,15 +56,13 @@ class ChatViewModel @Inject constructor(
 
     fun connectWebSocket() {
         viewModelScope.launch {
-            tokenManager.getAccessToken().firstOrNull()?.let { token ->
-                repository.connectWebSocket(wsUrl, token)
-            }
+            chatUseCases.connectWebSocket()
         }
     }
 
     fun disconnectWebSocket() {
         viewModelScope.launch {
-            repository.disconnectWebSocket()
+            chatUseCases.disconnectWebSocket()
         }
     }
 
@@ -79,7 +73,7 @@ class ChatViewModel @Inject constructor(
             currentPage = 0
             canLoadMore = true
             _messages.value = emptyList()
-            
+
             if (conversationId == "new") {
                 _uiState.value = ChatUiState.Success
                 return
@@ -91,7 +85,7 @@ class ChatViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = if (loadMore) ChatUiState.LoadingMore else ChatUiState.Loading
 
-            repository.getConversationMessages(conversationId, currentPage, pageSize)
+            chatUseCases.loadConversationMessages(conversationId, currentPage, pageSize)
                 .onSuccess { response ->
                     val newMessages = if (loadMore) {
                         (_messages.value + response.content).distinctBy { it.id }
@@ -103,7 +97,9 @@ class ChatViewModel @Inject constructor(
                     canLoadMore = response.content.size == pageSize
                     _uiState.value = ChatUiState.Success
 
-                    if (!loadMore) { markAsRead() }
+                    if (!loadMore) {
+                        markAsRead()
+                    }
                 }
                 .onFailure { error ->
                     Log.e("ChatViewModel", "Error loading messages", error)
@@ -129,10 +125,11 @@ class ChatViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             // BUG FIX: Esperar a que el WebSocket esté realmente conectado
-            if (repository.connectionState.first() != ConnectionState.CONNECTED) {
+
+            if (chatUseCases.getConnectionState().first() != ConnectionState.CONNECTED) {
                 connectWebSocket()
                 // Esperar un máximo de 3 segundos a que conecte
-                repository.connectionState.filter { it == ConnectionState.CONNECTED }.take(1).collect()
+                chatUseCases.getConnectionState().filter { it == ConnectionState.CONNECTED }.take(1).collect()
             }
 
             val request = MessageRequest(
@@ -143,14 +140,15 @@ class ChatViewModel @Inject constructor(
                 metadata = metadata,
                 replyToMessageId = replyToMessageId
             )
-            repository.sendMessageViaWebSocket(request)
+
+            chatUseCases.sendMessage(request)
         }
     }
 
     fun markAsRead() {
         val id = currentConversationId.value
         if (id != null && id != "new") {
-            viewModelScope.launch { repository.markAsReadViaWebSocket(id) }
+            viewModelScope.launch { chatUseCases.markMessageAsRead(id) }
         }
     }
 
@@ -166,21 +164,21 @@ class ChatViewModel @Inject constructor(
         if (!isCurrentlyTyping) {
             isCurrentlyTyping = true
             viewModelScope.launch {
-                repository.notifyTyping(id, true)
+                chatUseCases.notifyTyping(id, true)
             }
         }
 
         typingJob = viewModelScope.launch {
             delay(3000)
             isCurrentlyTyping = false
-            repository.notifyTyping(id, false)
+            chatUseCases.notifyTyping(id, false)
         }
     }
 
     private fun observeIncomingMessages() {
         // Observer for new incoming messages
         viewModelScope.launch {
-            repository.incomingMessages.collect { message ->
+            chatUseCases.getIncomingMessages().collect { message ->
                 message?.let { msg ->
                     val activeId = currentConversationId.value
                     val receiverId = targetReceiverId
@@ -188,7 +186,7 @@ class ChatViewModel @Inject constructor(
                     if (activeId != null && msg.conversationId == activeId) {
                         addMessageToList(msg)
                         markAsRead()
-                    } 
+                    }
                     // BUG FIX: Transición de "new" a ID real
                     else if (activeId == "new" && receiverId != null) {
                         if (msg.senderId == receiverId || msg.receiverId == receiverId) {
@@ -204,7 +202,7 @@ class ChatViewModel @Inject constructor(
 
         // Observer for global WebSocket events (like Read receipts)
         viewModelScope.launch {
-            repository.webSocketEvents.collect { event ->
+            chatUseCases.getWebSocketEvents().collect { event ->
                 val activeId = currentConversationId.value
                 when (event) {
                     is WebSocketEvent.MessageRead -> {

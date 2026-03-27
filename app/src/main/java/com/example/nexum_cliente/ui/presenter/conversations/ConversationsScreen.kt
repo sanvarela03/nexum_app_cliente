@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
@@ -445,5 +446,73 @@ private fun formatDate(timestamp: String): String {
         }
     } catch (e: Exception) {
         ""
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(showBackground = true)
+@Composable
+fun ConversationsScreenPreview() {
+    val currentUserId = "1"
+    val mockProfiles = listOf(
+        Profile(
+            id = 2L,
+            firstName = "Juan",
+            lastName = "Pérez",
+            username = "juanp",
+            email = "juan@example.com",
+            phone = "123456789",
+            imgUrl = "",
+            dateJoined = "2024-01-01T10:00:00Z",
+            lastLogin = "2024-01-01T10:00:00Z",
+            isEnabled = true
+        ),
+        Profile(
+            id = 3L,
+            firstName = "María",
+            lastName = "García",
+            username = "mariag",
+            email = "maria@example.com",
+            phone = "987654321",
+            imgUrl = "",
+            dateJoined = "2024-01-01T10:00:00Z",
+            lastLogin = "2024-01-01T10:00:00Z",
+            isEnabled = true
+        )
+    )
+
+    val mockConversations = listOf(
+        Conversation(
+            id = "conv1",
+            participantIds = setOf("1", "2"),
+            participantRoles = setOf("CLIENTE", "TRABAJADOR"),
+            lastMessageContent = "Hola, ¿cuándo podrías pasar a revisar el trabajo?",
+            lastMessageAt = Instant.now().toString(),
+            createdAt = Instant.now().toString(),
+            unreadCount = 2
+        ),
+        Conversation(
+            id = "conv2",
+            participantIds = setOf("1", "3"),
+            participantRoles = setOf("CLIENTE", "TRABAJADOR"),
+            lastMessageContent = "Presupuesto enviado. Quedo atento.",
+            lastMessageAt = Instant.now().minusSeconds(3600).toString(),
+            createdAt = Instant.now().toString(),
+            unreadCount = 0
+        )
+    )
+
+    Nexum_clienteTheme {
+        ConversationsScreenContent(
+            currentUserId = currentUserId,
+            conversations = mockConversations,
+            profiles = mockProfiles,
+            uiState = ConversationsUiState.Success,
+            unreadCount = 2,
+            onRefresh = {},
+            onUpdateUnread = {},
+            onConversationClick = { _, _, _ -> },
+            onNewChatClick = {}
+        )
     }
 }
