@@ -1,6 +1,7 @@
 package com.example.nexum_cliente.ui.presenter.job_offer
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +29,7 @@ class JobOfferViewModel @Inject constructor(
 
     var showMapDialog by mutableStateOf(false)
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun onEvent(event: JobOfferEvent) {
         when (event) {
             is JobOfferEvent.AddressChanged -> state = state.copy(address = event.address)
@@ -73,24 +75,30 @@ class JobOfferViewModel @Inject constructor(
                     "Mañana" -> {
                         val calendar = Calendar.getInstance()
                         calendar.set(Calendar.HOUR_OF_DAY, 10)
-
+                        calendar.set(Calendar.MINUTE, 0)
+                        val timeFormatter = SimpleDateFormat("hh:mm a", Locale.ENGLISH)
+                        state = state.copy(requestedTime = timeFormatter.format(calendar.time))
                     }
 
                     "Tarde" -> {
                         val calendar = Calendar.getInstance()
                         calendar.set(Calendar.HOUR_OF_DAY, 18)
+                        calendar.set(Calendar.MINUTE, 0)
+                        val timeFormatter = SimpleDateFormat("hh:mm a", Locale.ENGLISH)
+                        state = state.copy(requestedTime = timeFormatter.format(calendar.time))
                     }
 
                     "Noche" -> {
                         val calendar = Calendar.getInstance()
-                        calendar.set(Calendar.HOUR_OF_DAY, 22)
+                        calendar.set(Calendar.HOUR_OF_DAY, 22) // 10 PM
+                        calendar.set(Calendar.MINUTE, 0)
+                        val timeFormatter = SimpleDateFormat("hh:mm a", Locale.ENGLISH)
+                        state = state.copy(requestedTime = timeFormatter.format(calendar.time))
                     }
-
-                }
-                state =
-                    state.copy(requestedTime = if (event.option != "Elegir") event.option else state.requestedTime)
-                if (event.option == "Elegir") {
-                    state = state.copy(showTimePickerDialog = true)
+                    
+                    "Elegir" -> {
+                        state = state.copy(showTimePickerDialog = true)
+                    }
                 }
             }
 
@@ -105,7 +113,7 @@ class JobOfferViewModel @Inject constructor(
                     set(Calendar.HOUR_OF_DAY, event.hour)
                     set(Calendar.MINUTE, event.minute)
                 }
-                val timeFormatter = SimpleDateFormat("hh:mm a", Locale.getDefault())
+                val timeFormatter = SimpleDateFormat("hh:mm a", Locale.ENGLISH)
                 state = state.copy(requestedTime = timeFormatter.format(calendar.time))
             }
 
@@ -125,18 +133,18 @@ class JobOfferViewModel @Inject constructor(
         }
     }
 
-    private fun updateHour(){
-
-    }
     private fun updateDate(dateMillis: Long) {
-        val dateFormatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         state = state.copy(requestedDate = dateFormatter.format(Date(dateMillis)))
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun submitJobOffer() {
         viewModelScope.launch {
+            Log.d("JobOfferViewModel", "Requested date: ${state.requestedDate}")
+            Log.d("JobOfferViewModel", "Requested time: ${state.requestedTime}")
             val jobOffer = JobOfferMapper.stateToDomain(state)
+            Log.d("JobOfferViewModel", "Submitting job offer: $jobOffer")
             jobOfferUseCases.createJobOffer(jobOffer).collect { response ->
                 when (response) {
                     is ApiResponse.Success -> {

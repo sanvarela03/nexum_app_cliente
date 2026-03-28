@@ -1,5 +1,7 @@
 package com.example.nexum_cliente.ui.presenter.job_offer
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -20,21 +22,25 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerColors
 import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,7 +62,20 @@ import com.example.nexum_cliente.ui.components.Stepper
 import com.example.nexum_cliente.ui.components.TimePickerDialog
 import com.example.nexum_cliente.ui.presenter.map.MapScreen
 import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
+/**
+ * @author Santiago Varela Daza
+ * @email svarela03@uan.edu.co
+ * @github https://github.com/sanvarela03
+ * @since 2/14/2026
+ * @version 4.8
+ */
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JobOfferScreen(
@@ -71,59 +90,29 @@ fun JobOfferScreen(
     MapDialog(viewModel)
 
     if (state.showDatePickerDialog) {
-        val datePickerState = rememberDatePickerState()
-        DatePickerDialog(
-            colors = DatePickerDefaults.colors(
-                containerColor = Color.White,
-                titleContentColor = Color.Black
-            ),
-            onDismissRequest = { viewModel.onEvent(JobOfferEvent.ShowDatePicker(false)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let {
-                        viewModel.onEvent(JobOfferEvent.DateSelected(it))
-                    }
+        Nexum_clienteTheme() {
+            DatePickerDialogContent(
+                onDismissRequest = { viewModel.onEvent(JobOfferEvent.ShowDatePicker(false)) },
+                onConfirm = {
+                    viewModel.onEvent(JobOfferEvent.DateSelected(it))
                     viewModel.onEvent(JobOfferEvent.ShowDatePicker(false))
-                }) {
-                    Text("Aceptar")
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.onEvent(JobOfferEvent.ShowDatePicker(false)) }) {
-                    Text("Cancelar")
-                }
-            }
-        ) {
-            DatePicker(state = datePickerState)
+            )
         }
     }
 
     if (state.showTimePickerDialog) {
-        val timePickerState = rememberTimePickerState()
-        TimePickerDialog(
-            onDismissRequest = { viewModel.onEvent(JobOfferEvent.ShowTimePicker(false)) },
-            onConfirm = {
-                viewModel.onEvent(
-                    JobOfferEvent.TimeSelected(
-                        timePickerState.hour,
-                        timePickerState.minute
-                    )
-                )
-                viewModel.onEvent(JobOfferEvent.ShowTimePicker(false))
-            }
-        ) {
-            TimePicker(
-                state = timePickerState,
-                colors = TimePickerDefaults.colors(
-                    clockDialColor = Color.White,
-                    clockDialSelectedContentColor = Color.Black,
-                    clockDialUnselectedContentColor = Color.Black,
-                    selectorColor = Color.Gray,
-                    containerColor = Color.White,
-                    periodSelectorBorderColor = Color.Black,
-                )
+        Nexum_clienteTheme() {
+            TimePickerDialogContent(
+                selectedDate = state.requestedDate,
+                onDismissRequest = { viewModel.onEvent(JobOfferEvent.ShowTimePicker(false)) },
+                onConfirm = { hour, minute ->
+                    viewModel.onEvent(JobOfferEvent.TimeSelected(hour, minute))
+                    viewModel.onEvent(JobOfferEvent.ShowTimePicker(false))
+                }
             )
         }
+
     }
 
     JobOfferScreenContent(
@@ -134,9 +123,169 @@ fun JobOfferScreen(
         onDismissSuccess = { viewModel.onEvent(JobOfferEvent.DismissSuccessDialog) },
         onNavigateSuccess = {
             viewModel.onEvent(JobOfferEvent.DismissSuccessDialog)
-
-        }
+        },
+        isValid = state.isValid
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DatePickerDialogContent(
+    colors: DatePickerColors = DatePickerDefaults.colors(
+        containerColor = Color.White,
+        titleContentColor = Color.Black,
+        headlineContentColor = Color.Black,
+        selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+    ),
+    onDismissRequest: () -> Unit,
+    onConfirm: (Long) -> Unit,
+) {
+    val selectableDates = remember {
+        object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                // Inicio del día de hoy en UTC
+                val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+                val today = calendar.timeInMillis
+                
+                // Límite: actual + 2 años (hasta el final de ese año)
+                val maxCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+                    add(Calendar.YEAR, 2)
+                    set(Calendar.MONTH, Calendar.DECEMBER)
+                    set(Calendar.DAY_OF_MONTH, 31)
+                    set(Calendar.HOUR_OF_DAY, 23)
+                    set(Calendar.MINUTE, 59)
+                }
+                val maxDate = maxCalendar.timeInMillis
+                
+                return utcTimeMillis >= today && utcTimeMillis <= maxDate
+            }
+
+            override fun isSelectableYear(year: Int): Boolean {
+                val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+                return year >= currentYear && year <= currentYear + 2
+            }
+        }
+    }
+
+    val datePickerState = rememberDatePickerState(
+        selectableDates = selectableDates
+    )
+
+    DatePickerDialog(
+        colors = DatePickerDefaults.colors(
+            containerColor = Color.White,
+            titleContentColor = Color.Black
+        ),
+        onDismissRequest = {
+            onDismissRequest()
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                datePickerState.selectedDateMillis?.let {
+                    onConfirm(it)
+                }
+            }) {
+                Text("Aceptar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { onDismissRequest() }) {
+                Text("Cancelar")
+            }
+        }
+    ) {
+        DatePicker(
+            state = datePickerState,
+            colors = colors
+        )
+    }
+
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun DatePickerDialogContentPreview() {
+    Nexum_clienteTheme() {
+        DatePickerDialogContent(
+            onDismissRequest = {},
+            onConfirm = {}
+        )
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+fun TimePickerDialogContent(
+    selectedDate: String,
+    colors: TimePickerColors = TimePickerDefaults.colors(
+        clockDialColor = MaterialTheme.colorScheme.surface,
+        clockDialUnselectedContentColor = Color.Black,
+        containerColor = Color.White,
+        periodSelectorSelectedContainerColor = MaterialTheme.colorScheme.surface,
+        periodSelectorUnselectedContainerColor = Color.White,
+        timeSelectorSelectedContainerColor = Color.LightGray,
+        timeSelectorUnselectedContainerColor = Color.White,
+    ),
+    onDismissRequest: () -> Unit = {},
+    onConfirm: (Int, Int) -> Unit = { hour: Int, minute: Int -> Unit }
+) {
+    val timePickerState = rememberTimePickerState()
+    
+    val isTimeValid = remember(timePickerState.hour, timePickerState.minute, selectedDate) {
+        val h = timePickerState.hour
+        val m = timePickerState.minute
+        
+        // Rango laboral extendido: 7 AM a 10 PM (22:00)
+        val inRange = h >= 7 && (h < 22 || (h == 22 && m == 0))
+        if (!inRange) return@remember false
+        
+        // Si la fecha elegida es hoy, la hora debe ser futura
+        try {
+            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val todayStr = sdf.format(Date())
+            
+            if (selectedDate == todayStr) {
+                val now = Calendar.getInstance()
+                val currentH = now.get(Calendar.HOUR_OF_DAY)
+                val currentM = now.get(Calendar.MINUTE)
+                
+                if (h < currentH || (h == currentH && m <= currentM)) return@remember false
+            }
+        } catch (e: Exception) {}
+        
+        true
+    }
+
+    TimePickerDialog(
+        onDismissRequest = {
+            onDismissRequest()
+        },
+        onConfirm = {
+            if (isTimeValid) {
+                onConfirm(timePickerState.hour, timePickerState.minute)
+            }
+        }
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            TimePicker(
+                state = timePickerState,
+                colors = colors
+            )
+            if (!isTimeValid) {
+                Text(
+                    text = "Horario laboral: 7am - 10pm (y futuro)",
+                    color = Color.Red,
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -147,7 +296,8 @@ fun JobOfferScreenContent(
     onShowMapDialog: () -> Unit,
     onSubmit: () -> Unit,
     onDismissSuccess: () -> Unit = {},
-    onNavigateSuccess: () -> Unit = {}
+    onNavigateSuccess: () -> Unit = {},
+    isValid: Boolean = false
 ) {
     Nexum_clienteTheme() {
         Column(
@@ -264,6 +414,7 @@ fun JobOfferScreenContent(
             }
             ButtonComponent(
                 value = "Publicar",
+                isEnabled = isValid,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     disabledContainerColor = MaterialTheme.colorScheme.surface,
@@ -287,6 +438,7 @@ fun JobOfferScreenContent(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun MapDialog(viewModel: JobOfferViewModel) {
     MyDialog2(
@@ -322,7 +474,17 @@ private fun MapDialog(viewModel: JobOfferViewModel) {
     )
 }
 
-@Preview(showBackground = true)
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun TimePickerDialogPreview() {
+    Nexum_clienteTheme() {
+        TimePickerDialogContent(selectedDate = "01/01/2026")
+    }
+}
+
+
+//@Preview(showBackground = true)
 @Composable
 fun JobOfferScreenPreview() {
     Nexum_clienteTheme {

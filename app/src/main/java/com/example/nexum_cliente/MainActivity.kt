@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
             CustomerApp(
                 userAuthState = userAuthState,
                 startDestination = destination,
-            )
+             )
         }
 //        appDatabaseProvider.get()
     }

@@ -20,9 +20,12 @@ object DateUtils {
             val dateInputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault())
             val localDate = LocalDate.parse(date, dateInputFormatter)
 
-            // Define the formatter for the input time format "hh:mm a" (e.g., "03:00 PM")
+            // Normalizar AM/PM: eliminar puntos y convertir a mayúsculas (ej: "a.m." -> "AM")
+            val normalizedTime = time.replace(".", "").uppercase(Locale.ENGLISH).trim()
+
+            // Define the formatter for the input time format "hh:mm a" (e.g., "12:00 AM")
             val timeInputFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH)
-            val localTime = LocalTime.parse(time, timeInputFormatter)
+            val localTime = LocalTime.parse(normalizedTime, timeInputFormatter)
 
             val localDateTime = LocalDateTime.of(localDate, localTime)
 
@@ -31,7 +34,6 @@ object DateUtils {
 
             zonedDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         } catch (e: Exception) {
-            // Si el formato falla, devuelve una cadena vacía o maneja el error como prefieras.
             Log.e("DateUtils", "Error al formatear la fecha y hora: $e")
             ""
         }
