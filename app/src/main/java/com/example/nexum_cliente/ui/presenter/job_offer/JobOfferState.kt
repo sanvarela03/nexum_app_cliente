@@ -22,4 +22,8 @@ data class JobOfferState(
     val isJobOfferSubmitted: Boolean = false,
     val errorMessage: String = "",
     val successMessage: String = ""
-)
+) {
+    val isValid: Boolean
+        get() = title.isNotBlank() && description.isNotBlank() && images.isNotEmpty() &&
+                requestedDate.isNotBlank() && requestedTime.isNotBlank() && latitude != 0.0 && longitude != 0.0
+}

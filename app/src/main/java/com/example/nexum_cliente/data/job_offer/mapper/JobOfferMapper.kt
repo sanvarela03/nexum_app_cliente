@@ -1,6 +1,7 @@
 package com.example.nexum_cliente.data.job_offer.mapper
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.nexum_cliente.data.job_offer.local.JobOfferEntity
 import com.example.nexum_cliente.data.job_offer.remote.payload.req.AddJobOfferReq
@@ -56,11 +57,15 @@ object JobOfferMapper :
     // De Estado de UI (JobOfferState) a Modelo de Dominio (JobOffer)
     @RequiresApi(Build.VERSION_CODES.O)
     override fun stateToDomain(state: JobOfferState): JobOffer {
+        Log.d("JobOfferMapper", "Requested date: ${state.requestedDate}")
+        Log.d("JobOfferMapper", "Requested time: ${state.requestedTime}")
+        val requestedDate = DateUtils.formatToISO8601(state.requestedDate, state.requestedTime)
+        Log.d("JobOfferMapper", "Requested date: $requestedDate")
         return JobOffer(
             title = state.title,
             description = state.description,
             categoryId = state.categoryId,
-            requestedDate = DateUtils.formatToISO8601(state.requestedDate, state.requestedTime),
+            requestedDate = requestedDate,
             photos = state.images.map { it.toString() }, // Convirtiendo Uris a Strings. El UseCase se encargará de subirlas.
             location = listOf(state.longitude, state.latitude) // Cuidado, con este orden
         )
