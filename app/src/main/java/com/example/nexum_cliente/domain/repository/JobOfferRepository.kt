@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
  * @version 1.0
  */
 interface JobOfferRepository {
+    fun observeJobOffers(): Flow<List<JobOffer>>
     fun createJobOffer(jobOffer: JobOffer): Flow<ApiResponse<NewJobOfferRes>>
     fun getJobOffers(): Flow<List<JobOffer>>
 }

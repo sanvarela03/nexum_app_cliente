@@ -22,6 +22,13 @@ class JobOfferRepositoryImpl @Inject constructor(
     private val remoteDataSource: JobOfferRemoteDataSource,
     private val localDataSource: JobOfferLocalDataSource
 ) : JobOfferRepository {
+    override fun observeJobOffers(): Flow<List<JobOffer>> {
+        return flow {
+
+        }
+    }
+
+
     override fun createJobOffer(jobOffer: JobOffer): Flow<ApiResponse<NewJobOfferRes>> =
         remoteDataSource.createJobOffer(JobOfferMapper.toRequest(jobOffer))
 

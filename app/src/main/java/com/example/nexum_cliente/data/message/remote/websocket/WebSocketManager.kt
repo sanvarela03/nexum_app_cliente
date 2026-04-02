@@ -109,7 +109,9 @@ class WebSocketManager @Inject constructor(
                         when (frame) {
                             is Frame.Text -> handleIncomingFrame(frame.readText())
                             is Frame.Close -> Log.d(TAG, "🔌 Connection closed by server")
-                            else -> {}
+                            else -> {
+                                Log.d(TAG, "IDK BRO 🫠")
+                            }
                         }
                     }
                 }

@@ -42,6 +42,10 @@ class SignUpViewModel @Inject constructor(
     private val signUpMapper: SignUpMapper
 ) : ViewModel() {
 
+    companion object {
+        private const val TAG = "SignUpViewModel"
+    }
+
     var state by mutableStateOf(SignUpState())
         private set
 
@@ -285,34 +289,28 @@ class SignUpViewModel @Inject constructor(
                 mediaManagementUseCase.deleteImage(currentUrl, storageKey)
                     .onSuccess { onDelete() }
                     .onFailure { exception ->
-                        Log.e("SignUpViewModel", "Error deleting image", exception)
-                        Log.i(
-                            "SignUpViewModel",
-                            "isStorageException: ${exception is StorageException}"
-                        )
+                        Log.e(TAG, "Error deleting image", exception)
+                        Log.i(TAG, "isStorageException: ${exception is StorageException}")
                         if (exception is StorageException) {
-                            Log.i("SignUpViewModel", "errorCode: ${exception.errorCode}")
+                            Log.i(TAG, "errorCode: ${exception.errorCode}")
                         }
 
-                        Log.i(
-                            "SignUpViewModel",
-                            "isNotFound: ${exception is StorageException && exception.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND}"
-                        )
+                        Log.i(TAG, "isNotFound: ${exception is StorageException && exception.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND}")
                         if (exception is StorageException && exception.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND) {
                             Log.w(
-                                "SignUpViewModel",
-                                "Image to delete was not found in Firebase. Deleting locally",
+                                TAG,
+                                "Image to delete was not found in Firebase 🤔. Deleting locally ♻️",
                                 exception
                             )
                             onDelete()
                         } else {
-                            Log.e("SignUpViewModel", "Error deleting image", exception)
+                            Log.e(TAG, "❌ Error deleting image", exception)
                         }
                     }
             } else {
                 mediaManagementUseCase.uploadAndSaveImage(newUri, currentUrl, storageKey)
                     .onSuccess(onSuccess)
-                    .onFailure { Log.e("SignUpViewModel", "Error uploading image", it) }
+                    .onFailure { Log.e(TAG, "Error uploading image ⏫", it) }
             }
         }
     }
@@ -359,15 +357,15 @@ class SignUpViewModel @Inject constructor(
             else -> "Ocurrió un error: ${exception.message}"
         }
         state = state.copy(isLoadingCountries = false, countriesError = errorMessage)
-        Log.e("SignUpViewModel", "Network Error", exception)
+        Log.e(TAG, "Network Error", exception)
     }
 
     private fun refreshMarketLocations(fetchFromRemote: Boolean = false) {
         viewModelScope.launch {
             marketLocationUseCases.updateMarketLocations(fetchFromRemote).catch {
-                Log.d("SignUpViewModel", "updateMarketLocations Error: $it");
+                Log.d(TAG, "updateMarketLocations Error: $it");
             }.collect {
-                Log.d("SignUpViewModel", "updateMarketLocations: $it");
+                Log.d(TAG, "updateMarketLocations: $it");
             }
         }
     }
@@ -376,7 +374,7 @@ class SignUpViewModel @Inject constructor(
         viewModelScope.launch {
             marketLocationUseCases.observeMarketLocations()
                 .distinctUntilChanged()
-                .catch { Log.e("SignUpViewModel", "observeMarketLocations Error: $it"); }
+                .catch { Log.e(TAG, "observeMarketLocations Error: $it"); }
                 .collect { state = state.copy(marketLocations = it) }
         }
     }
@@ -406,7 +404,8 @@ class SignUpViewModel @Inject constructor(
 
             val signUpReq = signUpMapper.mapStateToRequest(state, tkn, username)
 
-            Log.d("SignUpRequest", signUpReq.toString())
+            Log.d(TAG, "SignUpRequest: ${signUpReq}")
+
             authUseCases.signUp(signUpReq).collect { response ->
                 when (response) {
                     is ApiResponse.Success -> {
@@ -432,6 +431,6 @@ class SignUpViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         signUpJob?.cancel()
-        Log.d("SignUpViewModel", "onCleared")
+        Log.d(TAG, "onCleared")
     }
 }

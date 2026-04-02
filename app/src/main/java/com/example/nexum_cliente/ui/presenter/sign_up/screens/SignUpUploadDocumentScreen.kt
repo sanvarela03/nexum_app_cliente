@@ -90,7 +90,7 @@ private fun SignUpUploadDocumentScreenContent(
     onNext: () -> Unit = {},
     enableNextButton: Boolean = false,
 ) {
-    val photoPickerLauncher = rememberLauncherForActivityResult(
+    val frontPhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
             uri?.let {
@@ -158,7 +158,7 @@ private fun SignUpUploadDocumentScreenContent(
                 leadingIconTint = Color.Black, // 👈 add this param inside your component
                 trailingIcon = Icons.AutoMirrored.Filled.ArrowForwardIos,
             ) {
-                photoPickerLauncher.launch(
+                frontPhotoPickerLauncher.launch(
                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                 )
             }
