@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
  * @since 8/4/2025
  * @version 1.0
  */
+@Serializable
 sealed class HomeRoutes {
     @Serializable
     object RequestsScreen : HomeRoutes()

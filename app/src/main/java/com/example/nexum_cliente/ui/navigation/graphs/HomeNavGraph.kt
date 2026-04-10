@@ -16,7 +16,6 @@ import com.example.nexum_cliente.ui.presenter.conversations.ConversationsScreen
 import com.example.nexum_cliente.ui.presenter.home.HomeViewModel
 import com.example.nexum_cliente.ui.presenter.job_offer.JobOfferScreen
 import com.example.nexum_cliente.ui.presenter.mercado_pago_checkout.MercadoPagoCheckout
-import com.example.nexum_cliente.ui.presenter.notifications.NotificationsScreen
 import com.example.nexum_cliente.ui.presenter.profile.ProfileScreen
 import com.example.nexum_cliente.ui.presenter.requests.RequestsScreen
 import com.example.nexum_cliente.ui.presenter.settings.SettingsScreen
@@ -40,7 +39,15 @@ fun NavGraphBuilder.homeGraph(
             CategoriesScreen(navController = navController)
         }
         composable<HomeRoutes.RequestsScreen> {
-            RequestsScreen()
+            RequestsScreen(
+                navigateToTracking = { offerId ->
+                    navController.navigate(
+                        JobOfferRoutes.TrackingScreen(offerId)
+                    ) {
+                        popUpTo(HomeRoutes.CategoriesScreen) { inclusive = true }
+                    }
+                }
+            )
         }
         composable<HomeRoutes.WalletScreen> {
             WalletScreen()
@@ -85,9 +92,24 @@ fun NavGraphBuilder.homeGraph(
             )
         }
 
-        composable<JobOfferRoutes.JobOfferScreen> {
+            composable<JobOfferRoutes.JobOfferScreen> {
             val args = it.toRoute<JobOfferRoutes.JobOfferScreen>()
-            JobOfferScreen(categoryId = args.categoryId)
+            JobOfferScreen(
+                categoryId = args.categoryId,
+                onNavigateToTracking = { offerId ->
+                    navController.navigate(JobOfferRoutes.TrackingScreen(offerId)) {
+                        popUpTo(JobOfferRoutes.JobOfferScreen(args.categoryId)) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable<JobOfferRoutes.TrackingScreen> {
+            val args = it.toRoute<JobOfferRoutes.TrackingScreen>()
+            com.example.nexum_cliente.ui.presenter.job_offer_tracking.JobOfferTrackingScreen(
+                jobOfferId = args.jobOfferId,
+                onNavigateBack = { navController.navigateUp() }
+            )
         }
 
     }

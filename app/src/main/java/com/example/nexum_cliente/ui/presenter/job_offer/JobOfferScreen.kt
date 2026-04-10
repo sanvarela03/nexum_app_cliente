@@ -80,7 +80,8 @@ import java.util.TimeZone
 @Composable
 fun JobOfferScreen(
     categoryId: Long,
-    viewModel: JobOfferViewModel = hiltViewModel()
+    viewModel: JobOfferViewModel = hiltViewModel(),
+    onNavigateToTracking: (String) -> Unit = {}
 ) {
     LaunchedEffect(Unit) {
         viewModel.onEvent(JobOfferEvent.CategoryIdChanged(categoryId))
@@ -123,6 +124,10 @@ fun JobOfferScreen(
         onDismissSuccess = { viewModel.onEvent(JobOfferEvent.DismissSuccessDialog) },
         onNavigateSuccess = {
             viewModel.onEvent(JobOfferEvent.DismissSuccessDialog)
+            // Extraer el UUID simulado o usar state.successMessage para obtener el ID (o añadirlo al state)
+            // Dado que el ViewModel guarda un UUID o devuelve un mensaje con el ID, usaremos un UUID temporal o vacío si no está en el state.
+            val extractedId = state.successMessage.substringAfter("Oferta de trabajo ").substringBefore(" creada")
+            onNavigateToTracking(extractedId.trim().ifEmpty { "N/A" })
         },
         isValid = state.isValid
     )
@@ -475,7 +480,7 @@ private fun MapDialog(viewModel: JobOfferViewModel) {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, showSystemUi = true)
+//@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun TimePickerDialogPreview() {
     Nexum_clienteTheme() {
@@ -484,7 +489,7 @@ fun TimePickerDialogPreview() {
 }
 
 
-//@Preview(showBackground = true)
+@Preview(showBackground = true)
 @Composable
 fun JobOfferScreenPreview() {
     Nexum_clienteTheme {

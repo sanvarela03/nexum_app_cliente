@@ -12,6 +12,6 @@ import kotlinx.coroutines.flow.Flow
  * @version 1.0
  */
 interface CategoryRepository {
-    fun observeCategories(): Flow<List<CategoryEntity>>
     suspend fun updateCategories(fetchFromRemote: Boolean) : Flow<ApiResponse<Unit>>
+    fun observeCategories(): Flow<List<CategoryEntity>>
 }

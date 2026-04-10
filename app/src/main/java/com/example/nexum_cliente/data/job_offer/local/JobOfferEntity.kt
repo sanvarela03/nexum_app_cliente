@@ -13,10 +13,18 @@ import androidx.room.PrimaryKey
  */
 @Entity(tableName = "job_offers")
 data class JobOfferEntity(
-    @PrimaryKey val id: Long,
+    @PrimaryKey
+    val id: Long,
+    val uuid: String,
+    val clientId: Long,
     val title: String,
     val description: String,
     val categoryId: Long,
+    val categoryName: String,
+    val h3Idx: String,
     val requestedDate: String,
+    val createdAt: String,
+    val lat: Double,
+    val lng: Double,
 )
 

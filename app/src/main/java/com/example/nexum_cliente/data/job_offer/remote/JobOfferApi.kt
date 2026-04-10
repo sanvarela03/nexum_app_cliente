@@ -4,6 +4,7 @@ import com.example.nexum_cliente.data.job_offer.remote.payload.res.JobOfferRes
 import com.example.nexum_cliente.data.job_offer.remote.payload.res.NewJobOfferRes
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
 /**
  * @author Santiago Varela Daza
@@ -15,5 +16,6 @@ import retrofit2.http.POST
 interface JobOfferApi {
     @POST("/api/v1/job-offers")
     suspend fun createJobOffer(@Body req: AddJobOfferReq): Response<NewJobOfferRes>
+    @GET("/api/v1/job-offers")
     suspend fun getJobOffers(): Response<List<JobOfferRes>>
 }

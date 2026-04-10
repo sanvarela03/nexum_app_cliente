@@ -7,11 +7,11 @@ import android.view.Gravity
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -135,16 +136,14 @@ private fun HomeScreenContent(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val mainScreens = listOf(
-        HomeRoutes.CategoriesScreen,
-        HomeRoutes.RequestsScreen,
-        HomeRoutes.WalletScreen,
-        HomeRoutes.NotificationsScreen
-    )
+    val mainScreens = MAIN_SCREENS
 
-    val showBars = mainScreens.any { route ->
-        currentDestination?.hierarchy?.any { it.hasRoute(route::class) } == true
-    } && isPortrait
+    // Aplicamos remember para seguir mejores prácticas sin alterar la estructura de insets
+    val showBars = remember(currentDestination, isPortrait) {
+        mainScreens.any { route ->
+            currentDestination?.hierarchy?.any { it.hasRoute(route::class) } == true
+        } && isPortrait
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -164,7 +163,10 @@ private fun HomeScreenContent(
         }
     ) {
         Scaffold(
-            modifier = Modifier.background(Color.White),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White),
+            contentWindowInsets = WindowInsets.safeDrawing,
             topBar = {
                 if (showBars) {
                     AppToolBar(
@@ -175,14 +177,16 @@ private fun HomeScreenContent(
                 }
             },
             bottomBar = {
-                HomeBottomBar(
-                    navigationItems = BottomNavigation.entries,
-                    currentDestination = currentDestination,
-                    navigateTo = onBottomNavigate
-                )
+                if (showBars) {
+                    HomeBottomBar(
+                        navigationItems = BottomNavigation.entries,
+                        currentDestination = currentDestination,
+                        navigateTo = onBottomNavigate
+                    )
+                }
             },
             // IMPORTANTE: Evita que la BottomBar suba con el teclado
-            contentWindowInsets = WindowInsets(0)
+//            contentWindowInsets = WindowInsets(0)
         ) { contentPadding ->
             Surface(
                 modifier = Modifier

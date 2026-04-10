@@ -2,40 +2,65 @@ package com.example.nexum_cliente.common
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.ui.text.toLowerCase
+import com.example.nexum_cliente.utils.DateUtils
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import kotlin.collections.joinToString
-import kotlin.text.contains
-import kotlin.text.isLowerCase
-import kotlin.text.lowercase
-import kotlin.text.replaceFirstChar
-import kotlin.text.split
-import kotlin.text.titlecase
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun String.toLocalDateTime(): LocalDateTime {
-    return when {
-        this.contains("T") -> {
-            val pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-            LocalDateTime.parse(this, pattern)
+    return try {
+        when {
+            this.contains("T") -> {
+                // Intenta parsear con zona/offset primero, si falla intenta como local ISO
+                try {
+                    ZonedDateTime.parse(this).toLocalDateTime()
+                } catch (e: Exception) {
+                    LocalDateTime.parse(this)
+                }
+            }
+
+            this.length == 10 -> { // yyyy-MM-dd
+                val pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                LocalDate.parse(this, pattern).atStartOfDay()
+            }
+
+            else -> {
+                val pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                LocalDateTime.parse(this, pattern)
+            }
         }
-        this.length == 10 -> { // yyyy-MM-dd
-             val pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-             LocalDate.parse(this, pattern).atStartOfDay()
-        }
-        else -> {
-            val pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-            LocalDateTime.parse(this, pattern)
-        }
+    } catch (e: Exception) {
+        LocalDateTime.now()
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun String.formatIsoToReadableDate(): String {
+    return try {
+        this.toLocalDateTime().formatToReadableDate()
+    } catch (e: Exception) {
+        "NaN"
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun String.formatIsoDate(): String {
+    return try {
+        DateUtils.formatIsoToReadable(this)
+    } catch (e: Exception) {
+        "NaN"
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun LocalDateTime.formatToReadableDate(): String {
-    val formatter = DateTimeFormatter.ofPattern("EEEE d 'de' MMMM 'a las' h:mm a", Locale("es", "ES"))
+    val formatter =
+        DateTimeFormatter.ofPattern("EEEE d 'de' MMMM 'a las' h:mm a", Locale("es", "ES"))
     val formattedDate = this.format(formatter)
     return formattedDate.split(" ").joinToString(" ") { word ->
         if (word.lowercase() !in listOf("de", "a", "las")) {
@@ -60,5 +85,5 @@ fun LocalDateTime.formatToDateOnly(): String {
 }
 
 fun String.capitalizeFirstLetter(): String {
-    return this.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+    return lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 }

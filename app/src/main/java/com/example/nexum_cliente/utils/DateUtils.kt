@@ -38,4 +38,20 @@ object DateUtils {
             ""
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun formatIsoToReadable(isoDate: String): String {
+        return try {
+            // Parsea la fecha ISO 8601 (ej: 2026-02-05T21:29:43.901965-05:00)
+            val zonedDateTime = ZonedDateTime.parse(isoDate)
+
+            // Formato de salida deseado: "dd/MM/yyyy hh:mm a"
+            val outputFormatter =
+                DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a", Locale.getDefault())
+            zonedDateTime.format(outputFormatter)
+        } catch (e: Exception) {
+            Log.e("DateUtils", "Error al parsear la fecha ISO: $e")
+            LocalDate.now().toString()
+        }
+    }
 }

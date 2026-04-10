@@ -10,10 +10,15 @@ import kotlinx.serialization.Serializable
  * @since 8/8/2025
  * @version 1.0
  */
+@Serializable
 sealed class JobOfferRoutes {
     @Serializable
     data class JobOfferScreen(
         val categoryId: Long,
     ) : JobOfferRoutes()
 
+    @Serializable
+    data class TrackingScreen(
+        val jobOfferId: String
+    ) : JobOfferRoutes()
 }

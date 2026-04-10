@@ -7,28 +7,27 @@ import com.example.nexum_cliente.domain.model.MarketLocation
 import com.example.nexum_cliente.ui.common.ValidationResult
 
 object SignUpValidator {
+
+    private const val MIN_EMAIL_LENGTH = 3
+    private const val MAX_EMAIL_LENGTH = 254
+    private const val MIN_PASSWORD_LENGTH = 5
+    private const val MIN_USER_LENGTH = 4
+    private const val MAX_USER_LENGTH = 20
+    private val emailRegex = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
     fun validateEmail(email: String?): ValidationResult {
-        if (email.isNullOrEmpty()) {
+        if (email.isNullOrBlank()) {
             return ValidationResult(false, "Email cannot be empty.")
         }
-
-        val emailRegex = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
-
-
-        val isValid = emailRegex.matches(email) && email.length >= 4 && email.length <= 20
-
-        val errorMessage = when {
-            !emailRegex.matches(email) -> "Invalid email format."
-            email.length < 4 -> "Email is too short (minimum 4 characters)."
-            email.length > 20 -> "Email is too long (maximum 19 characters)."
-            else -> ""
+        return when {
+            email.length < MIN_EMAIL_LENGTH -> ValidationResult(false, "Email is too short.")
+            email.length > MAX_EMAIL_LENGTH -> ValidationResult(false, "Email is too long.")
+            !emailRegex.matches(email) -> ValidationResult(false, "Invalid email format")
+            else -> ValidationResult(true)
         }
-
-        return ValidationResult(isValid, errorMessage)
     }
 
     fun validatePassword(password: String?): ValidationResult = ValidationResult(
-        (!password.isNullOrEmpty() && password.length >= 4)
+        (!password.isNullOrEmpty() && password.length >= MIN_PASSWORD_LENGTH)
     )
 
     fun validateName(name: String?): ValidationResult = ValidationResult(

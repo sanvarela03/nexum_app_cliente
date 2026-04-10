@@ -285,12 +285,12 @@ private fun ChatScreenContent(
                 ChatInputBar(
                     text = messageText,
                     onTextChange = { 
-                        messageText = it 
+                        messageText = it
                         onTyping()
                     },
                     onSendClick = {
                         if (messageText.isNotBlank()) {
-                            onSendMessage(messageText)
+                            onSendMessage(messageText.trim())
                             messageText = ""
                         }
                     },

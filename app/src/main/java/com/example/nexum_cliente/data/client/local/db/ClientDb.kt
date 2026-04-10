@@ -10,6 +10,8 @@ import com.example.nexum_cliente.data.client.local.role.RoleDao
 import com.example.nexum_cliente.data.client.local.role.RoleEntity
 import com.example.nexum_cliente.data.country.local.CountryDao
 import com.example.nexum_cliente.data.country.local.CountryEntity
+import com.example.nexum_cliente.data.job_offer.local.JobOfferDao
+import com.example.nexum_cliente.data.job_offer.local.JobOfferEntity
 import com.example.nexum_cliente.data.market_location.local.MarketLocationDao
 import com.example.nexum_cliente.data.market_location.local.MarketLocationEntity
 import com.example.nexum_cliente.data.profile.local.ProfileDao
@@ -30,7 +32,8 @@ import com.example.nexum_cliente.data.profile.local.ProfileEntity
         CategoryEntity::class,
         MarketLocationEntity::class,
         CountryEntity::class,
-        ProfileEntity::class
+        ProfileEntity::class,
+        JobOfferEntity::class,
     ],
     version = 1
 )
@@ -41,4 +44,5 @@ abstract class ClientDb : RoomDatabase() {
     abstract val marketLocationDao: MarketLocationDao
     abstract val countryDao: CountryDao
     abstract val profileDao: ProfileDao
+    abstract val jobOfferDao: JobOfferDao
 }

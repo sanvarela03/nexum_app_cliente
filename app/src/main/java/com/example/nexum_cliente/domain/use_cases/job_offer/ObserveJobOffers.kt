@@ -9,12 +9,12 @@ import javax.inject.Singleton
  * @author Santiago Varela Daza
  * @email svarela03@uan.edu.co
  * @github https://github.com/sanvarela03
- * @since 1/14/2026
+ * @since 4/3/2026
  * @version 1.0
  */
 @Singleton
-class GetJobOffers @Inject constructor(
+class ObserveJobOffers @Inject constructor(
     private val repository: JobOfferRepository
 ) {
-    operator fun invoke() = repository.getJobOffers()
+    operator fun invoke() = repository.observeJobOffers()
 }

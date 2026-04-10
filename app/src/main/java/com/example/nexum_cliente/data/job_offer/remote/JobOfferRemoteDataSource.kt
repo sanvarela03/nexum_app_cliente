@@ -25,4 +25,7 @@ class JobOfferRemoteDataSource @Inject constructor(
             Log.d("JobOfferRemoteDataSource", "createJobOffer: $req")
             api.createJobOffer(req)
         }
+
+    fun getJobOffers() = apiRequestFlow { api.getJobOffers() }
+
 }

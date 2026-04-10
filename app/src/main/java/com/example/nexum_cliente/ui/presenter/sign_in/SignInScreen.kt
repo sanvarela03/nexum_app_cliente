@@ -62,7 +62,7 @@ fun SignInScreen(
         SignInScreenContent(
             state = state,
             emailChanged = {
-                viewModel.onEvent(SignInEvent.UsernameChanged(it))
+                viewModel.onEvent(SignInEvent.UsernameChanged(it.trim()))
             },
             passwordChanged = {
                 viewModel.onEvent(SignInEvent.PasswordChanged(it))

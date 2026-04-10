@@ -14,7 +14,14 @@ import com.example.nexum_cliente.domain.use_cases.profile.ProfileUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,6 +37,9 @@ class ChatViewModel @Inject constructor(
     private val profileUseCases: ProfileUseCases,
     private val chatUseCases: ChatUseCases,
 ) : ViewModel() {
+    companion object {
+        private const val TAG = "ChatViewModel"
+    }
 
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages: StateFlow<List<Message>> = _messages.asStateFlow()
@@ -66,7 +76,11 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    fun loadConversationMessages(conversationId: String, receiverId: String? = null, loadMore: Boolean = false) {
+    fun loadConversationMessages(
+        conversationId: String,
+        receiverId: String? = null,
+        loadMore: Boolean = false
+    ) {
         if (!loadMore) {
             currentConversationId.value = conversationId
             targetReceiverId = receiverId
@@ -129,7 +143,8 @@ class ChatViewModel @Inject constructor(
             if (chatUseCases.getConnectionState().first() != ConnectionState.CONNECTED) {
                 connectWebSocket()
                 // Esperar un máximo de 3 segundos a que conecte
-                chatUseCases.getConnectionState().filter { it == ConnectionState.CONNECTED }.take(1).collect()
+                chatUseCases.getConnectionState().filter { it == ConnectionState.CONNECTED }.take(1)
+                    .collect()
             }
 
             val request = MessageRequest(
@@ -157,6 +172,9 @@ class ChatViewModel @Inject constructor(
 
     fun setTyping() {
         val id = currentConversationId.value
+
+        Log.d(TAG, "setTyping: ${id == null || id == "new"}")
+
         if (id == null || id == "new") return
 
         typingJob?.cancel()
@@ -190,7 +208,10 @@ class ChatViewModel @Inject constructor(
                     // BUG FIX: Transición de "new" a ID real
                     else if (activeId == "new" && receiverId != null) {
                         if (msg.senderId == receiverId || msg.receiverId == receiverId) {
-                            Log.d("ChatViewModel", "Switching from 'new' to real ID: ${msg.conversationId}")
+                            Log.d(
+                                "ChatViewModel",
+                                "Switching from 'new' to real ID: ${msg.conversationId}"
+                            )
                             currentConversationId.value = msg.conversationId
                             addMessageToList(msg)
                             markAsRead()
@@ -217,14 +238,19 @@ class ChatViewModel @Inject constructor(
                                 }
                             }
                             _messages.value = updatedMessages
-                            Log.d("ChatViewModel", "Updated read receipts locally for conversation: $activeId")
+                            Log.d(
+                                "ChatViewModel",
+                                "Updated read receipts locally for conversation: $activeId"
+                            )
                         }
                     }
+
                     is WebSocketEvent.TypingEvent -> {
                         if (activeId != null && event.conversationId == activeId) {
                             _isReceiverTyping.value = event.isTyping
                         }
                     }
+
                     else -> {}
                 }
             }
@@ -239,7 +265,9 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    fun clearError() { _uiState.value = ChatUiState.Success }
+    fun clearError() {
+        _uiState.value = ChatUiState.Success
+    }
 
     override fun onCleared() {
         super.onCleared()

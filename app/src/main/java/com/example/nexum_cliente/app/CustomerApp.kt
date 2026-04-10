@@ -2,7 +2,9 @@ package com.example.nexum_cliente.app
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -31,7 +33,8 @@ fun CustomerApp(
             UserAuthState.UNKNOWN -> AuthRoutes.SplashScreen
             UserAuthState.UNAUTHENTICATED -> Graph.Auth
             UserAuthState.AUTHENTICATED -> AuthRoutes.HomeScreen
-        }
+        },
+        modifier = Modifier.fillMaxSize()
     ) {
         authGraph(navController, signUpViewModel, startDestination)
 

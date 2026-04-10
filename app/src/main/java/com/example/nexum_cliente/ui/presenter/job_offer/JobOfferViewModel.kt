@@ -18,6 +18,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import javax.inject.Singleton
 
 @HiltViewModel
 class JobOfferViewModel @Inject constructor(
@@ -95,7 +96,7 @@ class JobOfferViewModel @Inject constructor(
                         val timeFormatter = SimpleDateFormat("hh:mm a", Locale.ENGLISH)
                         state = state.copy(requestedTime = timeFormatter.format(calendar.time))
                     }
-                    
+
                     "Elegir" -> {
                         state = state.copy(showTimePickerDialog = true)
                     }
