@@ -26,6 +26,7 @@ fun TimePickerDialog(
     title: String = "Seleccione la hora",
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
+    confirmEnabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     Dialog(
@@ -68,7 +69,8 @@ fun TimePickerDialog(
                         onClick = onDismissRequest
                     ) { Text("Cancelar") }
                     TextButton(
-                        onClick = onConfirm
+                        onClick = onConfirm,
+                        enabled = confirmEnabled
                     ) { Text("Aceptar") }
                 }
             }

@@ -23,7 +23,7 @@ private val REMOTE_MSG_URL = "https://nexum-msg-be.onrender.com"
 private val REMOTE_WS_URL = "wss://nexum-msg-be.onrender.com"
 
 
-val useLocal = false
+val useLocal = true
 
 val HOST_URL = if (useLocal) LOCAL_URL else REMOTE_URL
 val MSG_URL = if (useLocal) LOCAL_MSG_URL else REMOTE_MSG_URL

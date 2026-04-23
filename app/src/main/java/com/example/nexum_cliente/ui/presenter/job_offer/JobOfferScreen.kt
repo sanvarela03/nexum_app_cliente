@@ -1,6 +1,10 @@
 package com.example.nexum_cliente.ui.presenter.job_offer
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,17 +44,26 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.maps.model.LatLng
 import com.example.nexum_cliente.R
 import com.example.nexum_cliente.ui.components.ButtonComponent
 import com.example.nexum_cliente.ui.components.FilterChipComponent2
@@ -62,11 +75,7 @@ import com.example.nexum_cliente.ui.components.Stepper
 import com.example.nexum_cliente.ui.components.TimePickerDialog
 import com.example.nexum_cliente.ui.presenter.map.MapScreen
 import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
+import com.example.nexum_cliente.utils.validator.JobOfferValidator
 
 /**
  * @author Santiago Varela Daza
@@ -83,16 +92,32 @@ fun JobOfferScreen(
     viewModel: JobOfferViewModel = hiltViewModel(),
     onNavigateToTracking: (String) -> Unit = {}
 ) {
+    val context = LocalContext.current
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) ||
+                permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false)
+        if (granted) {
+            viewModel.onEvent(JobOfferEvent.RequestCurrentLocation)
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.onEvent(JobOfferEvent.CategoryIdChanged(categoryId))
     }
-    val state = viewModel.state
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    // El indicador de validez ahora viene directamente del estado
+    val isFormValid = state.isFormValid
 
     MapDialog(viewModel)
 
     if (state.showDatePickerDialog) {
-        Nexum_clienteTheme() {
+        Nexum_clienteTheme {
             DatePickerDialogContent(
+                initialDateMillis = viewModel.getInitialDateMillis(),
                 onDismissRequest = { viewModel.onEvent(JobOfferEvent.ShowDatePicker(false)) },
                 onConfirm = {
                     viewModel.onEvent(JobOfferEvent.DateSelected(it))
@@ -103,9 +128,11 @@ fun JobOfferScreen(
     }
 
     if (state.showTimePickerDialog) {
-        Nexum_clienteTheme() {
+        Nexum_clienteTheme {
             TimePickerDialogContent(
                 selectedDate = state.requestedDate,
+                initialHour = viewModel.getInitialTimeValues()[0],
+                initialMinute = viewModel.getInitialTimeValues()[1],
                 onDismissRequest = { viewModel.onEvent(JobOfferEvent.ShowTimePicker(false)) },
                 onConfirm = { hour, minute ->
                     viewModel.onEvent(JobOfferEvent.TimeSelected(hour, minute))
@@ -113,29 +140,45 @@ fun JobOfferScreen(
                 }
             )
         }
-
     }
 
     JobOfferScreenContent(
         state = state,
         onEvent = viewModel::onEvent,
         onShowMapDialog = { viewModel.showMapDialog = true },
+        onMyLocationClick = {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                viewModel.onEvent(JobOfferEvent.RequestCurrentLocation)
+            } else {
+                permissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
+            }
+        },
         onSubmit = { viewModel.onEvent(JobOfferEvent.Submit) },
         onDismissSuccess = { viewModel.onEvent(JobOfferEvent.DismissSuccessDialog) },
         onNavigateSuccess = {
             viewModel.onEvent(JobOfferEvent.DismissSuccessDialog)
-            // Extraer el UUID simulado o usar state.successMessage para obtener el ID (o añadirlo al state)
-            // Dado que el ViewModel guarda un UUID o devuelve un mensaje con el ID, usaremos un UUID temporal o vacío si no está en el state.
-            val extractedId = state.successMessage.substringAfter("Oferta de trabajo ").substringBefore(" creada")
-            onNavigateToTracking(extractedId.trim().ifEmpty { "N/A" })
+            onNavigateToTracking(state.createdJobOfferUuid.ifEmpty { "N/A" })
         },
-        isValid = state.isValid
+        isValid = isFormValid
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DatePickerDialogContent(
+    initialDateMillis: Long? = null,
     colors: DatePickerColors = DatePickerDefaults.colors(
         containerColor = Color.White,
         titleContentColor = Color.Black,
@@ -148,36 +191,17 @@ private fun DatePickerDialogContent(
     val selectableDates = remember {
         object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                // Inicio del día de hoy en UTC
-                val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
-                    set(Calendar.HOUR_OF_DAY, 0)
-                    set(Calendar.MINUTE, 0)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-                val today = calendar.timeInMillis
-                
-                // Límite: actual + 2 años (hasta el final de ese año)
-                val maxCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
-                    add(Calendar.YEAR, 2)
-                    set(Calendar.MONTH, Calendar.DECEMBER)
-                    set(Calendar.DAY_OF_MONTH, 31)
-                    set(Calendar.HOUR_OF_DAY, 23)
-                    set(Calendar.MINUTE, 59)
-                }
-                val maxDate = maxCalendar.timeInMillis
-                
-                return utcTimeMillis >= today && utcTimeMillis <= maxDate
+                return JobOfferValidator.isDateSelectable(utcTimeMillis)
             }
 
             override fun isSelectableYear(year: Int): Boolean {
-                val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-                return year >= currentYear && year <= currentYear + 2
+                return JobOfferValidator.isYearSelectable(year)
             }
         }
     }
 
     val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = initialDateMillis,
         selectableDates = selectableDates
     )
 
@@ -215,7 +239,7 @@ private fun DatePickerDialogContent(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun DatePickerDialogContentPreview() {
-    Nexum_clienteTheme() {
+    Nexum_clienteTheme {
         DatePickerDialogContent(
             onDismissRequest = {},
             onConfirm = {}
@@ -227,6 +251,8 @@ fun DatePickerDialogContentPreview() {
 @OptIn(ExperimentalMaterial3Api::class)
 fun TimePickerDialogContent(
     selectedDate: String,
+    initialHour: Int,
+    initialMinute: Int,
     colors: TimePickerColors = TimePickerDefaults.colors(
         clockDialColor = MaterialTheme.colorScheme.surface,
         clockDialUnselectedContentColor = Color.Black,
@@ -237,33 +263,15 @@ fun TimePickerDialogContent(
         timeSelectorUnselectedContainerColor = Color.White,
     ),
     onDismissRequest: () -> Unit = {},
-    onConfirm: (Int, Int) -> Unit = { hour: Int, minute: Int -> Unit }
+    onConfirm: (Int, Int) -> Unit = { _, _ -> }
 ) {
-    val timePickerState = rememberTimePickerState()
-    
-    val isTimeValid = remember(timePickerState.hour, timePickerState.minute, selectedDate) {
-        val h = timePickerState.hour
-        val m = timePickerState.minute
-        
-        // Rango laboral extendido: 7 AM a 10 PM (22:00)
-        val inRange = h >= 7 && (h < 22 || (h == 22 && m == 0))
-        if (!inRange) return@remember false
-        
-        // Si la fecha elegida es hoy, la hora debe ser futura
-        try {
-            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            val todayStr = sdf.format(Date())
-            
-            if (selectedDate == todayStr) {
-                val now = Calendar.getInstance()
-                val currentH = now.get(Calendar.HOUR_OF_DAY)
-                val currentM = now.get(Calendar.MINUTE)
-                
-                if (h < currentH || (h == currentH && m <= currentM)) return@remember false
-            }
-        } catch (e: Exception) {}
-        
-        true
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialHour,
+        initialMinute = initialMinute
+    )
+
+    val validationResult = remember(timePickerState.hour, timePickerState.minute, selectedDate) {
+        JobOfferValidator.validateTime(timePickerState.hour, timePickerState.minute, selectedDate)
     }
 
     TimePickerDialog(
@@ -271,19 +279,20 @@ fun TimePickerDialogContent(
             onDismissRequest()
         },
         onConfirm = {
-            if (isTimeValid) {
+            if (validationResult.isValid) {
                 onConfirm(timePickerState.hour, timePickerState.minute)
             }
-        }
+        },
+        confirmEnabled = validationResult.isValid
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             TimePicker(
                 state = timePickerState,
                 colors = colors
             )
-            if (!isTimeValid) {
+            if (!validationResult.isValid) {
                 Text(
-                    text = "Horario laboral: 7am - 10pm (y futuro)",
+                    text = validationResult.errorMessage,
                     color = Color.Red,
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(top = 8.dp)
@@ -299,12 +308,14 @@ fun JobOfferScreenContent(
     state: JobOfferState,
     onEvent: (JobOfferEvent) -> Unit,
     onShowMapDialog: () -> Unit,
+    onMyLocationClick: () -> Unit,
     onSubmit: () -> Unit,
     onDismissSuccess: () -> Unit = {},
     onNavigateSuccess: () -> Unit = {},
-    isValid: Boolean = false
+    isValid: Boolean = false,
+    currentTimeMillis: Long = 0L
 ) {
-    Nexum_clienteTheme() {
+    Nexum_clienteTheme {
         Column(
             modifier = Modifier
                 .padding(start = 16.dp, end = 16.dp)
@@ -321,8 +332,10 @@ fun JobOfferScreenContent(
             MyTextFieldComponent2(
                 labelValue = "Dirección",
                 textValue = state.address,
+                errorStatus = !state.addressValidation.isValid,
+                errorMessage = state.addressValidation.errorMessage,
                 leadingIcon = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = onMyLocationClick) {
                         Icon(
                             imageVector = Icons.Default.MyLocation,
                             contentDescription = "Ubicación actual"
@@ -347,6 +360,8 @@ fun JobOfferScreenContent(
                 labelValue = "Titulo",
                 textValue = state.title,
                 trailingIcon = Icons.Default.Edit,
+                errorStatus = !state.titleValidation.isValid,
+                errorMessage = state.titleValidation.errorMessage,
                 onTextSelected = {
                     onEvent(JobOfferEvent.TitleChanged(it))
                 }
@@ -355,6 +370,8 @@ fun JobOfferScreenContent(
                 labelValue = "Descripción",
                 textValue = state.description,
                 trailingIcon = Icons.AutoMirrored.Filled.Assignment,
+                errorStatus = !state.descriptionValidation.isValid,
+                errorMessage = state.descriptionValidation.errorMessage,
                 onTextSelected = {
                     onEvent(JobOfferEvent.DescriptionChanged(it))
                 }
@@ -402,19 +419,47 @@ fun JobOfferScreenContent(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 timeOptions.forEach { option ->
+                    val isEnabled = remember(state.requestedDate, option, currentTimeMillis) {
+                        when (option) {
+                            "Mañana" -> JobOfferValidator.validateTime(10, 0, state.requestedDate).isValid
+                            "Tarde" -> JobOfferValidator.validateTime(18, 0, state.requestedDate).isValid
+                            "Noche" -> JobOfferValidator.validateTime(22, 0, state.requestedDate).isValid
+                            else -> true
+                        }
+                    }
                     FilterChipComponent2(
                         text = option,
                         isSelected = state.selectedTimeOption == option,
+                        enabled = isEnabled,
                         onClick = { onEvent(JobOfferEvent.TimeOptionSelected(option)) }
                     )
                 }
             }
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Fecha seleccionada: ", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                
+                val isTimeValid = remember(state.requestedDate, state.requestedTime, currentTimeMillis) {
+                    try {
+                        val timeFormatter = java.text.SimpleDateFormat("hh:mm a", java.util.Locale.ENGLISH)
+                        val date = timeFormatter.parse(state.requestedTime)
+                        val cal = java.util.Calendar.getInstance().apply { 
+                            if (date != null) time = date 
+                        }
+                        JobOfferValidator.validateTime(
+                            cal.get(java.util.Calendar.HOUR_OF_DAY),
+                            cal.get(java.util.Calendar.MINUTE),
+                            state.requestedDate
+                        ).isValid
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
+                
                 Text(
-                    state.requestedDate + " " + state.requestedTime,
+                    text = "${state.requestedDate} ${state.requestedTime}",
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Light
+                    fontWeight = FontWeight.Light,
+                    color = if (isTimeValid) Color(0xFF009963) else Color.Red
                 )
             }
             ButtonComponent(
@@ -438,7 +483,7 @@ fun JobOfferScreenContent(
             onDismiss = onDismissSuccess,
             onConfirm = onNavigateSuccess
         ) {
-            Text(text = "${state.successMessage}")
+            Text(text = state.successMessage)
         }
     }
 }
@@ -446,17 +491,23 @@ fun JobOfferScreenContent(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun MapDialog(viewModel: JobOfferViewModel) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
     MyDialog2(
         title = "Seleccionar dirección",
         dismissTxt = "Cancelar",
         confirmTxt = "Aceptar",
         content = {
+            val initialLocation = if (state.latitude != 0.0 && state.longitude != 0.0) {
+                LatLng(state.latitude, state.longitude)
+            } else null
+
             MapScreen(
                 modifier = Modifier
                     .padding(5.dp)
                     .width(306.dp)
                     .height(306.dp)
                     .clip(RoundedCornerShape(12.dp)),
+                initialLocation = initialLocation,
                 onMapClick = { latLng, address ->
                     viewModel.onEvent(
                         JobOfferEvent.LatitudeChanged(latLng.latitude)
@@ -480,11 +531,11 @@ private fun MapDialog(viewModel: JobOfferViewModel) {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-//@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun TimePickerDialogPreview() {
-    Nexum_clienteTheme() {
-        TimePickerDialogContent(selectedDate = "01/01/2026")
+    Nexum_clienteTheme {
+        TimePickerDialogContent(selectedDate = "01/01/2026", initialHour = 12, initialMinute = 0)
     }
 }
 
@@ -508,6 +559,7 @@ fun JobOfferScreenPreview() {
                 state = previewState,
                 onEvent = {},
                 onShowMapDialog = {},
+                onMyLocationClick = {},
                 onSubmit = {}
             )
         }

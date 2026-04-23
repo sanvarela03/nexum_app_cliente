@@ -1,6 +1,8 @@
 package com.example.nexum_cliente.ui.components
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,47 +38,60 @@ fun MyTextFieldComponent(
     onTextSelected: (String) -> Unit,
     textValue: String = "",
     errorStatus: Boolean = false,
+    errorMessage: String? = null,
 ) {
     var isFocused by rememberSaveable{ mutableStateOf(false) }
+    var hasBeenModified by rememberSaveable { mutableStateOf(false) }
+    val shouldShowError = errorStatus && hasBeenModified
 
-    
     val unfocusedBorderColor = if (errorStatus && isFocused) Color.Green else Color(0xFFE6E6E6)
-    OutlinedTextField(
-        value = textValue,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color.Blue,        // cuando está enfocado
-            unfocusedBorderColor = unfocusedBorderColor, // cuando no está enfocado
-            errorBorderColor = Color.Red,
-            unfocusedLabelColor = Color(0xFFE6E6E6),
-            unfocusedLeadingIconColor = Color(0xFFE6E6E6),
-        ),
-        shape = RoundedCornerShape(8.dp),
-        modifier = modifier.onFocusEvent {
-            if (it.isFocused) {
-                // Notificamos al padre que perdió el foco
-                isFocused = true
-            }
-        },
-        label = {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = textValue,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.Blue,        // cuando está enfocado
+                unfocusedBorderColor = unfocusedBorderColor, // cuando no está enfocado
+                errorBorderColor = Color.Red,
+                unfocusedLabelColor = Color(0xFFE6E6E6),
+                unfocusedLeadingIconColor = Color(0xFFE6E6E6),
+            ),
+            shape = RoundedCornerShape(8.dp),
+            modifier = modifier.onFocusEvent {
+                if (it.isFocused) {
+                    // Notificamos al padre que perdió el foco
+                    isFocused = true
+                }
+            },
+            label = {
+                Text(
+                    text = labelValue,
+                    fontWeight = FontWeight.Medium
+                )
+            },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            singleLine = true,
+            maxLines = 1,
+            onValueChange = {
+                hasBeenModified = true
+                onTextSelected(it)
+            },
+            leadingIcon = leadingIcon?.let { nonNullIcon ->
+                { Icon(nonNullIcon, contentDescription = null) }
+            },
+            trailingIcon = trailingIcon?.let { nonNullIcon ->
+                { Icon(nonNullIcon, contentDescription = null) }
+            },
+            isError = shouldShowError
+        )
+        if (shouldShowError && !errorMessage.isNullOrBlank()) {
             Text(
-                text = labelValue,
-                fontWeight = FontWeight.Medium
+                text = errorMessage,
+                color = Color.Red,
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.padding(start = 8.dp, top = 4.dp)
             )
-        },
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-        singleLine = true,
-        maxLines = 1,
-        onValueChange = {
-            onTextSelected(it)
-        },
-        leadingIcon = leadingIcon?.let { nonNullIcon ->
-            { Icon(nonNullIcon, contentDescription = null) }
-        },
-        trailingIcon = trailingIcon?.let { nonNullIcon ->
-            { Icon(nonNullIcon, contentDescription = null) }
-        },
-        isError = if (isFocused) errorStatus else false
-    )
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,46 +107,57 @@ fun MyTextFieldComponent(
     textValue: String = "",
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     errorStatus: Boolean = false,
+    errorMessage: String? = null,
 ) {
     var isFocused by rememberSaveable { mutableStateOf(false) }
 
     val unfocusedBorderColor =
         if (errorStatus && isFocused) Color.Green else MaterialTheme.colorScheme.secondary
 
-    OutlinedTextField(
-        value = textValue,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color.Blue,        // cuando está enfocado
-            unfocusedBorderColor = Color(0xFFE6E6E6), // cuando no está enfocado
-            errorBorderColor = Color.Red,
-            unfocusedLabelColor = Color(0xFFE6E6E6),
-            unfocusedLeadingIconColor = Color(0xFFE6E6E6)
-        ),
-        shape = RoundedCornerShape(8.dp),
-        modifier = modifier.onFocusEvent {
-            if (it.isFocused) {
-                // Notificamos al padre que perdió el foco
-                isFocused = true
-            }
-        },
-        label = {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = textValue,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.Blue,        // cuando está enfocado
+                unfocusedBorderColor = Color(0xFFE6E6E6), // cuando no está enfocado
+                errorBorderColor = Color.Red,
+                unfocusedLabelColor = Color(0xFFE6E6E6),
+                unfocusedLeadingIconColor = Color(0xFFE6E6E6)
+            ),
+            shape = RoundedCornerShape(8.dp),
+            modifier = modifier.onFocusEvent {
+                if (it.isFocused) {
+                    // Notificamos al padre que perdió el foco
+                    isFocused = true
+                }
+            },
+            label = {
+                Text(
+                    text = labelValue,
+                    fontWeight = FontWeight.Medium
+                )
+            },
+            keyboardOptions = keyboardOptions,
+            singleLine = true,
+            maxLines = 1,
+            onValueChange = {
+                onTextSelected(it)
+            },
+            leadingIcon = leadingIcon?.let { nonNullIcon ->
+                { Icon(nonNullIcon, contentDescription = null) }
+            },
+            trailingIcon = trailingIcon?.let { nonNullIcon ->
+                { Icon(nonNullIcon, contentDescription = null) }
+            },
+            isError = errorStatus
+        )
+        if (errorStatus && !errorMessage.isNullOrBlank()) {
             Text(
-                text = labelValue,
-                fontWeight = FontWeight.Medium
+                text = errorMessage,
+                color = Color.Red,
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.padding(start = 8.dp, top = 4.dp)
             )
-        },
-        keyboardOptions = keyboardOptions,
-        singleLine = true,
-        maxLines = 1,
-        onValueChange = {
-            onTextSelected(it)
-        },
-        leadingIcon = leadingIcon?.let { nonNullIcon ->
-            { Icon(nonNullIcon, contentDescription = null) }
-        },
-        trailingIcon = trailingIcon?.let { nonNullIcon ->
-            { Icon(nonNullIcon, contentDescription = null) }
-        },
-        isError = if (isFocused) errorStatus else false
-    )
+        }
+    }
 }

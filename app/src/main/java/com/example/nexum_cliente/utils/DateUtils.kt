@@ -12,19 +12,22 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 object DateUtils {
+    const val DATE_PATTERN = "dd/MM/yyyy"
+    const val TIME_PATTERN = "hh:mm a"
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun formatToISO8601(date: String, time: String): String {
         return try {
             Log.d("DateUtils", "formatToISO8601: $date $time")
             // Define the formatter for the input date format "dd/MM/yyyy"
-            val dateInputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault())
+            val dateInputFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN, Locale.getDefault())
             val localDate = LocalDate.parse(date, dateInputFormatter)
 
             // Normalizar AM/PM: eliminar puntos y convertir a mayúsculas (ej: "a.m." -> "AM")
             val normalizedTime = time.replace(".", "").uppercase(Locale.ENGLISH).trim()
 
             // Define the formatter for the input time format "hh:mm a" (e.g., "12:00 AM")
-            val timeInputFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH)
+            val timeInputFormatter = DateTimeFormatter.ofPattern(TIME_PATTERN, Locale.ENGLISH)
             val localTime = LocalTime.parse(normalizedTime, timeInputFormatter)
 
             val localDateTime = LocalDateTime.of(localDate, localTime)
@@ -47,7 +50,7 @@ object DateUtils {
 
             // Formato de salida deseado: "dd/MM/yyyy hh:mm a"
             val outputFormatter =
-                DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a", Locale.getDefault())
+                DateTimeFormatter.ofPattern("$DATE_PATTERN $TIME_PATTERN", Locale.getDefault())
             zonedDateTime.format(outputFormatter)
         } catch (e: Exception) {
             Log.e("DateUtils", "Error al parsear la fecha ISO: $e")

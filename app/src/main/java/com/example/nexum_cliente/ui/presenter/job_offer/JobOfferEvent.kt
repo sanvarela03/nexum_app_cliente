@@ -19,6 +19,7 @@ sealed class JobOfferEvent {
     data class CategoryIdChanged(val categoryId: Long) : JobOfferEvent()
     data class TimeSelected(val hour: Int, val minute: Int) : JobOfferEvent()
 
+    object RequestCurrentLocation : JobOfferEvent()
     object DismissSuccessDialog : JobOfferEvent()
     object ConfirmSuccessDialog : JobOfferEvent()
 

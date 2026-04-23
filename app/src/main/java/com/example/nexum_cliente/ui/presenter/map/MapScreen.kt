@@ -34,36 +34,34 @@ import timber.log.Timber
 fun MapScreen(
     modifier: Modifier = Modifier,
     viewModel: MapViewModel = hiltViewModel(),
+    initialLocation: LatLng? = null,
     onMapClick: (LatLng, String) -> Unit,
 ) {
     val context = LocalContext.current
-    val london = LatLng(51.5074, -0.1278)
+    val defaultLocation = LatLng(4.6097, -74.0817) // Bogotá as default instead of London
 
     val userLocation = viewModel.userLocation.value
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     AskLocationPermission(viewModel, context, fusedLocationClient)
 
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(london, 10f)
+        position = CameraPosition.fromLatLngZoom(initialLocation ?: defaultLocation, 15f)
     }
 
-
-    val markerState = rememberMarkerState(position = london)
+    val markerState = rememberMarkerState(position = initialLocation ?: defaultLocation)
 
     LaunchedEffect(userLocation) {
-        // Si obtenemos ubicación del usuario, mover marcador y cámara ahí
-        userLocation?.let {
-            markerState.position = it
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 10f)
+        // Si no hay una ubicación inicial y obtenemos la del usuario, mover ahí
+        if (initialLocation == null && userLocation != null) {
+            markerState.position = userLocation
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(userLocation, 15f)
             viewModel.getAddressFromLatLng(
                 context = context,
-                lat = it.latitude,
-                lng = it.longitude
+                lat = userLocation.latitude,
+                lng = userLocation.longitude
             ) { address ->
-                onMapClick(it, address ?: "")
+                onMapClick(userLocation, address ?: "")
             }
-
-            onMapClick(it, "")
         }
     }
 
@@ -71,18 +69,14 @@ fun MapScreen(
         modifier = modifier,
         cameraPositionState = cameraPositionState,
         properties = MapProperties(
-            isMyLocationEnabled = userLocation != null
+            isMyLocationEnabled = true
         ),
         uiSettings = MapUiSettings(
-            myLocationButtonEnabled = true
+            myLocationButtonEnabled = true,
+            zoomControlsEnabled = true
         ),
-//        onMapClick = { latLng ->
-//            markerState.position = latLng
-//        },
         onMapClick = { latLng ->
             markerState.position = latLng
-            markerState.position.latitude
-
             viewModel.getAddressFromLatLng(
                 context = context,
                 lat = latLng.latitude,
@@ -92,16 +86,11 @@ fun MapScreen(
             }
         }
     ) {
-        // If the user's location is available, place a marker on the map
-        userLocation?.let {
-            Marker(
-                state = markerState, // Place the marker at the user's location
-                title = "Tu estas aquí 😎✌🏻", // Set the title for the marker
-                snippet = "Aquí es donde te encuentras actualmente." // Set the snippet for the marker
-            )
-            // Move the camera to the user's location with a zoom level of 10f
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 10f)
-        }
+        Marker(
+            state = markerState,
+            title = "Ubicación seleccionada",
+            snippet = "Esta será la ubicación de la oferta."
+        )
     }
 }
 

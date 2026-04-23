@@ -75,10 +75,12 @@ fun FilterChipComponent2(
     fontSize: TextUnit = 12.sp,
     fontWeight: FontWeight = FontWeight.Normal,
     isSelected: Boolean = false,
+    enabled: Boolean = true,
     onClick: () -> Unit = {}
 ) {
     FilterChip(
         onClick = onClick,
+        enabled = enabled,
         border = if (!isSelected) BorderStroke(1.dp, Color(0xFFD6D6D6)) else BorderStroke(
             0.dp,
             Color.Transparent
@@ -94,13 +96,15 @@ fun FilterChipComponent2(
                     fontSize = fontSize,
                     fontWeight = fontWeight,
                     textAlign = TextAlign.Center,
-                    color = if (isSelected) Color.White else Color.Black,
+                    color = if (isSelected) Color.White else if (enabled) Color.Black else Color.Gray,
                 )
             }
         },
         selected = isSelected,
         colors = FilterChipDefaults.filterChipColors(
             selectedContainerColor = Color.Black,
+            disabledContainerColor = Color(0xFFF2F2F2),
+            disabledLabelColor = Color.Gray
         ),
         modifier = modifier // <--- ajusta al contenido
     )

@@ -1,6 +1,8 @@
 package com.example.nexum_cliente.ui.presenter.job_offer
 
 import android.net.Uri
+import com.example.nexum_cliente.ui.common.ValidationResult
+import com.example.nexum_cliente.utils.validator.JobOfferValidator
 
 data class JobOfferState(
     val categoryId: Long = -1L,
@@ -17,13 +19,37 @@ data class JobOfferState(
     val showDatePickerDialog: Boolean = false,
     val showTimePickerDialog: Boolean = false,
     val isLoading: Boolean = false,
-    val isButtonEnabled: Boolean = false,
 
     val isJobOfferSubmitted: Boolean = false,
+    val createdJobOfferUuid: String = "",
     val errorMessage: String = "",
     val successMessage: String = ""
 ) {
-    val isValid: Boolean
-        get() = title.isNotBlank() && description.isNotBlank() && images.isNotEmpty() &&
-                requestedDate.isNotBlank() && requestedTime.isNotBlank() && latitude != 0.0 && longitude != 0.0
+    val titleValidation: ValidationResult
+        get() = JobOfferValidator.validateTitle(title)
+
+    val descriptionValidation: ValidationResult
+        get() = JobOfferValidator.validateDescription(description)
+
+    val addressValidation: ValidationResult
+        get() = JobOfferValidator.validateAddress(address)
+
+    val imagesValidation: ValidationResult
+        get() = JobOfferValidator.validateImages(images)
+
+    val dateValidation: ValidationResult
+        get() = JobOfferValidator.validateDate(requestedDate)
+
+    val timeValidation: ValidationResult
+        get() = JobOfferValidator.validateTime(requestedDate, requestedTime)
+
+    val isFormValid: Boolean
+        get() = titleValidation.isValid &&
+                descriptionValidation.isValid &&
+                addressValidation.isValid &&
+                imagesValidation.isValid &&
+                dateValidation.isValid &&
+                timeValidation.isValid &&
+                latitude != 0.0 &&
+                longitude != 0.0
 }

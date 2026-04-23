@@ -1,16 +1,16 @@
 package com.example.nexum_cliente.ui.presenter.requests
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import com.example.nexum_cliente.domain.use_cases.job_offer.JobOfferUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,19 +26,17 @@ import javax.inject.Inject
 class RequestsViewModel @Inject constructor(
     private val jobOfferUseCases: JobOfferUseCases
 ) : ViewModel() {
-
     companion object {
         private const val TAG = "RequestsViewModel"
     }
 
+    private val _state = MutableStateFlow(RequestsState())
+    val state = _state.asStateFlow()
 
-    var state by mutableStateOf(RequestsState())
-        private set
-
-    val jobOffers = jobOfferUseCases.observeJobOffers()
+    private val observeJobOffers = jobOfferUseCases.observeJobOffers()
 
     init {
-        state = state.copy(isLoading = true)
+        _state.update { it.copy(isLoading = true) }
         observe()
         update(fetchFromRemote = false)
     }
@@ -49,46 +47,74 @@ class RequestsViewModel @Inject constructor(
                 update(event.fetchFromRemote)
             }
         }
-
     }
 
     private fun observe() {
         viewModelScope.launch {
-            jobOffers
+            observeJobOffers
                 .distinctUntilChanged()
                 .catch { e ->
-                    state = state.copy(errorMessage = e.message ?: "Unknown error")
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = e.message ?: "Unknown error"
+                        )
+                    }
                 }
                 .collect { jobOffers ->
-                    state = state.copy(jobOffers = jobOffers)
+                    _state.update { it.copy(jobOffers = jobOffers) }
                 }
         }
     }
 
     private fun update(fetchFromRemote: Boolean = false) {
+        Log.d(TAG, "Updating job offers...")
+        Log.d(TAG, "Fetch from remote: $fetchFromRemote")
         viewModelScope.launch {
             jobOfferUseCases.updateJobOffers(fetchFromRemote)
                 .catch { e ->
                     Log.e(TAG, "Error updating job offers: ${e.message}")
-                    state = state.copy(errorMessage = e.message ?: "Unknown error")
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            isRefreshing = false,
+                            errorMessage = e.message ?: "Unknown error"
+                        )
+                    }
                 }
                 .collect { response ->
                     when (response) {
+                        is ApiResponse.Loading -> {
+                            _state.update {
+                                it.copy(
+                                    isLoading = !fetchFromRemote,
+                                    isRefreshing = fetchFromRemote
+                                )
+                            }
+                        }
+
                         is ApiResponse.Success -> {
-                            state = state.copy(isLoading = false, isRefreshing = false)
+                            _state.update { it.copy(isLoading = false, isRefreshing = false) }
                         }
 
                         is ApiResponse.Error -> {
-                            state = state.copy(isLoading = false, isRefreshing = false)
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    isRefreshing = false,
+                                    errorMessage = response.errorMessage
+                                )
+                            }
                         }
 
                         is ApiResponse.Failure -> {
-                            state = state.copy(isLoading = false, isRefreshing = false)
-
-                        }
-
-                        is ApiResponse.Loading -> {
-                            state = state.copy(isLoading = true, isRefreshing = true)
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    isRefreshing = false,
+                                    errorMessage = response.errorMessage
+                                )
+                            }
                         }
                     }
                 }
