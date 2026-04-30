@@ -299,18 +299,18 @@ class SignUpViewModel @Inject constructor(
                         if (exception is StorageException && exception.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND) {
                             Log.w(
                                 TAG,
-                                "Image to delete was not found in Firebase 🤔. Deleting locally ♻️",
+                                "Image to delete was not found in Firebase. Deleting locally",
                                 exception
                             )
                             onDelete()
                         } else {
-                            Log.e(TAG, "❌ Error deleting image", exception)
+                            Log.e(TAG, "Error deleting image", exception)
                         }
                     }
             } else {
                 mediaManagementUseCase.uploadAndSaveImage(newUri, currentUrl, storageKey)
                     .onSuccess(onSuccess)
-                    .onFailure { Log.e(TAG, "Error uploading image ⏫", it) }
+                    .onFailure { Log.e(TAG, "Error uploading image", it) }
             }
         }
     }
@@ -390,40 +390,63 @@ class SignUpViewModel @Inject constructor(
     private fun signUp() {
         signUpJob?.cancel()
         signUpJob = viewModelScope.launch {
-            val tokenResult = getFcmTokenUseCase()
-            val tkn = tokenResult.getOrElse {
-                state = state.copy(
-                    signUpError = true,
-                    errorMessage = "No se pudo obtener el token de notificación."
-                )
-                return@launch
-            }
+            try {
+                state = state.copy(isSigningUp = true, signUpError = false, errorMessage = "")
 
-            val username = signUpMapper.generateUsername(state.name, state.lastName)
-            state = state.copy(username = username)
+                val tokenResult = getFcmTokenUseCase()
+                val tkn = tokenResult.getOrElse {
+                    state = state.copy(
+                        isSigningUp = false,
+                        signUpError = true,
+                        errorMessage = "No se pudo obtener el token de notificación."
+                    )
+                    return@launch
+                }
 
-            val signUpReq = signUpMapper.mapStateToRequest(state, tkn, username)
+                val username = signUpMapper.generateUsername(state.name, state.lastName)
+                state = state.copy(username = username)
 
-            Log.d(TAG, "SignUpRequest: ${signUpReq}")
+                val signUpReq = signUpMapper.mapStateToRequest(state, tkn, username)
 
-            authUseCases.signUp(signUpReq).collect { response ->
-                when (response) {
-                    is ApiResponse.Success -> {
-                        state =
-                            state.copy(isSignedUp = true, signUpResponse = response.data.message)
-                    }
+                Log.d(TAG, "SignUpRequest: ${signUpReq}")
 
-                    is ApiResponse.Error -> {
-                        state = state.copy(signUpError = true, errorMessage = response.errorMessage)
-                    }
+                authUseCases.signUp(signUpReq).collect { response ->
+                    when (response) {
+                        is ApiResponse.Success -> {
+                            state = state.copy(
+                                isSigningUp = false,
+                                isSignedUp = true,
+                                signUpResponse = response.data.message
+                            )
+                        }
 
-                    is ApiResponse.Failure -> {
-                        state = state.copy(signUpError = true, errorMessage = response.errorMessage)
-                    }
+                        is ApiResponse.Error -> {
+                            state = state.copy(
+                                isSigningUp = false,
+                                signUpError = true,
+                                errorMessage = response.errorMessage
+                            )
+                        }
 
-                    is ApiResponse.Loading -> { /* Opcional: mostrar un spinner global */
+                        is ApiResponse.Failure -> {
+                            state = state.copy(
+                                isSigningUp = false,
+                                signUpError = true,
+                                errorMessage = response.errorMessage
+                            )
+                        }
+
+                        is ApiResponse.Loading -> { /* Opcional: mostrar un spinner global */
+                        }
                     }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error durante signUp", e)
+                state = state.copy(
+                    isSigningUp = false,
+                    signUpError = true,
+                    errorMessage = "Ocurrió un error inesperado: ${e.message}"
+                )
             }
         }
     }
