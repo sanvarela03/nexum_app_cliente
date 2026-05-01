@@ -2,7 +2,7 @@ package com.example.nexum_cliente.ui.presenter.sign_up.screens
 
 import android.net.Uri
 import android.os.Build
-import android.util.Log
+
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -34,12 +34,14 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material3.ButtonDefaults
+
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,7 +61,7 @@ import com.example.nexum_cliente.R
 import com.example.nexum_cliente.common.capitalizeFirstLetter
 import com.example.nexum_cliente.ui.components.ButtonComponent
 import com.example.nexum_cliente.ui.components.ImagePreview
-import com.example.nexum_cliente.ui.components.MyDialog2
+import com.example.nexum_cliente.ui.components.SignUpSuccessDialog
 import com.example.nexum_cliente.ui.navigation.rutes.AuthRoutes
 import com.example.nexum_cliente.ui.presenter.sign_up.SignUpEvent
 import com.example.nexum_cliente.ui.presenter.sign_up.SignUpState
@@ -83,6 +85,8 @@ fun SignUpProfilePictureScreen(
     val state = viewModel.state
     val context = LocalContext.current
 
+    val capturedUsername = remember(state.username) { state.username }
+
     LaunchedEffect(state.signUpError) {
         if (state.signUpError) {
             Toast.makeText(context, state.errorMessage, Toast.LENGTH_LONG).show()
@@ -92,6 +96,7 @@ fun SignUpProfilePictureScreen(
 
     SignUpProfilePictureScreenContent(
         state = state,
+        username = capturedUsername,
         onProfilePictureChanged = {
             viewModel.onEvent(SignUpEvent.ProfilePictureUriChanged(it))
         },
@@ -101,12 +106,9 @@ fun SignUpProfilePictureScreen(
         onRegister = {
             viewModel.onEvent(SignUpEvent.RegisterButtonClicked)
         },
-        onDismissSuccess = {
+        onAcceptAndNavigate = {
             viewModel.onEvent(SignUpEvent.DismissSignUpSuccessDialog)
-        },
-        onNavigateSuccess = {
-            viewModel.onEvent(SignUpEvent.DismissSignUpSuccessDialog)
-            navController.navigate(AuthRoutes.SignInScreen(username = state.username)) {
+            navController.navigate(AuthRoutes.SignInScreen(username = capturedUsername)) {
                 popUpTo(AuthRoutes.SignUpScreen) {
                     inclusive = true
                 }
@@ -120,11 +122,11 @@ fun SignUpProfilePictureScreen(
 @Preview(showBackground = true, showSystemUi = true)
 private fun SignUpProfilePictureScreenContent(
     state: SignUpState = SignUpState(),
+    username: String = "",
     onProfilePictureChanged: (Uri) -> Unit = {},
     onRemoveProfilePicture: (Int) -> Unit = {},
     onRegister: () -> Unit = {},
-    onDismissSuccess: () -> Unit = {},
-    onNavigateSuccess: () -> Unit = {}
+    onAcceptAndNavigate: () -> Unit = {}
 ) {
     val insets = WindowInsets.navigationBars.asPaddingValues()
     Nexum_clienteTheme() {
@@ -258,26 +260,23 @@ private fun SignUpProfilePictureScreenContent(
             Spacer(modifier = Modifier.height(10.dp))
             ButtonComponent(
                 value = "Terminar registro",
+                isLoading = state.isSigningUp,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     disabledContainerColor = MaterialTheme.colorScheme.surface,
                     contentColor = Color.White,
                     disabledContentColor = MaterialTheme.colorScheme.secondary
                 ),
-                isEnabled = state.isProfilePictureValid
+                isEnabled = state.isProfilePictureValid && !state.isSigningUp
             ) {
-                Log.d("SignUpButton", "Button clicked")
                 onRegister()
             }
 
-            MyDialog2(
-                title = "Registro exitoso",
+            SignUpSuccessDialog(
                 show = state.isSignedUp,
-                onDismiss = onDismissSuccess,
-                onConfirm = onNavigateSuccess
-            ) {
-                Text(text = "El nombre de usuario autogenerado es: ${state.username}")
-            }
+                username = username,
+                onAccept = onAcceptAndNavigate
+            )
         }
     }
 }
