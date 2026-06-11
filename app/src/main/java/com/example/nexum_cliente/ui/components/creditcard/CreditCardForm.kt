@@ -44,7 +44,7 @@ private fun isFormValid(state: CreditCardState): Boolean =
 // Card type label
 // ---------------------------------------------------------------------------
 
-private fun CardType.label(): String = when (this) {
+internal fun CardType.label(): String = when (this) {
     CardType.VISA -> "Visa"
     CardType.MASTERCARD -> "Mastercard"
     CardType.AMEX -> "Amex"

@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.nexum_cliente.ui.components.creditcard.CreditCardForm
 import com.example.nexum_cliente.ui.components.creditcard.CreditCardState
+import com.example.nexum_cliente.ui.components.creditcard.CreditCardVisual
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,6 +82,15 @@ fun CreditCardFormPreview(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            HorizontalDivider()
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Live card preview
+            CreditCardVisual(state = state)
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             HorizontalDivider()
 
