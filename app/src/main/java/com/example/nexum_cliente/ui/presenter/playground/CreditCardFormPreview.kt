@@ -24,7 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
+
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -37,7 +37,7 @@ import kotlinx.coroutines.launch
 fun CreditCardFormPreview(
     onNavigateBack: () -> Unit
 ) {
-    var state by rememberSaveable { mutableStateOf(CreditCardState()) }
+    var state by remember { mutableStateOf(CreditCardState()) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
