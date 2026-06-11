@@ -10,12 +10,15 @@ import androidx.navigation.toRoute
 import com.example.nexum_cliente.ui.navigation.rutes.DrawerRoutes
 import com.example.nexum_cliente.ui.navigation.rutes.HomeRoutes
 import com.example.nexum_cliente.ui.navigation.rutes.JobOfferRoutes
+import com.example.nexum_cliente.ui.navigation.rutes.PlaygroundRoutes
 import com.example.nexum_cliente.ui.presenter.categories.CategoriesScreen
 import com.example.nexum_cliente.ui.presenter.chat.ChatScreen
 import com.example.nexum_cliente.ui.presenter.conversations.ConversationsScreen
 import com.example.nexum_cliente.ui.presenter.home.HomeViewModel
 import com.example.nexum_cliente.ui.presenter.job_offer.JobOfferScreen
 import com.example.nexum_cliente.ui.presenter.mercado_pago_checkout.MercadoPagoCheckout
+import com.example.nexum_cliente.ui.presenter.playground.CreditCardFormPreview
+import com.example.nexum_cliente.ui.presenter.playground.PlaygroundScreen
 import com.example.nexum_cliente.ui.presenter.profile.ProfileScreen
 import com.example.nexum_cliente.ui.presenter.requests.RequestsScreen
 import com.example.nexum_cliente.ui.presenter.settings.SettingsScreen
@@ -65,6 +68,18 @@ fun NavGraphBuilder.homeGraph(
 
         composable<DrawerRoutes.SettingsScreen> {
             SettingsScreen()
+        }
+
+        composable<DrawerRoutes.PlaygroundScreen> {
+            PlaygroundScreen(
+                onNavigateTo = { route -> navController.navigate(route) }
+            )
+        }
+
+        composable<PlaygroundRoutes.CreditCardForm> {
+            CreditCardFormPreview(
+                onNavigateBack = { navController.navigateUp() }
+            )
         }
         composable<HomeRoutes.ConversationsScreen> {
             ConversationsScreen(

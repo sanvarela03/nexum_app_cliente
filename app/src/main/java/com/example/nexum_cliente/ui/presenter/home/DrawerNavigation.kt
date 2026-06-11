@@ -2,8 +2,10 @@ package com.example.nexum_cliente.ui.presenter.home
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Science
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.nexum_cliente.ui.navigation.rutes.DrawerRoutes
@@ -38,5 +40,13 @@ enum class DrawerNavigation(
         icon = Icons.Outlined.Settings,
         selectedIcon = Icons.Filled.Settings,
         unselectedIcon = Icons.Outlined.Settings,
+    ),
+    PLAYGROUND(
+        title = "Playground",
+        description = "Componentes UI",
+        route = DrawerRoutes.PlaygroundScreen,
+        icon = Icons.Outlined.Science,
+        selectedIcon = Icons.Filled.Science,
+        unselectedIcon = Icons.Outlined.Science,
     ),
 }
