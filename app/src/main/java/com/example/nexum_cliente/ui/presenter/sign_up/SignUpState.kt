@@ -68,6 +68,7 @@ data class SignUpState(
     val frontDocumentUriError: Boolean = false,
     val backDocumentUriError: Boolean = false,
 
+    val isSigningUp: Boolean = false,
     val isSignedUp: Boolean = false,
     val signUpResponse: String = "",
 
