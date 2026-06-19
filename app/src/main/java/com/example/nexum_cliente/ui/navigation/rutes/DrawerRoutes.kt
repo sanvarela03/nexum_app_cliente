@@ -17,4 +17,7 @@ sealed class DrawerRoutes {
 
     @Serializable
     object SettingsScreen : DrawerRoutes()
+
+    @Serializable
+    object PlaygroundScreen : DrawerRoutes()
 }
