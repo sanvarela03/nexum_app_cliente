@@ -10,6 +10,10 @@ sealed class JobOfferEvent {
     data class LongitudeChanged(val longitude: Double) : JobOfferEvent()
     data class AddImage(val images: List<Uri>) : JobOfferEvent()
     data class RemoveImage(val index: Int) : JobOfferEvent()
+    // Eventos para subida real a Firebase
+    data class ImageUriAdded(val uri: Uri) : JobOfferEvent()         // Dispara upload
+    data class ImageUrlUploaded(val url: String) : JobOfferEvent()   // Upload exitoso
+    data class ImageUrlRemoved(val url: String) : JobOfferEvent()    // Dispara delete
     data class DateOptionSelected(val option: String) : JobOfferEvent()
     data class TimeOptionSelected(val option: String) : JobOfferEvent()
     data class ShowDatePicker(val show: Boolean) : JobOfferEvent()

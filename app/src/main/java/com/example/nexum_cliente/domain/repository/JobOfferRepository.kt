@@ -18,4 +18,5 @@ interface JobOfferRepository {
     fun observeJobOffers(): Flow<List<JobOffer>>
     fun createJobOffer(newJobOffer: NewJobOffer): Flow<ApiResponse<NewJobOfferRes>>
     fun getJobOffers(): Flow<List<JobOffer>>
+    suspend fun getByUuid(uuid: String): JobOffer?
 }

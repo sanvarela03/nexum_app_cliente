@@ -1,6 +1,5 @@
 package com.example.nexum_cliente.ui.components
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -9,7 +8,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
@@ -44,10 +42,11 @@ fun MyTextFieldComponent2(
         .fillMaxWidth()
         .clip(componentShapes.small),
 ) {
-    var isFocused by rememberSaveable { mutableStateOf(false) }
+    // Este estado evita que el campo se pinte de rojo al abrir la pantalla
     var hasBeenModified by rememberSaveable { mutableStateOf(false) }
 
-    val shouldShowError = errorStatus && hasBeenModified && !isFocused
+    // Feedback inmediato: Solo mostramos el error si ya hubo interacción
+    val shouldShowError = errorStatus && hasBeenModified
 
     Column(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
@@ -60,9 +59,7 @@ fun MyTextFieldComponent2(
                 unfocusedLeadingIconColor = Color(0xFFE6E6E6),
             ),
             shape = RoundedCornerShape(8.dp),
-            modifier = modifier.onFocusEvent {
-                isFocused = it.isFocused
-            },
+            modifier = modifier,
             label = {
                 Text(
                     text = labelValue,

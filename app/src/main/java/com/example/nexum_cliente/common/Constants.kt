@@ -26,8 +26,20 @@ private val REMOTE_WS_URL = "wss://nexum-msg-be.onrender.com"
 val useLocal = true
 
 val HOST_URL = if (useLocal) LOCAL_URL else REMOTE_URL
-val MSG_URL = if (useLocal) LOCAL_MSG_URL else REMOTE_MSG_URL
+val MSG_URL = if (false) LOCAL_MSG_URL else REMOTE_MSG_URL
 val BASE_URL = MSG_URL
 val WS_URL = if (useLocal) LOCAL_WS_URL else REMOTE_WS_URL
 
 const val APP_KEY = "a3f2c1b1-8e4b-4a6d-8b9e-0c1f2a3b4d5e"
+
+// Límite máximo de imágenes por oferta de trabajo
+const val MAX_JOB_OFFER_IMAGES = 5
+
+// Key para persistir el draft de imágenes de JobOffer en DataStore
+const val JOB_OFFER_DRAFT_IMAGES_KEY = "jobOfferDraftImageUrls"
+
+// Cache persistente URI → Firebase URL (solo se guarda en submits exitosos)
+// Formato: "uri1:::url1|||uri2:::url2"
+const val JOB_OFFER_URI_URL_CACHE_KEY = "jobOfferUriUrlCache"
+const val URI_URL_SEPARATOR = ":::"
+const val ENTRY_SEPARATOR = "|||"

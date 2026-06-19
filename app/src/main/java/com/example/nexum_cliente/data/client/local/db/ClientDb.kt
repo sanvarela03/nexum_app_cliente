@@ -14,6 +14,10 @@ import com.example.nexum_cliente.data.job_offer.local.JobOfferDao
 import com.example.nexum_cliente.data.job_offer.local.JobOfferEntity
 import com.example.nexum_cliente.data.market_location.local.MarketLocationDao
 import com.example.nexum_cliente.data.market_location.local.MarketLocationEntity
+import com.example.nexum_cliente.data.nearby_workers.local.NearbyWorkerDao
+import com.example.nexum_cliente.data.nearby_workers.local.NearbyWorkerEntity
+import com.example.nexum_cliente.data.notification.local.NotificationDao
+import com.example.nexum_cliente.data.notification.local.NotificationEntity
 import com.example.nexum_cliente.data.profile.local.ProfileDao
 import com.example.nexum_cliente.data.profile.local.ProfileEntity
 
@@ -34,6 +38,8 @@ import com.example.nexum_cliente.data.profile.local.ProfileEntity
         CountryEntity::class,
         ProfileEntity::class,
         JobOfferEntity::class,
+        NearbyWorkerEntity::class,
+        NotificationEntity::class
     ],
     version = 1
 )
@@ -45,4 +51,6 @@ abstract class ClientDb : RoomDatabase() {
     abstract val countryDao: CountryDao
     abstract val profileDao: ProfileDao
     abstract val jobOfferDao: JobOfferDao
+    abstract val nearbyWorkerDao: NearbyWorkerDao
+    abstract val notificationDao: NotificationDao
 }

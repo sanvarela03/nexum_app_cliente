@@ -13,12 +13,11 @@ import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import com.example.nexum_cliente.data.mapper.SignUpMapper
 import com.example.nexum_cliente.domain.use_cases.auth.AuthUseCases
 import com.example.nexum_cliente.domain.use_cases.common.GetFcmTokenUseCase
-import com.example.nexum_cliente.domain.use_cases.common.MediaManagementUseCase
+import com.example.nexum_cliente.common.MediaUploadHandler
 import com.example.nexum_cliente.domain.use_cases.country.CountryUseCases
 import com.example.nexum_cliente.domain.use_cases.market_location.MarketLocationUseCases
 import com.example.nexum_cliente.domain.use_cases.sign_up.RestoreSignUpDraftUseCase
 import com.example.nexum_cliente.domain.use_cases.sign_up.ValidateSignUpUseCase
-import com.google.firebase.storage.StorageException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
@@ -35,7 +34,7 @@ class SignUpViewModel @Inject constructor(
     private val authUseCases: AuthUseCases,
     private val countryUseCases: CountryUseCases,
     private val marketLocationUseCases: MarketLocationUseCases,
-    private val mediaManagementUseCase: MediaManagementUseCase,
+    private val mediaUploadHandler: MediaUploadHandler,
     private val restoreSignUpDraftUseCase: RestoreSignUpDraftUseCase,
     private val getFcmTokenUseCase: GetFcmTokenUseCase,
     private val validateSignUpUseCase: ValidateSignUpUseCase,
@@ -283,36 +282,14 @@ class SignUpViewModel @Inject constructor(
         onSuccess: (String) -> Unit,
         onDelete: () -> Unit
     ) {
-        Log.d("SignUpViewModel", "handleMediaChange: $newUri ${newUri.toString().length}")
-        viewModelScope.launch {
-            if (newUri == null || newUri == Uri.EMPTY) {
-                mediaManagementUseCase.deleteImage(currentUrl, storageKey)
-                    .onSuccess { onDelete() }
-                    .onFailure { exception ->
-                        Log.e(TAG, "Error deleting image", exception)
-                        Log.i(TAG, "isStorageException: ${exception is StorageException}")
-                        if (exception is StorageException) {
-                            Log.i(TAG, "errorCode: ${exception.errorCode}")
-                        }
-
-                        Log.i(TAG, "isNotFound: ${exception is StorageException && exception.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND}")
-                        if (exception is StorageException && exception.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND) {
-                            Log.w(
-                                TAG,
-                                "Image to delete was not found in Firebase 🤔. Deleting locally ♻️",
-                                exception
-                            )
-                            onDelete()
-                        } else {
-                            Log.e(TAG, "❌ Error deleting image", exception)
-                        }
-                    }
-            } else {
-                mediaManagementUseCase.uploadAndSaveImage(newUri, currentUrl, storageKey)
-                    .onSuccess(onSuccess)
-                    .onFailure { Log.e(TAG, "Error uploading image ⏫", it) }
-            }
-        }
+        mediaUploadHandler.handleMediaChange(
+            scope = viewModelScope,
+            newUri = newUri,
+            currentUrl = currentUrl,
+            storageKey = storageKey,
+            onSuccess = onSuccess,
+            onDelete = onDelete
+        )
     }
 
     private fun refreshCountries(fetchFromRemote: Boolean = false) {

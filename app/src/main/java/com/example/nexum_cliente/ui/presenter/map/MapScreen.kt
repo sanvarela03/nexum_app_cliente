@@ -6,7 +6,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
@@ -40,9 +43,46 @@ fun MapScreen(
     val context = LocalContext.current
     val defaultLocation = LatLng(4.6097, -74.0817) // Bogotá as default instead of London
 
+    var isPermissionGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        android.Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
     val userLocation = viewModel.userLocation.value
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
-    AskLocationPermission(viewModel, context, fusedLocationClient)
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions.values.any { it }
+        isPermissionGranted = granted
+        if (granted) {
+            viewModel.fetchUserLocation(context, fusedLocationClient)
+        } else {
+            Timber.e("Location permission was denied by the user.")
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (!isPermissionGranted) {
+            permissionLauncher.launch(
+                arrayOf(
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        } else {
+            viewModel.fetchUserLocation(context, fusedLocationClient)
+        }
+    }
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(initialLocation ?: defaultLocation, 15f)
@@ -69,10 +109,10 @@ fun MapScreen(
         modifier = modifier,
         cameraPositionState = cameraPositionState,
         properties = MapProperties(
-            isMyLocationEnabled = true
+            isMyLocationEnabled = isPermissionGranted
         ),
         uiSettings = MapUiSettings(
-            myLocationButtonEnabled = true,
+            myLocationButtonEnabled = isPermissionGranted,
             zoomControlsEnabled = true
         ),
         onMapClick = { latLng ->
@@ -91,41 +131,5 @@ fun MapScreen(
             title = "Ubicación seleccionada",
             snippet = "Esta será la ubicación de la oferta."
         )
-    }
-}
-
-@Composable
-private fun AskLocationPermission(
-    viewModel: MapViewModel,
-    context: Context,
-    fusedLocationClient: FusedLocationProviderClient
-) {
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            // Fetch the user's location and update the camera if permission is granted
-            viewModel.fetchUserLocation(context, fusedLocationClient)
-        } else {
-            // Handle the case when permission is denied
-            Timber.e("Location permission was denied by the user.")
-        }
-    }
-    LaunchedEffect(Unit) {
-        when (PackageManager.PERMISSION_GRANTED) {
-            // Check if the location permission is already granted
-            ContextCompat.checkSelfPermission(
-                context,
-                android.Manifest.permission.ACCESS_FINE_LOCATION
-            ) -> {
-                // Fetch the user's location and update the camera
-                viewModel.fetchUserLocation(context, fusedLocationClient)
-            }
-
-            else -> {
-                // Request the location permission if it has not been granted
-                permissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
-            }
-        }
     }
 }

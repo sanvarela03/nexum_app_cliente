@@ -37,30 +37,38 @@ fun MyTextFieldComponent(
     trailingIcon: ImageVector? = null,
     onTextSelected: (String) -> Unit,
     textValue: String = "",
+    keyboardOptions: KeyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
     errorStatus: Boolean = false,
     errorMessage: String? = null,
 ) {
-    var isFocused by rememberSaveable{ mutableStateOf(false) }
+    var isFocused by rememberSaveable { mutableStateOf(false) }
     var hasBeenModified by rememberSaveable { mutableStateOf(false) }
-    val shouldShowError = errorStatus && hasBeenModified
 
-    val unfocusedBorderColor = if (errorStatus && isFocused) Color.Green else Color(0xFFE6E6E6)
+    // El error solo se muestra si el estado es de error Y el usuario ha modificado el campo.
+    val isActuallyError = errorStatus && hasBeenModified
+    
+    // El verde solo se muestra si NO hay error, el usuario ha interactuado y NO tiene el foco.
+    val shouldShowSuccess = !errorStatus && hasBeenModified && !isFocused
+
+    val unfocusedBorderColor = if (shouldShowSuccess) {
+        Color.Green 
+    } else {
+        Color(0xFFE6E6E6)
+    }
+
     Column(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = textValue,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Blue,        // cuando está enfocado
-                unfocusedBorderColor = unfocusedBorderColor, // cuando no está enfocado
+                focusedBorderColor = Color.Blue,
+                unfocusedBorderColor = unfocusedBorderColor,
                 errorBorderColor = Color.Red,
-                unfocusedLabelColor = Color(0xFFE6E6E6),
-                unfocusedLeadingIconColor = Color(0xFFE6E6E6),
+                unfocusedLabelColor = Color(0xFF9EA1A5),
+                unfocusedLeadingIconColor = Color(0xFF9EA1A5),
             ),
             shape = RoundedCornerShape(8.dp),
             modifier = modifier.onFocusEvent {
-                if (it.isFocused) {
-                    // Notificamos al padre que perdió el foco
-                    isFocused = true
-                }
+                isFocused = it.isFocused
             },
             label = {
                 Text(
@@ -68,7 +76,7 @@ fun MyTextFieldComponent(
                     fontWeight = FontWeight.Medium
                 )
             },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardOptions = keyboardOptions,
             singleLine = true,
             maxLines = 1,
             onValueChange = {
@@ -81,77 +89,9 @@ fun MyTextFieldComponent(
             trailingIcon = trailingIcon?.let { nonNullIcon ->
                 { Icon(nonNullIcon, contentDescription = null) }
             },
-            isError = shouldShowError
+            isError = isActuallyError
         )
-        if (shouldShowError && !errorMessage.isNullOrBlank()) {
-            Text(
-                text = errorMessage,
-                color = Color.Red,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MyTextFieldComponent(
-    modifier: Modifier = Modifier
-        .fillMaxWidth()
-        .clip(componentShapes.small),
-    labelValue: String,
-    leadingIcon: ImageVector? = null,
-    trailingIcon: ImageVector? = null,
-    onTextSelected: (String) -> Unit,
-    textValue: String = "",
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    errorStatus: Boolean = false,
-    errorMessage: String? = null,
-) {
-    var isFocused by rememberSaveable { mutableStateOf(false) }
-
-    val unfocusedBorderColor =
-        if (errorStatus && isFocused) Color.Green else MaterialTheme.colorScheme.secondary
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = textValue,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Blue,        // cuando está enfocado
-                unfocusedBorderColor = Color(0xFFE6E6E6), // cuando no está enfocado
-                errorBorderColor = Color.Red,
-                unfocusedLabelColor = Color(0xFFE6E6E6),
-                unfocusedLeadingIconColor = Color(0xFFE6E6E6)
-            ),
-            shape = RoundedCornerShape(8.dp),
-            modifier = modifier.onFocusEvent {
-                if (it.isFocused) {
-                    // Notificamos al padre que perdió el foco
-                    isFocused = true
-                }
-            },
-            label = {
-                Text(
-                    text = labelValue,
-                    fontWeight = FontWeight.Medium
-                )
-            },
-            keyboardOptions = keyboardOptions,
-            singleLine = true,
-            maxLines = 1,
-            onValueChange = {
-                onTextSelected(it)
-            },
-            leadingIcon = leadingIcon?.let { nonNullIcon ->
-                { Icon(nonNullIcon, contentDescription = null) }
-            },
-            trailingIcon = trailingIcon?.let { nonNullIcon ->
-                { Icon(nonNullIcon, contentDescription = null) }
-            },
-            isError = errorStatus
-        )
-        if (errorStatus && !errorMessage.isNullOrBlank()) {
+        if (isActuallyError && !errorMessage.isNullOrBlank()) {
             Text(
                 text = errorMessage,
                 color = Color.Red,

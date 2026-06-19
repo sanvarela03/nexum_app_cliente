@@ -51,4 +51,9 @@ class JobOfferRepositoryImpl @Inject constructor(
             // TODO: Implementar lógica para obtener las ofertas de trabajo desde el servidor
         }
     }
+
+    override suspend fun getByUuid(uuid: String): JobOffer? {
+        val entity = local.getByUuid(uuid)
+        return entity?.let { JobOfferMapper.toDomain(it) }
+    }
 }
