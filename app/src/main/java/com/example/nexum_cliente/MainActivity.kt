@@ -1,16 +1,20 @@
 package com.example.nexum_cliente
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import com.example.nexum_cliente.app.CustomerApp
 import com.example.nexum_cliente.data.local.AppDatabase
@@ -30,6 +34,7 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        askNotificationPermission()
         Log.d("MainActivity", "onCreate: ")
 
         // Desactivar el ajuste automático de la ventana por parte del sistema
@@ -51,6 +56,26 @@ class MainActivity : ComponentActivity() {
              )
         }
 //        appDatabaseProvider.get()
+    }
+
+    private fun askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                // Si el permiso no ha sido concedido, lo solicitamos
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // FCM SDK (and your app) can post notifications.
+        } else {
+            // TODO: Inform user that that your app will not show notifications.
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -78,7 +103,7 @@ class MainActivity : ComponentActivity() {
         Log.d("MainActivity", "onStop: ")
     }
 
-    override fun onDestroy() {
+        override fun onDestroy() {
         super.onDestroy()
         Log.d("MainActivity", "onDestroy: ")
     }

@@ -3,9 +3,9 @@ package com.example.nexum_cliente.ui.presenter.mercado_pago_checkout
 import com.example.nexum_cliente.data.mercado_pago.remote.payload.req.CreatePreferenceRequest
 
 data class MercadoPagoUiState(
-    val title: String = "",
-    val price: String = "",
-    val quantity: String = "",
+    val title: String = "Tarifa de seguridad y confianza",
+    val price: String = "8700",
+    val quantity: String = "1",
     val isLoading: Boolean = false,
     val preferenceId: String? = null,
     val error: String? = null,

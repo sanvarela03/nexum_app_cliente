@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.utils.validator
 
+import com.example.nexum_cliente.common.MAX_JOB_OFFER_IMAGES
 import com.example.nexum_cliente.ui.common.ValidationResult
 import com.example.nexum_cliente.utils.DateUtils
 import java.text.SimpleDateFormat
@@ -83,9 +84,9 @@ object JobOfferValidator {
         return validateTime(requestedDate, timeFormatter.format(calendar.time), buffer)
     }
 
-    fun validateTitle(title: String): ValidationResult {
+    fun validateTitle(title: String?): ValidationResult {
         return when {
-            title.isBlank() -> ValidationResult(false, "El título no puede estar vacío.")
+            title.isNullOrBlank() -> ValidationResult(false, "El título no puede estar vacío.")
             title.length < 5 -> ValidationResult(false, "El título debe tener al menos 5 caracteres.")
             else -> ValidationResult(true)
         }
@@ -108,10 +109,13 @@ object JobOfferValidator {
     }
 
     fun validateImages(images: List<Any>): ValidationResult {
-        return if (images.isEmpty()) {
-            ValidationResult(false, "Debes subir al menos una imagen.")
-        } else {
-            ValidationResult(true)
+        return when {
+            images.isEmpty() ->
+                ValidationResult(false, "Debes subir al menos una imagen.")
+            images.size > MAX_JOB_OFFER_IMAGES ->
+                ValidationResult(false, "No puedes subir más de $MAX_JOB_OFFER_IMAGES imágenes.")
+            else ->
+                ValidationResult(true)
         }
     }
 

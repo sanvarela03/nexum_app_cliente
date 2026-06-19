@@ -101,7 +101,6 @@ private fun SignUpUserDataScreenContent(
                     textValue = state.name,
                     onTextSelected = {
                         nameChanged(it)
-//                    viewModel.onEvent(SignUpEvent.NameChanged(it))
                     },
                     errorStatus = state.nameError
                 )

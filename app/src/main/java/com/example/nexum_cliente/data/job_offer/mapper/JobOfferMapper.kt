@@ -30,6 +30,7 @@ object JobOfferMapper :
             categoryId = state.categoryId,
             requestedDate = state.requestedDate,
             photos = state.photos,
+            address = state.address,
             location = state.location
         )
     }
@@ -78,11 +79,12 @@ object JobOfferMapper :
         val requestedDate = DateUtils.formatToISO8601(state.requestedDate, state.requestedTime)
         Log.d("JobOfferMapper", "Requested date: $requestedDate")
         return NewJobOffer(
-            title = state.title,
+            title = state.title ?: "",
             description = state.description,
             categoryId = state.categoryId,
             requestedDate = requestedDate,
-            photos = state.images.map { it.toString() }, // Convirtiendo Uris a Strings. El UseCase se encargará de subirlas.
+            photos = state.imageUrls, // URLs reales de Firebase Storage
+            address = state.address,
             location = listOf(state.longitude, state.latitude) // Cuidado, con este orden
         )
     }
