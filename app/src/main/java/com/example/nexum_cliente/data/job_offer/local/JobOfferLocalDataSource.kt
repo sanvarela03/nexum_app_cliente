@@ -24,6 +24,10 @@ class JobOfferLocalDataSource @Inject constructor(
         return dao.getAll()
     }
 
+    suspend fun getByUuid(uuid: String): JobOfferEntity? {
+        return dao.getByUuid(uuid)
+    }
+
     override fun observe(): Flow<List<JobOfferEntity>> {
         return dao.observe()
     }

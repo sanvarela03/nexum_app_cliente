@@ -24,6 +24,9 @@ interface JobOfferDao : BaseDao<JobOfferEntity> {
     @Query("SELECT * FROM $TABLE_NAME WHERE id = :id")
     suspend fun getById(id: Long): JobOfferEntity?
 
+    @Query("SELECT * FROM $TABLE_NAME WHERE uuid = :uuid")
+    suspend fun getByUuid(uuid: String): JobOfferEntity?
+
     @Query("SELECT * FROM $TABLE_NAME")
     fun observe(): Flow<List<JobOfferEntity>>
 

@@ -7,5 +7,6 @@ import javax.inject.Singleton
 data class JobOfferUseCases @Inject constructor(
     val createJobOffer: CreateJobOffer,
     val updateJobOffers: UpdateJobOffers,
-    val observeJobOffers: ObserveJobOffers
+    val observeJobOffers: ObserveJobOffers,
+    val getJobOfferByUuid: GetJobOfferByUuid
 )

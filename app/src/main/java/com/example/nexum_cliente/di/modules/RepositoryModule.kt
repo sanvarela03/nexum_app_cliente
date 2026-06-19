@@ -8,6 +8,8 @@ import com.example.nexum_cliente.data.job_offer.JobOfferRepositoryImpl
 import com.example.nexum_cliente.data.market_location.MarketLocationRepositoryImpl
 import com.example.nexum_cliente.data.mercado_pago.MercadoPagoRepositoryImpl
 import com.example.nexum_cliente.data.message.MessagingRepositoryImpl
+import com.example.nexum_cliente.data.nearby_workers.NearbyWorkersRepositoryImpl
+import com.example.nexum_cliente.data.notification.NotificationRepositoryImpl
 import com.example.nexum_cliente.data.profile.ProfileRepositoryImpl
 import com.example.nexum_cliente.domain.repository.AuthRepository
 import com.example.nexum_cliente.domain.repository.CategoryRepository
@@ -17,6 +19,8 @@ import com.example.nexum_cliente.domain.repository.JobOfferRepository
 import com.example.nexum_cliente.domain.repository.MarketLocationRepository
 import com.example.nexum_cliente.domain.repository.MercadoPagoRepository
 import com.example.nexum_cliente.domain.repository.MessagingRepository
+import com.example.nexum_cliente.domain.repository.NearbyWorkersRepository
+import com.example.nexum_cliente.domain.repository.NotificationRepository
 import com.example.nexum_cliente.domain.repository.ProfileRepository
 import dagger.Binds
 import dagger.Module
@@ -62,4 +66,12 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindProfileRepository(profileRepositoryImpl: ProfileRepositoryImpl): ProfileRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindNearbyWorkersRepository(nearbyWorkersRepositoryImpl: NearbyWorkersRepositoryImpl): NearbyWorkersRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindNotificationRepository(notificationRepositoryImpl: NotificationRepositoryImpl): NotificationRepository
 }

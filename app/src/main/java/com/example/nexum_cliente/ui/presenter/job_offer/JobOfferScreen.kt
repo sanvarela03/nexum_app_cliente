@@ -2,6 +2,7 @@ package com.example.nexum_cliente.ui.presenter.job_offer
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -34,7 +36,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SelectableDates
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -45,12 +46,8 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import kotlinx.coroutines.delay
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -63,7 +60,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.android.gms.maps.model.LatLng
 import com.example.nexum_cliente.R
 import com.example.nexum_cliente.ui.components.ButtonComponent
 import com.example.nexum_cliente.ui.components.FilterChipComponent2
@@ -76,6 +72,7 @@ import com.example.nexum_cliente.ui.components.TimePickerDialog
 import com.example.nexum_cliente.ui.presenter.map.MapScreen
 import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
 import com.example.nexum_cliente.utils.validator.JobOfferValidator
+import com.google.android.gms.maps.model.LatLng
 
 /**
  * @author Santiago Varela Daza
@@ -317,165 +314,204 @@ fun JobOfferScreenContent(
 ) {
     Nexum_clienteTheme {
         Column(
-            modifier = Modifier
-                .padding(start = 16.dp, end = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.fillMaxSize()
         ) {
+            // Stepper fijo en la parte superior
             Stepper(
                 numberOfSteps = 4,
                 currentStep = 2,
                 selectedColor = Color(0xFF009963),
-                unSelectedColor = Color(0xFFE6E6E6)
-            )
-            Text("Agregar dirección", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            MyTextFieldComponent2(
-                labelValue = "Dirección",
-                textValue = state.address,
-                errorStatus = !state.addressValidation.isValid,
-                errorMessage = state.addressValidation.errorMessage,
-                leadingIcon = {
-                    IconButton(onClick = onMyLocationClick) {
-                        Icon(
-                            imageVector = Icons.Default.MyLocation,
-                            contentDescription = "Ubicación actual"
-                        )
-                    }
-                },
-                trailingIcon = {
-                    IconButton(onClick = onShowMapDialog) {
-                        Icon(
-                            painter = painterResource(R.drawable.distance),
-                            contentDescription = "Abrir mapa"
-                        )
-                    }
-                },
-                onTextSelected = {
-                    onEvent(JobOfferEvent.AddressChanged(it))
-                }
+                unSelectedColor = Color(0xFFE6E6E6),
+                modifier = Modifier.padding(5.dp)
             )
 
-            Text("Detalle de la solicitud", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            MyTextFieldComponent(
-                labelValue = "Titulo",
-                textValue = state.title,
-                trailingIcon = Icons.Default.Edit,
-                errorStatus = !state.titleValidation.isValid,
-                errorMessage = state.titleValidation.errorMessage,
-                onTextSelected = {
-                    onEvent(JobOfferEvent.TitleChanged(it))
-                }
-            )
-            MyTextFieldComponent(
-                labelValue = "Descripción",
-                textValue = state.description,
-                trailingIcon = Icons.AutoMirrored.Filled.Assignment,
-                errorStatus = !state.descriptionValidation.isValid,
-                errorMessage = state.descriptionValidation.errorMessage,
-                onTextSelected = {
-                    onEvent(JobOfferEvent.DescriptionChanged(it))
-                }
-            )
-            Text("Agregar evidencia", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-
-            MultiplePhotoPickerComponent(
-                selectedImages = state.images,
-                onAddImage = { images ->
-                    onEvent(JobOfferEvent.AddImage(images))
-                },
-                onRemoveImage = { index ->
-                    onEvent(JobOfferEvent.RemoveImage(index))
-                }
-            )
-            Text("Fecha", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            val dateOptions = listOf("Hoy", "3 dias", "1 semana", "Elegir")
-            FlowRow(
+            // Contenido con scroll
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentWidth()
-                    .defaultMinSize(minHeight = 20.dp)
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                    .weight(1f)
+                    .padding(start = 16.dp, end = 16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                dateOptions.forEach { option ->
-                    FilterChipComponent2(
-                        text = option,
-                        isSelected = state.selectedDateOption == option,
-                        onClick = { onEvent(JobOfferEvent.DateOptionSelected(option)) }
-                    )
-                }
-            }
-
-            Text("Hora", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            val timeOptions = listOf("Mañana", "Tarde", "Noche", "Elegir")
-            FlowRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentWidth()
-                    .defaultMinSize(minHeight = 20.dp)
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                timeOptions.forEach { option ->
-                    val isEnabled = remember(state.requestedDate, option, currentTimeMillis) {
-                        when (option) {
-                            "Mañana" -> JobOfferValidator.validateTime(10, 0, state.requestedDate).isValid
-                            "Tarde" -> JobOfferValidator.validateTime(18, 0, state.requestedDate).isValid
-                            "Noche" -> JobOfferValidator.validateTime(22, 0, state.requestedDate).isValid
-                            else -> true
+                Text("Agregar dirección", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                MyTextFieldComponent2(
+                    labelValue = "Dirección",
+                    textValue = state.address,
+                    errorStatus = !state.addressValidation.isValid,
+                    errorMessage = state.addressValidation.errorMessage,
+                    leadingIcon = {
+                        IconButton(onClick = onMyLocationClick) {
+                            Icon(
+                                imageVector = Icons.Default.MyLocation,
+                                contentDescription = "Ubicación actual",
+                                tint = MaterialTheme.colorScheme.secondary
+                            )
                         }
-                    }
-                    FilterChipComponent2(
-                        text = option,
-                        isSelected = state.selectedTimeOption == option,
-                        enabled = isEnabled,
-                        onClick = { onEvent(JobOfferEvent.TimeOptionSelected(option)) }
-                    )
-                }
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Fecha seleccionada: ", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                
-                val isTimeValid = remember(state.requestedDate, state.requestedTime, currentTimeMillis) {
-                    try {
-                        val timeFormatter = java.text.SimpleDateFormat("hh:mm a", java.util.Locale.ENGLISH)
-                        val date = timeFormatter.parse(state.requestedTime)
-                        val cal = java.util.Calendar.getInstance().apply { 
-                            if (date != null) time = date 
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = onShowMapDialog) {
+                            Icon(
+                                painter = painterResource(R.drawable.distance),
+                                contentDescription = "Abrir mapa"
+                            )
                         }
-                        JobOfferValidator.validateTime(
-                            cal.get(java.util.Calendar.HOUR_OF_DAY),
-                            cal.get(java.util.Calendar.MINUTE),
-                            state.requestedDate
-                        ).isValid
-                    } catch (e: Exception) {
-                        false
+                    },
+                    onTextSelected = {
+                        onEvent(JobOfferEvent.AddressChanged(it))
                     }
-                }
-                
-                Text(
-                    text = "${state.requestedDate} ${state.requestedTime}",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Light,
-                    color = if (isTimeValid) Color(0xFF009963) else Color.Red
                 )
-            }
-            ButtonComponent(
-                value = "Publicar",
-                isEnabled = isValid,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    disabledContainerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = Color.White,
-                    disabledContentColor = MaterialTheme.colorScheme.secondary
-                ),
-                onButtonClicked = {
-                    onSubmit()
-                }
-            )
 
+                Text("Detalle de la solicitud", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                MyTextFieldComponent(
+                    labelValue = "Titulo",
+                    textValue = state.title ?: "",
+                    trailingIcon = Icons.Default.Edit,
+                    errorStatus = !state.titleValidation.isValid,
+                    errorMessage = state.titleValidation.errorMessage,
+                    onTextSelected = {
+                        onEvent(JobOfferEvent.TitleChanged(it))
+                    }
+                )
+                MyTextFieldComponent(
+                    labelValue = "Descripción",
+                    textValue = state.description,
+                    trailingIcon = Icons.AutoMirrored.Filled.Assignment,
+                    errorStatus = !state.descriptionValidation.isValid,
+                    errorMessage = state.descriptionValidation.errorMessage,
+                    onTextSelected = {
+                        onEvent(JobOfferEvent.DescriptionChanged(it))
+                    }
+                )
+                Text("Agregar evidencia", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+
+                MultiplePhotoPickerComponent(
+                    selectedImages = state.images,
+                    onAddImage = { uris ->
+                        // Disparar un upload por cada URI seleccionada
+                        uris.forEach { uri ->
+                            onEvent(JobOfferEvent.ImageUriAdded(uri))
+                        }
+                    },
+                    onRemoveImage = { index ->
+                        // Borrar de Firebase y del estado usando la URL remota
+                        val url = state.imageUrls.getOrNull(index)
+                        if (url != null) {
+                            onEvent(JobOfferEvent.ImageUrlRemoved(url))
+                        } else {
+                            // Fallback: si aún no terminó de subir, solo quitar la URI local
+                            onEvent(JobOfferEvent.RemoveImage(index))
+                        }
+                    }
+                )
+                Text("Fecha", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                val dateOptions = listOf("Hoy", "3 dias", "1 semana", "Elegir")
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentWidth()
+                        .defaultMinSize(minHeight = 20.dp)
+                        .padding(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    dateOptions.forEach { option ->
+                        FilterChipComponent2(
+                            text = option,
+                            isSelected = state.selectedDateOption == option,
+                            onClick = { onEvent(JobOfferEvent.DateOptionSelected(option)) }
+                        )
+                    }
+                }
+
+                Text("Hora", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                val timeOptions = listOf("Mañana", "Tarde", "Noche", "Elegir")
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentWidth()
+                        .defaultMinSize(minHeight = 20.dp)
+                        .padding(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    timeOptions.forEach { option ->
+                        val isEnabled = remember(state.requestedDate, option, currentTimeMillis) {
+                            when (option) {
+                                "Mañana" -> JobOfferValidator.validateTime(
+                                    10,
+                                    0,
+                                    state.requestedDate
+                                ).isValid
+
+                                "Tarde" -> JobOfferValidator.validateTime(
+                                    18,
+                                    0,
+                                    state.requestedDate
+                                ).isValid
+
+                                "Noche" -> JobOfferValidator.validateTime(
+                                    22,
+                                    0,
+                                    state.requestedDate
+                                ).isValid
+
+                                else -> true
+                            }
+                        }
+                        FilterChipComponent2(
+                            text = option,
+                            isSelected = state.selectedTimeOption == option,
+                            enabled = isEnabled,
+                            onClick = { onEvent(JobOfferEvent.TimeOptionSelected(option)) }
+                        )
+                    }
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Fecha seleccionada: ", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+
+                    val isTimeValid =
+                        remember(state.requestedDate, state.requestedTime, currentTimeMillis) {
+                            try {
+                                val timeFormatter =
+                                    java.text.SimpleDateFormat("hh:mm a", java.util.Locale.ENGLISH)
+                                val date = timeFormatter.parse(state.requestedTime)
+                                val cal = java.util.Calendar.getInstance().apply {
+                                    if (date != null) time = date
+                                }
+                                JobOfferValidator.validateTime(
+                                    cal.get(java.util.Calendar.HOUR_OF_DAY),
+                                    cal.get(java.util.Calendar.MINUTE),
+                                    state.requestedDate
+                                ).isValid
+                            } catch (e: Exception) {
+                                false
+                            }
+                        }
+
+                    Text(
+                        text = "${state.requestedDate} ${state.requestedTime}",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Light,
+                        color = if (isTimeValid) Color(0xFF009963) else Color.Red
+                    )
+                }
+                ButtonComponent(
+                    value = "Publicar",
+                    isEnabled = isValid,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        disabledContainerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = Color.White,
+                        disabledContentColor = MaterialTheme.colorScheme.secondary
+                    ),
+                    onButtonClicked = {
+                        onSubmit()
+                    }
+                )
+                // Espacio extra al final para que el botón no quede pegado al borde inferior
+                androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
+            }
         }
         MyDialog2(
             title = "Oferta de trabajo publicada",
@@ -540,28 +576,25 @@ fun TimePickerDialogPreview() {
 }
 
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
 fun JobOfferScreenPreview() {
     Nexum_clienteTheme {
-        Surface {
-            val previewState = JobOfferState(
-                address = "Calle Falsa 123, Springfield",
-                title = "Reparación de tubería",
-                description = "Se necesita reparar una tubería que gotea en la cocina.",
-                selectedDateOption = "Hoy",
-                selectedTimeOption = "Mañana",
-                requestedDate = "08/17/2025",
-                requestedTime = "Mañana"
-            )
-
-            JobOfferScreenContent(
-                state = previewState,
-                onEvent = {},
-                onShowMapDialog = {},
-                onMyLocationClick = {},
-                onSubmit = {}
-            )
-        }
+        val previewState = JobOfferState(
+            address = "Calle Falsa 123, Springfield",
+            title = "Reparación de tubería",
+            description = "Se necesita reparar una tubería que gotea en la cocina.",
+            selectedDateOption = "Hoy",
+            selectedTimeOption = "Mañana",
+            requestedDate = "08/17/2025",
+            requestedTime = "Mañana"
+        )
+        JobOfferScreenContent(
+            state = previewState,
+            onEvent = {},
+            onShowMapDialog = {},
+            onMyLocationClick = {},
+            onSubmit = {}
+        )
     }
 }

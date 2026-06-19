@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -197,6 +200,7 @@ private fun ChatScreenContent(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             Surface(
                 shadowElevation = 4.dp,
@@ -269,22 +273,69 @@ private fun ChatScreenContent(
                     }
                 )
             }
-        },
-        bottomBar = {
-            Column {
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .consumeWindowInsets(paddingValues)
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                when (uiState) {
+                    is ChatUiState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                    is ChatUiState.Error -> ErrorMessage(uiState.message, onRetry)
+                    else -> {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier.fillMaxSize(),
+                            reverseLayout = true,
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom)
+                        ) {
+                            items(items = chatItems, key = { item ->
+                                when (item) {
+                                    is Message -> "msg_${item.id}"
+                                    is LocalDate -> "header_${item}"
+                                    else -> "other_${item.hashCode()}"
+                                }
+                            }) { item ->
+                                when (item) {
+                                    is Message -> MessageItem(item, item.senderId == currentUserId)
+                                    is LocalDate -> DateHeader(item)
+                                }
+                            }
+                            if (uiState is ChatUiState.LoadingMore) {
+                                item {
+                                    Box(Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
+                                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding()
+            ) {
                 if (isReceiverTyping) {
                     Text(
                         text = "Escribiendo...",
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier
-                            .padding(horizontal = 24.dp, vertical = 4.dp)
-                            .align(Alignment.Start)
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp)
                     )
                 }
                 ChatInputBar(
                     text = messageText,
-                    onTextChange = { 
+                    onTextChange = {
                         messageText = it
                         onTyping()
                     },
@@ -298,46 +349,6 @@ private fun ChatScreenContent(
                 )
             }
         }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            when (uiState) {
-                is ChatUiState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                is ChatUiState.Error -> ErrorMessage(uiState.message, onRetry)
-                else -> {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier.fillMaxSize(),
-                        reverseLayout = true,
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom)
-                    ) {
-                        items(items = chatItems, key = { item ->
-                            when (item) {
-                                is Message -> "msg_${item.id}"
-                                is LocalDate -> "header_${item}"
-                                else -> "other_${item.hashCode()}"
-                            }
-                        }) { item ->
-                            when (item) {
-                                is Message -> MessageItem(item, item.senderId == currentUserId)
-                                is LocalDate -> DateHeader(item)
-                            }
-                        }
-                        if (uiState is ChatUiState.LoadingMore) {
-                            item {
-                                Box(Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
-                                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -346,10 +357,11 @@ private fun ChatInputBar(
     text: String,
     onTextChange: (String) -> Unit,
     onSendClick: () -> Unit,
-    enabled: Boolean
+    enabled: Boolean,
+    modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shadowElevation = 8.dp,
         color = Color.White
     ) {

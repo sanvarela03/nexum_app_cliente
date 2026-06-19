@@ -13,5 +13,6 @@ data class AddJobOfferReq(
     val categoryId: Long,
     val requestedDate: String,
     val photos: List<String>,
+    val address: String,
     val location: List<Double>,
 )

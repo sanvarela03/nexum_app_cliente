@@ -7,6 +7,8 @@ import com.example.nexum_cliente.data.client.local.role.RoleDao
 import com.example.nexum_cliente.data.country.local.CountryDao
 import com.example.nexum_cliente.data.job_offer.local.JobOfferDao
 import com.example.nexum_cliente.data.market_location.local.MarketLocationDao
+import com.example.nexum_cliente.data.nearby_workers.local.NearbyWorkerDao
+import com.example.nexum_cliente.data.notification.local.NotificationDao
 import com.example.nexum_cliente.data.profile.local.ProfileDao
 import dagger.Module
 import dagger.Provides
@@ -54,7 +56,12 @@ object DaoModule {
     @Singleton
     fun provideJobOfferDao(clientDb: ClientDb): JobOfferDao = clientDb.jobOfferDao
 
+    @Provides
+    @Singleton
+    fun provideNearbyWorkerDao(clientDb: ClientDb): NearbyWorkerDao = clientDb.nearbyWorkerDao
 
-
+    @Provides
+    @Singleton
+    fun provideNotificationDao(clientDb: ClientDb): NotificationDao = clientDb.notificationDao
 
 }
