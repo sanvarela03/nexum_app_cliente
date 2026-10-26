@@ -253,7 +253,6 @@ private fun NotificationItem(
                         text = notification.createdAt,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp,
-                        color = Color.Gray
                     )
                 }
             }

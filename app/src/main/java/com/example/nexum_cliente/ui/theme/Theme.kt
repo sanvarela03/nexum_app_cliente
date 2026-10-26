@@ -10,6 +10,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -79,6 +80,14 @@ private val LightColorScheme = lightColorScheme(
     surfaceContainerHigh = Color(0xFFE5E5E5),
     surfaceContainerHighest = Color(0xFFDADADA),
 )
+
+val MaterialTheme.jobOfferCardBackground: Color
+    @Composable
+    get() = if (colorScheme.background.luminance() < 0.5f) {
+        Color(0xFF383838)
+    } else {
+        Color(0xFFE4DFE5)
+    }
 
 @Composable
 fun Nexum_clienteTheme(

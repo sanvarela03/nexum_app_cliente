@@ -43,6 +43,7 @@ import com.example.nexum_cliente.common.toLocalDateTime
 import com.example.nexum_cliente.domain.model.JobOffer
 import com.example.nexum_cliente.ui.components.Stepper
 import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
+import com.example.nexum_cliente.ui.theme.jobOfferCardBackground
 import com.example.nexum_cliente.ui.theme.stepperColors
 import com.example.nexum_cliente.ui.components.Stepper
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -265,8 +266,7 @@ private fun JobOfferItem(
     OutlinedCard(
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface
+            containerColor = MaterialTheme.jobOfferCardBackground
         ),
         modifier = Modifier
             .padding(horizontal = 8.dp, vertical = 6.dp)
@@ -447,6 +447,28 @@ fun RequestsScreenContentPreview() {
                 )
             ),
             onRefresh = {}
+        )
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+@Preview(
+    name = "Requests - Light",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Preview(
+    name = "Requests - Dark",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+fun JobOfferItemPreview() {
+    Nexum_clienteTheme() {
+        JobOfferItem(
+            jobOffer = JobOffer(),
         )
     }
 }

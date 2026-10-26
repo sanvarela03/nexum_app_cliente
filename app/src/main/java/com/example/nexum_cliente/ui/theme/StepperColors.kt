@@ -16,7 +16,7 @@ data class StepperColors(
 internal val LightStepperColors = StepperColors(
     selected = Color(0xFF009963),
     unselected = Color(0xFFE6E6E6),
-    onSelected = Color.White
+    onSelected = Color(0xFFD1CCD3)
 )
 
 internal val LocalStepperColors = staticCompositionLocalOf { LightStepperColors }
