@@ -142,4 +142,8 @@ dependencies {
     
     // Mercado Pago
     implementation("androidx.browser:browser:1.8.0")
+
+    // EncryptedSharedPreferences
+    implementation(libs.androidx.security.crypto)
+
 }

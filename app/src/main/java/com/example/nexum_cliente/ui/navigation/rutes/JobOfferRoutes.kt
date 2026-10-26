@@ -15,10 +15,22 @@ sealed class JobOfferRoutes {
     @Serializable
     data class JobOfferScreen(
         val categoryId: Long,
+        val categoryName: String = "",
     ) : JobOfferRoutes()
 
     @Serializable
     data class TrackingScreen(
         val jobOfferId: String
+    ) : JobOfferRoutes()
+
+    @Serializable
+    data class JobApplicationsScreen(
+        val jobOfferId: String
+    ) : JobOfferRoutes()
+
+    @Serializable
+    data class CheckoutScreen(
+        val jobApplicationId: Long,
+        val agreedAmount: Double
     ) : JobOfferRoutes()
 }

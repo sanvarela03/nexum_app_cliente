@@ -15,7 +15,7 @@ import retrofit2.http.POST
  */
 interface JobOfferApi {
     @POST("/api/v1/job-offers")
-    suspend fun createJobOffer(@Body req: AddJobOfferReq): Response<NewJobOfferRes>
+    suspend fun createJobOffer(@Body req: AddJobOfferReq): Response<JobOfferRes>
     @GET("/api/v1/job-offers")
     suspend fun getJobOffers(): Response<List<JobOfferRes>>
 }

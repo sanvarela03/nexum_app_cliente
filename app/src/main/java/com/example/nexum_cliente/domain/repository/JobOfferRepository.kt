@@ -1,7 +1,7 @@
 package com.example.nexum_cliente.domain.repository
 
 import com.example.nexum_cliente.data.global_payload.res.ApiResponse
-import com.example.nexum_cliente.data.job_offer.remote.payload.res.NewJobOfferRes
+import com.example.nexum_cliente.data.job_offer.remote.payload.res.JobOfferRes
 import com.example.nexum_cliente.domain.model.JobOffer
 import com.example.nexum_cliente.domain.model.params.NewJobOffer
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.Flow
 interface JobOfferRepository {
     fun updateJobOffers(fetchFromRemote: Boolean): Flow<ApiResponse<Unit>>
     fun observeJobOffers(): Flow<List<JobOffer>>
-    fun createJobOffer(newJobOffer: NewJobOffer): Flow<ApiResponse<NewJobOfferRes>>
+    fun createJobOffer(newJobOffer: NewJobOffer): Flow<ApiResponse<JobOfferRes>>
     fun getJobOffers(): Flow<List<JobOffer>>
     suspend fun getByUuid(uuid: String): JobOffer?
 }

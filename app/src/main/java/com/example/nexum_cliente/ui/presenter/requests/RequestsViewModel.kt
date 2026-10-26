@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nexum_cliente.data.global_payload.res.ApiResponse
+import com.example.nexum_cliente.domain.model.JobOffer
 import com.example.nexum_cliente.domain.use_cases.job_offer.JobOfferUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,13 +39,21 @@ class RequestsViewModel @Inject constructor(
     init {
         _state.update { it.copy(isLoading = true) }
         observe()
-        update(fetchFromRemote = false)
+        update(fetchFromRemote = true)
     }
 
     fun onEvent(event: RequestsEvent) {
         when (event) {
             is RequestsEvent.Refresh -> {
                 update(event.fetchFromRemote)
+            }
+            is RequestsEvent.ChangeSortType -> {
+                _state.update { current ->
+                    current.copy(
+                        sortType = event.sortType,
+                        jobOffers = applySort(current.rawJobOffers, event.sortType)
+                    )
+                }
             }
         }
     }
@@ -62,9 +71,36 @@ class RequestsViewModel @Inject constructor(
                     }
                 }
                 .collect { jobOffers ->
-                    _state.update { it.copy(jobOffers = jobOffers) }
+                    _state.update { current ->
+                        current.copy(
+                            rawJobOffers = jobOffers,
+                            jobOffers = applySort(jobOffers, current.sortType)
+                        )
+                    }
                 }
         }
+    }
+
+    private fun applySort(offers: List<JobOffer>, sortType: RequestsSortType): List<JobOffer> {
+        return when (sortType) {
+            RequestsSortType.DATE_DESC -> offers.sortedByDescending { it.createdAt.ifBlank { it.requestedDate } }
+            RequestsSortType.DATE_ASC -> offers.sortedBy { it.createdAt.ifBlank { it.requestedDate } }
+            RequestsSortType.STATUS -> offers.sortedWith(
+                compareBy<JobOffer> { statusPriority(it.status) }
+                    .thenByDescending { it.createdAt.ifBlank { it.requestedDate } }
+            )
+        }
+    }
+
+    private fun statusPriority(status: String): Int = when (status) {
+        "SEARCHING" -> 1
+        "QUOTED" -> 2
+        "ASSIGNED" -> 3
+        "IN_PROGRESS" -> 4
+        "PENDING" -> 5
+        "COMPLETED" -> 6
+        "CANCELLED" -> 7
+        else -> 8
     }
 
     private fun update(fetchFromRemote: Boolean = false) {

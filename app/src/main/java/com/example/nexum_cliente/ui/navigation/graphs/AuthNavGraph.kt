@@ -17,6 +17,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
+import com.example.nexum_cliente.common.capitalizeFirstLetter
 import com.example.nexum_cliente.ui.navigation.rutes.AuthRoutes
 import com.example.nexum_cliente.ui.presenter.sign_in.SignInScreen
 import com.example.nexum_cliente.ui.presenter.sign_up.SignUpViewModel
@@ -31,7 +32,7 @@ import com.example.nexum_cliente.ui.presenter.sign_up.screens.SignUpUploadDocume
 import com.example.nexum_cliente.ui.presenter.sign_up.screens.SignUpUserDataScreen
 
 private const val ANIMATION_DURATION = 1000
-private const val SLIDE_OFFSET = 1000
+
 
 private typealias AnimationScope = AnimatedContentTransitionScope<NavBackStackEntry>
 
@@ -41,28 +42,6 @@ data class ScreenTransitions(
     val popEnterTransition: AnimationScope.() -> EnterTransition? = { Transitions.defaultPopEnterTransition() },
     val popExitTransition: AnimationScope.() -> ExitTransition? = { Transitions.defaultPopExitTransition() }
 )
-
-object Transitions {
-    fun defaultEnterTransition(): EnterTransition =
-        slideInHorizontally(
-            animationSpec = tween(ANIMATION_DURATION),
-            initialOffsetX = { SLIDE_OFFSET })
-
-    fun defaultExitTransition(): ExitTransition =
-        slideOutHorizontally(
-            animationSpec = tween(ANIMATION_DURATION),
-            targetOffsetX = { -SLIDE_OFFSET })
-
-    fun defaultPopEnterTransition(): EnterTransition =
-        slideInHorizontally(
-            animationSpec = tween(ANIMATION_DURATION),
-            initialOffsetX = { -SLIDE_OFFSET })
-
-    fun defaultPopExitTransition(): ExitTransition =
-        slideOutHorizontally(
-            animationSpec = tween(ANIMATION_DURATION),
-            targetOffsetX = { SLIDE_OFFSET })
-}
 
 inline fun <reified T : Any> NavGraphBuilder.composableWithTransitions(
     transitions: ScreenTransitions = ScreenTransitions(),
@@ -166,3 +145,7 @@ fun NavGraphBuilder.authGraph(
         }
     }
 }
+
+val test = "hello".capitalizeFirstLetter()
+
+//"svarela03".checkEmail()

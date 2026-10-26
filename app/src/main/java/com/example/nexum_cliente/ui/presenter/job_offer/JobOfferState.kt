@@ -7,6 +7,7 @@ import com.example.nexum_cliente.utils.validator.JobOfferValidator
 
 data class JobOfferState(
     val categoryId: Long = -1L,
+    val categoryName: String = "",
     val title: String? = "",
     val description: String = "",
     val address: String = "",

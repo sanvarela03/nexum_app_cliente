@@ -20,7 +20,9 @@ data class JobOfferRes(
     val h3Idx: String,
     val createdAt: String,
     val location: Location,
+    val address: String? = null,
     val imageUrls: List<String>,
+    val status: String? = null,
 )
 
 data class Location(

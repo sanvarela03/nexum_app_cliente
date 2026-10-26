@@ -135,7 +135,12 @@ fun CategoriesScreen(
                     val url =
                         if (category.imageUrl != null && !category.imageUrl.contains("NA") && !category.imageUrl.isEmpty()) category.imageUrl else "https://http.cat/images/102.jpg"
                     CategoryItem(url, category) {
-                        navController.navigate(JobOfferRoutes.JobOfferScreen(categoryId = category.id))
+                        navController.navigate(
+                            JobOfferRoutes.JobOfferScreen(
+                                categoryId = category.id,
+                                categoryName = category.name ?: ""
+                            )
+                        )
                     }
                 }
             }

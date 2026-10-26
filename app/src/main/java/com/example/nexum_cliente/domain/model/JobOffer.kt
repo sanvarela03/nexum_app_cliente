@@ -20,6 +20,7 @@ data class JobOffer(
     val h3Idx: String = "NAN",
     val createdAt: String = "00/00/0000",
     val location: Location = Location(),
+    val address: String? = null,
     val photos: List<String> = emptyList(),
     val status: String = "SEARCHING"
 )

@@ -28,13 +28,8 @@ object DbModule {
             ClientDb::class.java,
             "client.db"
         )
-
-//                    db.execSQL("INSERT INTO MarketLocationEntity (id, city, country, state, countryCode) VALUES (1, 'Bogotá', 'Colombia', 'Cundinamarca', 'CO')")
-//                    db.execSQL("INSERT INTO MarketLocationEntity (id, city, country, state, countryCode) VALUES (2, 'Barranquilla', 'Colombia', 'Atlántico', 'CO')")
-//                    db.execSQL("INSERT INTO MarketLocationEntity (id, city, country, state, countryCode) VALUES (3, 'Chía', 'Colombia', 'Cundinamarca', 'CO')")
-//                    db.execSQL("INSERT INTO MarketLocationEntity (id, city, country, state, countryCode) VALUES (4, 'Medellín', 'Colombia', 'Antioquia', 'CO')")
-//                    db.execSQL("INSERT INTO MarketLocationEntity (id, city, country, state, countryCode) VALUES (5, 'Ciudad de México', 'México', 'Ciudad de México', 'MX')")
-               .build()
+            .fallbackToDestructiveMigration()
+            .build()
     }
 }
 

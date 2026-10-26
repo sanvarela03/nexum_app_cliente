@@ -70,9 +70,10 @@ object ClientMapper : EntityMapper<ClientRes, ClientEntity>, DomainMapper<Client
             username = username,
             email = state.email,
             password = state.password,
-            phoneCode = state.phoneCode.split(' ').firstOrNull() ?: "",
+            phoneCode = (state.phoneCode.ifBlank { state.selectedCountry?.phoneCode ?: "+57" })
+                .split(' ').firstOrNull() ?: "+57",
             phoneNumber = state.phone,
-            marketLocationId = state.selectedMarketLocation?.id ?: 0 ,
+            marketLocationId = state.selectedMarketLocation?.id ?: 1L,
             firebaseToken = "NaN", // Placeholder, as token is likely injected later or should be in state
             profile = ProfileReq(
                 firstName = state.name,
@@ -81,6 +82,8 @@ object ClientMapper : EntityMapper<ClientRes, ClientEntity>, DomainMapper<Client
                 profileImageUrl = state.profilePictureUrl,
                 frontDocumentUrl = state.frontDocumentUrl,
                 backDocumentUrl = state.backDocumentUrl,
+                documentNumber = state.documentNumber,
+                documentType = "CC",
             )
         )
     }

@@ -127,6 +127,12 @@ object JobOfferValidator {
         }
     }
 
+    fun isTodayAllowed(buffer: Int = bufferMinutes): Boolean {
+        val sdf = SimpleDateFormat(DateUtils.DATE_PATTERN, Locale.getDefault())
+        val todayStr = sdf.format(Date())
+        return validateTime(22, 0, todayStr, buffer).isValid
+    }
+
     fun isDateSelectable(utcTimeMillis: Long): Boolean {
         // Inicio del día de hoy en UTC
         val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
@@ -147,7 +153,9 @@ object JobOfferValidator {
         }
         val maxDate = maxCalendar.timeInMillis
 
-        return utcTimeMillis >= today && utcTimeMillis <= maxDate
+        val minDate = if (isTodayAllowed()) today else today + 24 * 60 * 60 * 1000L
+
+        return utcTimeMillis >= minDate && utcTimeMillis <= maxDate
     }
 
     fun isYearSelectable(year: Int): Boolean {

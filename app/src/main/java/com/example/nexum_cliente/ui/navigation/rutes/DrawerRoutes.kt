@@ -18,6 +18,13 @@ sealed class DrawerRoutes {
     @Serializable
     object SettingsScreen : DrawerRoutes()
 
+
+    @Serializable
+    object SafetyScreen : DrawerRoutes()
+
     @Serializable
     object PlaygroundScreen : DrawerRoutes()
+
+    @Serializable
+    object ContractsScreen : DrawerRoutes()
 }

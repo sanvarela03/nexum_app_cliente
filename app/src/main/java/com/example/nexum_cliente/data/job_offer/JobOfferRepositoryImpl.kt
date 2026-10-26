@@ -5,7 +5,7 @@ import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import com.example.nexum_cliente.data.job_offer.local.JobOfferLocalDataSource
 import com.example.nexum_cliente.data.job_offer.mapper.JobOfferMapper
 import com.example.nexum_cliente.data.job_offer.remote.JobOfferRemoteDataSource
-import com.example.nexum_cliente.data.job_offer.remote.payload.res.NewJobOfferRes
+import com.example.nexum_cliente.data.job_offer.remote.payload.res.JobOfferRes
 import com.example.nexum_cliente.di.modules.IoDispatcher
 import com.example.nexum_cliente.domain.model.JobOffer
 import com.example.nexum_cliente.domain.model.params.NewJobOffer
@@ -43,8 +43,18 @@ class JobOfferRepositoryImpl @Inject constructor(
     override fun observeJobOffers(): Flow<List<JobOffer>> =
         local.observe().map { it -> it.map { JobOfferMapper.toDomain(it) } }
 
-    override fun createJobOffer(newJobOffer: NewJobOffer): Flow<ApiResponse<NewJobOfferRes>> =
-        remote.createJobOffer(JobOfferMapper.toRequest(newJobOffer))
+    override fun createJobOffer(newJobOffer: NewJobOffer): Flow<ApiResponse<JobOfferRes>> = flow {
+        remote.createJobOffer(JobOfferMapper.toRequest(newJobOffer)).collect { response ->
+            if (response is ApiResponse.Success) {
+                try {
+                    local.insert(JobOfferMapper.toEntity(response.data))
+                } catch (e: Exception) {
+                    android.util.Log.e("JobOfferRepo", "Error inserting created job offer locally: ${e.message}")
+                }
+            }
+            emit(response)
+        }
+    }
 
     override fun getJobOffers(): Flow<List<JobOffer>> {
         return flow {

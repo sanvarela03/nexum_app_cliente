@@ -41,15 +41,17 @@ object JobOfferMapper :
             id = dto.jobOfferId,
             uuid = dto.jobOfferUuid,
             clientId = dto.clientId,
-            title = dto.title,
-            description = dto.description,
+            title = dto.title ?: "",
+            description = dto.description ?: "",
             categoryId = dto.categoryId,
-            categoryName = dto.categoryName,
-            h3Idx = dto.h3Idx,
-            requestedDate = dto.requiredDate,
-            createdAt = dto.createdAt,
-            lat = dto.location.lat,
-            lng = dto.location.lng,
+            categoryName = dto.categoryName ?: "",
+            h3Idx = dto.h3Idx ?: "",
+            requestedDate = dto.requiredDate ?: "",
+            createdAt = dto.createdAt ?: "",
+            lat = dto.location?.lat ?: 0.0,
+            lng = dto.location?.lng ?: 0.0,
+            address = dto.address,
+            status = dto.status ?: "SEARCHING",
         )
     }
 
@@ -67,7 +69,9 @@ object JobOfferMapper :
             h3Idx = entity.h3Idx,
             createdAt = entity.createdAt,
             location = Location(lat = entity.lat, lng = entity.lng),
+            address = entity.address,
             photos = emptyList(),
+            status = entity.status,
         )
     }
 

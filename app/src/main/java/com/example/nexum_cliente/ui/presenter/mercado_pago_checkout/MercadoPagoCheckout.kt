@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -38,13 +39,22 @@ import com.example.nexum_cliente.ui.components.Stepper
 
 @Composable
 fun MercadoPagoCheckout(
+    jobApplicationId: Long? = null,
+    agreedAmount: Double? = null,
     viewModel: MercadoPagoViewModel = hiltViewModel(
         viewModelStoreOwner = LocalActivity.current as ComponentActivity
     ),
-    onCancel: () -> Unit
+    onCancel: () -> Unit = {},
+    onContractCreated: (Long) -> Unit = {}
 ) {
     val context = LocalContext.current
     val state = viewModel.state
+
+    LaunchedEffect(jobApplicationId, agreedAmount) {
+        if (jobApplicationId != null && agreedAmount != null) {
+            viewModel.setCheckoutInfo(jobApplicationId, agreedAmount)
+        }
+    }
 
     // Abrir Custom Tab cuando llega el initPoint
     LaunchedEffect(state.initPoint) {
@@ -57,27 +67,66 @@ fun MercadoPagoCheckout(
         }
     }
 
-    // Dialog resultado del pago
+    // Dialog resultado del pago y creación de contrato
     state.paymentResult?.let { result ->
         AlertDialog(
-            onDismissRequest = { viewModel.resetPaymentResult() },
+            onDismissRequest = {
+                val contractId = state.createdContract?.id
+                viewModel.resetPaymentResult()
+                if (contractId != null) {
+                    onContractCreated(contractId)
+                }
+            },
             confirmButton = {
-                TextButton(onClick = { viewModel.resetPaymentResult() }) {
-                    Text("OK")
+                TextButton(onClick = {
+                    val contractId = state.createdContract?.id
+                    viewModel.resetPaymentResult()
+                    if (contractId != null) {
+                        onContractCreated(contractId)
+                    } else if (result is PaymentResult.Success && !state.isCreatingContract) {
+                        viewModel.createContract()
+                    }
+                }) {
+                    Text(
+                        if (state.createdContract != null) "Ver Seguimiento"
+                        else if (result is PaymentResult.Success && state.isCreatingContract) "Creando contrato..."
+                        else if (result is PaymentResult.Success) "Formalizar Contrato"
+                        else "OK"
+                    )
                 }
             },
             title = {
                 Text(
-                    when (result) {
-                        is PaymentResult.Success -> "✅ Pago exitoso"
-                        is PaymentResult.Failure -> "❌ Pago fallido"
-                        is PaymentResult.Pending -> "⏳ Pago pendiente"
+                    when {
+                        state.createdContract != null -> "🎉 ¡Contrato formalizado!"
+                        result is PaymentResult.Success -> "✅ Pago exitoso"
+                        result is PaymentResult.Failure -> "❌ Pago fallido"
+                        result is PaymentResult.Pending -> "⏳ Pago pendiente"
+                        else -> "Transacción"
                     }
                 )
             },
             text = {
-                if (result is PaymentResult.Success) {
-                    Text("ID de pago: ${result.paymentId}")
+                Column {
+                    if (result is PaymentResult.Success) {
+                        Text("ID de pago: ${result.paymentId}")
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    if (state.isCreatingContract) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Generando contrato oficial...")
+                        }
+                    } else if (state.createdContract != null) {
+                        Text("Tu propuesta fue aceptada y el contrato #${state.createdContract?.id} ha sido creado.\n\nYa puedes coordinar la fecha de encuentro y generar el código de verificación presencial.")
+                    } else if (result is PaymentResult.Success) {
+                        Text("La tarifa fue procesada. Puedes formalizar el contrato ahora.")
+                    } else if (result is PaymentResult.Failure) {
+                        Text("No se pudo completar el pago de la tarifa de seguridad y confianza.")
+                    } else if (result is PaymentResult.Pending) {
+                        Text("El pago está pendiente de confirmación.")
+                    }
                 }
             }
         )

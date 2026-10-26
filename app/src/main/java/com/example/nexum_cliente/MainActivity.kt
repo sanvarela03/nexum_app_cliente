@@ -14,8 +14,14 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import com.example.nexum_cliente.app.CustomerApp
 import com.example.nexum_cliente.data.local.AppDatabase
 import com.example.nexum_cliente.ui.global_viewmodels.AuthViewModel
@@ -28,18 +34,32 @@ import javax.inject.Provider
 class MainActivity : ComponentActivity() {
     @Inject
     lateinit var appDatabaseProvider: Provider<AppDatabase>
+
+    @Inject
+    lateinit var updateFcmTokenUseCase: com.example.nexum_cliente.domain.use_cases.user.UpdateFcmTokenUseCase
+
+    @Inject
+    lateinit var tokenManager: com.example.nexum_cliente.security.TokenManager
+
+    @Inject
+    lateinit var paymentDeepLinkManager: com.example.nexum_cliente.utils.PaymentDeepLinkManager
+
     private val authViewModel: AuthViewModel by viewModels()
     private val mercadoPagoViewModel: MercadoPagoViewModel by viewModels()
+    private var currentIntent by mutableStateOf<Intent?>(null)
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        currentIntent = intent
         askNotificationPermission()
+        syncFcmTokenIfLoggedIn()
         Log.d("MainActivity", "onCreate: ")
 
         // Desactivar el ajuste automático de la ventana por parte del sistema
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        intent?.data?.let { paymentDeepLinkManager.onDeepLinkReceived(it) }
         mercadoPagoViewModel.onDeepLinkReceived(intent?.data)
 
         enableEdgeToEdge()
@@ -53,9 +73,27 @@ class MainActivity : ComponentActivity() {
             CustomerApp(
                 userAuthState = userAuthState,
                 startDestination = destination,
-             )
+                initialIntent = currentIntent
+            )
         }
 //        appDatabaseProvider.get()
+    }
+
+    private fun syncFcmTokenIfLoggedIn() {
+        if (tokenManager.getAccessTokenSync() != null) {
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().token
+                .addOnSuccessListener { token ->
+                    if (!token.isNullOrBlank()) {
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            try {
+                                updateFcmTokenUseCase(token).collect { }
+                            } catch (e: Exception) {
+                                Log.e("MainActivity", "Error syncing FCM token on startup", e)
+                            }
+                        }
+                    }
+                }
+        }
     }
 
     private fun askNotificationPermission() {
@@ -80,6 +118,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
+        currentIntent = intent
+        intent.data?.let { paymentDeepLinkManager.onDeepLinkReceived(it) }
         mercadoPagoViewModel.onDeepLinkReceived(intent.data)
     }
 
@@ -103,7 +144,7 @@ class MainActivity : ComponentActivity() {
         Log.d("MainActivity", "onStop: ")
     }
 
-        override fun onDestroy() {
+    override fun onDestroy() {
         super.onDestroy()
         Log.d("MainActivity", "onDestroy: ")
     }

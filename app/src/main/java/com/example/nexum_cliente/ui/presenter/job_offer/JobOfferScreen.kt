@@ -12,21 +12,32 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.DatePickerDefaults
@@ -86,7 +97,9 @@ import com.google.android.gms.maps.model.LatLng
 @Composable
 fun JobOfferScreen(
     categoryId: Long,
+    categoryName: String = "",
     viewModel: JobOfferViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit = {},
     onNavigateToTracking: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -101,8 +114,8 @@ fun JobOfferScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.onEvent(JobOfferEvent.CategoryIdChanged(categoryId))
+    LaunchedEffect(categoryId, categoryName) {
+        viewModel.onEvent(JobOfferEvent.CategoryIdChanged(categoryId, categoryName))
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -142,6 +155,7 @@ fun JobOfferScreen(
     JobOfferScreenContent(
         state = state,
         onEvent = viewModel::onEvent,
+        onNavigateBack = onNavigateBack,
         onShowMapDialog = { viewModel.showMapDialog = true },
         onMyLocationClick = {
             if (ContextCompat.checkSelfPermission(
@@ -168,7 +182,8 @@ fun JobOfferScreen(
             viewModel.onEvent(JobOfferEvent.DismissSuccessDialog)
             onNavigateToTracking(state.createdJobOfferUuid.ifEmpty { "N/A" })
         },
-        isValid = isFormValid
+        isValid = isFormValid,
+        currentTimeMillis = System.currentTimeMillis()
     )
 }
 
@@ -299,11 +314,12 @@ fun TimePickerDialogContent(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun JobOfferScreenContent(
     state: JobOfferState,
     onEvent: (JobOfferEvent) -> Unit,
+    onNavigateBack: () -> Unit = {},
     onShowMapDialog: () -> Unit,
     onMyLocationClick: () -> Unit,
     onSubmit: () -> Unit,
@@ -313,17 +329,84 @@ fun JobOfferScreenContent(
     currentTimeMillis: Long = 0L
 ) {
     Nexum_clienteTheme {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // Stepper fijo en la parte superior
-            Stepper(
-                numberOfSteps = 4,
-                currentStep = 2,
-                selectedColor = Color(0xFF009963),
-                unSelectedColor = Color(0xFFE6E6E6),
-                modifier = Modifier.padding(5.dp)
-            )
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Column {
+                            Text(
+                                text = "Nueva Solicitud",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                            if (state.categoryName.isNotBlank()) {
+                                Text(
+                                    text = state.categoryName,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFF009963)
+                                )
+                            }
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Volver",
+                                tint = Color.Black
+                            )
+                        }
+                    },
+                    actions = {
+                        if (state.categoryName.isNotBlank()) {
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = Color(0xFFE8F5E9),
+                                border = BorderStroke(1.dp, Color(0xFF009963).copy(alpha = 0.3f)),
+                                modifier = Modifier.padding(end = 12.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(6.dp)
+                                            .background(Color(0xFF009963), shape = CircleShape)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = state.categoryName,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF009963)
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.White
+                    )
+                )
+            },
+            containerColor = Color.White
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                // Stepper fijo en la parte superior
+                Stepper(
+                    numberOfSteps = 4,
+                    currentStep = 2,
+                    selectedColor = Color(0xFF009963),
+                    unSelectedColor = Color(0xFFE6E6E6),
+                    modifier = Modifier.padding(5.dp)
+                )
 
             // Contenido con scroll
             Column(
@@ -416,9 +499,16 @@ fun JobOfferScreenContent(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     dateOptions.forEach { option ->
+                        val isEnabled = remember(option, currentTimeMillis) {
+                            when (option) {
+                                "Hoy" -> JobOfferValidator.isTodayAllowed()
+                                else -> true
+                            }
+                        }
                         FilterChipComponent2(
                             text = option,
                             isSelected = state.selectedDateOption == option,
+                            enabled = isEnabled,
                             onClick = { onEvent(JobOfferEvent.DateOptionSelected(option)) }
                         )
                     }
@@ -513,6 +603,7 @@ fun JobOfferScreenContent(
                 androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
             }
         }
+    }
         MyDialog2(
             title = "Oferta de trabajo publicada",
             show = state.isJobOfferSubmitted,
@@ -587,11 +678,13 @@ fun JobOfferScreenPreview() {
             selectedDateOption = "Hoy",
             selectedTimeOption = "Mañana",
             requestedDate = "08/17/2025",
-            requestedTime = "Mañana"
+            requestedTime = "Mañana",
+            categoryName = "Plomería"
         )
         JobOfferScreenContent(
             state = previewState,
             onEvent = {},
+            onNavigateBack = {},
             onShowMapDialog = {},
             onMyLocationClick = {},
             onSubmit = {}

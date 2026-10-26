@@ -39,4 +39,8 @@ class JobOfferLocalDataSource @Inject constructor(
     override suspend fun clearAll() {
         dao.clearAll()
     }
+
+    suspend fun insert(resource: JobOfferEntity) {
+        dao.insert(resource)
+    }
 }

@@ -10,4 +10,5 @@ package com.example.nexum_cliente.ui.presenter.requests
  */
 sealed class RequestsEvent {
     data class Refresh(val fetchFromRemote: Boolean) : RequestsEvent()
+    data class ChangeSortType(val sortType: RequestsSortType) : RequestsEvent()
 }

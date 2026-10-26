@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.os.Build
 import android.view.Gravity
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.WindowInsets
@@ -47,6 +48,8 @@ import com.example.nexum_cliente.ui.components.HomeBottomBar
 import com.example.nexum_cliente.ui.components.NavigationDrawerBody
 import com.example.nexum_cliente.ui.components.NavigationDrawerHeader
 import com.example.nexum_cliente.ui.navigation.graphs.Graph
+import android.content.Intent
+import com.example.nexum_cliente.ui.navigation.rutes.JobOfferRoutes
 import com.example.nexum_cliente.ui.navigation.graphs.homeGraph
 import com.example.nexum_cliente.ui.navigation.rutes.DrawerRoutes
 import com.example.nexum_cliente.ui.navigation.rutes.HomeRoutes
@@ -58,6 +61,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     homeViewModel: HomeViewModel = hiltViewModel(),
+    initialIntent: Intent? = null
 ) {
     var currentUserId by rememberSaveable { mutableStateOf<Long?>(null) }
 
@@ -80,6 +84,25 @@ fun HomeScreen(
             val toast = Toast.makeText(context, "Error: ${state.errorMessage}", Toast.LENGTH_SHORT)
             toast.setGravity(Gravity.BOTTOM, 0, 300)
             toast.show()
+        }
+    }
+
+    // Manejo de deep link desde notificaciones
+    LaunchedEffect(initialIntent) {
+        if (initialIntent != null) {
+            val type = initialIntent.getStringExtra("type")
+            val jobOfferId = initialIntent.getStringExtra("jobOfferId")
+
+            if (type == "NEW_JOB_APPLICATION" && jobOfferId != null) {
+                homeNavController.navigate(JobOfferRoutes.JobApplicationsScreen(jobOfferId = jobOfferId))
+                initialIntent.removeExtra("type")
+                initialIntent.removeExtra("jobOfferId")
+                initialIntent.removeExtra("jobApplicationId")
+            } else if (type == "WORK_COMPLETED" || type == "MEETING_VERIFIED" || type == "MEETING_SCHEDULED") {
+                homeNavController.navigate(DrawerRoutes.ContractsScreen)
+                initialIntent.removeExtra("type")
+                initialIntent.removeExtra("contractId")
+            }
         }
     }
 
@@ -145,13 +168,21 @@ private fun HomeScreenContent(
         } && isPortrait
     }
 
+    val scope = rememberCoroutineScope()
+    BackHandler(enabled = drawerState.isOpen) {
+        scope.launch { drawerState.close() }
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = showBars,
+        gesturesEnabled = drawerState.isOpen, // Solo habilitado cuando está abierto para cerrarlo sin colisionar con mapas al estar cerrado
         drawerContent = {
             ModalDrawerSheet(modifier = Modifier.width(200.dp)) {
                 NavigationDrawerHeader(
-                    value = "${state.client?.firstName} ${state.client?.lastName}",
+                    value = listOfNotNull(state.client?.firstName, state.client?.lastName)
+                        .filter { it.isNotBlank() }
+                        .joinToString(" ")
+                        .ifBlank { null },
                     name = state.client?.email,
                     profileImgURL = state.client?.profilePictureUrl
                 )

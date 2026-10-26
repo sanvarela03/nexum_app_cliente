@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.app
 
+import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,7 @@ import com.example.nexum_cliente.ui.presenter.splash.SplashScreen
 fun CustomerApp(
     userAuthState: UserAuthState,
     startDestination: AuthRoutes,
+    initialIntent: Intent? = null,
     signUpViewModel: SignUpViewModel = hiltViewModel(),
 ) {
     val navController = rememberNavController()
@@ -37,7 +39,6 @@ fun CustomerApp(
         modifier = Modifier.fillMaxSize()
     ) {
         authGraph(navController, signUpViewModel, startDestination)
-
         protectedComposable<AuthRoutes.HomeScreen>(
             isAuthenticated = userAuthState == UserAuthState.AUTHENTICATED,
             onUnauthorized = {
@@ -48,7 +49,7 @@ fun CustomerApp(
                 }
             }
         ) {
-            HomeScreen()
+            HomeScreen(initialIntent = initialIntent)
         }
         composable<AuthRoutes.SplashScreen> {
             SplashScreen(

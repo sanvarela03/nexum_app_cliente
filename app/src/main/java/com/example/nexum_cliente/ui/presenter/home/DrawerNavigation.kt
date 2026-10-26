@@ -49,4 +49,20 @@ enum class DrawerNavigation(
         selectedIcon = Icons.Filled.Science,
         unselectedIcon = Icons.Outlined.Science,
     ),
+    SAFETY(
+        title = "Seguridad y confianza",
+        description = "Componentes UI",
+        route = DrawerRoutes.SafetyScreen,
+        icon = Icons.Outlined.Science,
+        selectedIcon = Icons.Filled.Science,
+        unselectedIcon = Icons.Outlined.Science,
+    ),
+    CONTRACTS(
+        title = "Mis Citas y Contratos",
+        description = "Gestiona tus citas y códigos de llegada",
+        route = DrawerRoutes.ContractsScreen,
+        icon = Icons.Outlined.Settings,
+        selectedIcon = Icons.Filled.Settings,
+        unselectedIcon = Icons.Outlined.Settings,
+    ),
 }

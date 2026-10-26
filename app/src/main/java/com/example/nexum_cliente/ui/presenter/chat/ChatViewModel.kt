@@ -9,7 +9,9 @@ import com.example.nexum_cliente.domain.model.ConnectionState
 import com.example.nexum_cliente.domain.model.Message
 import com.example.nexum_cliente.domain.model.MessageStatus
 import com.example.nexum_cliente.domain.model.MessageType
+import com.example.nexum_cliente.domain.model.Conversation
 import com.example.nexum_cliente.domain.use_cases.chat.ChatUseCases
+import com.example.nexum_cliente.domain.use_cases.conversation.ConversationUseCases
 import com.example.nexum_cliente.domain.use_cases.profile.ProfileUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -36,6 +38,7 @@ import javax.inject.Inject
 class ChatViewModel @Inject constructor(
     private val profileUseCases: ProfileUseCases,
     private val chatUseCases: ChatUseCases,
+    private val conversationUseCases: ConversationUseCases,
 ) : ViewModel() {
     companion object {
         private const val TAG = "ChatViewModel"
@@ -82,44 +85,82 @@ class ChatViewModel @Inject constructor(
         loadMore: Boolean = false
     ) {
         if (!loadMore) {
-            currentConversationId.value = conversationId
             targetReceiverId = receiverId
             currentPage = 0
             canLoadMore = true
             _messages.value = emptyList()
 
-            if (conversationId == "new") {
-                _uiState.value = ChatUiState.Success
+            // Si el ID es vacío o "new", buscamos si ya existe conversación con receiverId
+            if (conversationId.isBlank() || conversationId == "new") {
+                if (receiverId != null) {
+                    viewModelScope.launch {
+                        _uiState.value = ChatUiState.Loading
+                        val existingConv = findExistingConversationWith(receiverId)
+                        if (existingConv != null) {
+                            Log.d(TAG, "Found existing conversation ${existingConv.id} for receiverId: $receiverId")
+                            currentConversationId.value = existingConv.id
+                            fetchMessages(existingConv.id, loadMore = false)
+                        } else {
+                            Log.d(TAG, "No existing conversation for receiverId: $receiverId. State -> Success")
+                            currentConversationId.value = "new"
+                            _uiState.value = ChatUiState.Success
+                        }
+                    }
+                } else {
+                    currentConversationId.value = "new"
+                    _uiState.value = ChatUiState.Success
+                }
                 return
             }
+
+            currentConversationId.value = conversationId
         }
 
         if (!canLoadMore) return
 
+        val activeId = currentConversationId.value ?: conversationId
+        if (activeId.isBlank() || activeId == "new") return
+
         viewModelScope.launch {
-            _uiState.value = if (loadMore) ChatUiState.LoadingMore else ChatUiState.Loading
-
-            chatUseCases.loadConversationMessages(conversationId, currentPage, pageSize)
-                .onSuccess { response ->
-                    val newMessages = if (loadMore) {
-                        (_messages.value + response.content).distinctBy { it.id }
-                    } else {
-                        response.content.distinctBy { it.id }
-                    }
-                    _messages.value = newMessages
-                    currentPage++
-                    canLoadMore = response.content.size == pageSize
-                    _uiState.value = ChatUiState.Success
-
-                    if (!loadMore) {
-                        markAsRead()
-                    }
-                }
-                .onFailure { error ->
-                    Log.e("ChatViewModel", "Error loading messages", error)
-                    _uiState.value = ChatUiState.Error(error.message ?: "Error loading messages")
-                }
+            fetchMessages(activeId, loadMore)
         }
+    }
+
+    private suspend fun findExistingConversationWith(receiverId: String): Conversation? {
+        return try {
+            val result = conversationUseCases.getConversations(page = 0, size = 50)
+            result.getOrNull()?.content?.firstOrNull { conv ->
+                conv.participantIds.contains(receiverId)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error looking up conversation for receiverId $receiverId", e)
+            null
+        }
+    }
+
+    private suspend fun fetchMessages(conversationId: String, loadMore: Boolean) {
+        _uiState.value = if (loadMore) ChatUiState.LoadingMore else ChatUiState.Loading
+
+        chatUseCases.loadConversationMessages(conversationId, currentPage, pageSize)
+            .onSuccess { response ->
+                val newMessages = if (loadMore) {
+                    (_messages.value + response.content).distinctBy { it.id }
+                } else {
+                    response.content.distinctBy { it.id }
+                }
+                _messages.value = newMessages
+                currentPage++
+                canLoadMore = response.content.size == pageSize
+                _uiState.value = ChatUiState.Success
+
+                if (!loadMore) {
+                    markAsRead()
+                }
+            }
+            .onFailure { error ->
+                Log.e(TAG, "Error loading messages for conversation: $conversationId", error)
+                _uiState.value = ChatUiState.Error(error.message ?: "Error loading messages")
+            }
     }
 
     fun fetchReceiverProfile(receiverId: String) {
@@ -162,7 +203,7 @@ class ChatViewModel @Inject constructor(
 
     fun markAsRead() {
         val id = currentConversationId.value
-        if (id != null && id != "new") {
+        if (!id.isNullOrBlank() && id != "new") {
             viewModelScope.launch { chatUseCases.markMessageAsRead(id) }
         }
     }
@@ -173,9 +214,9 @@ class ChatViewModel @Inject constructor(
     fun setTyping() {
         val id = currentConversationId.value
 
-        Log.d(TAG, "setTyping: ${id == null || id == "new"}")
+        Log.d(TAG, "setTyping: ${id.isNullOrBlank() || id == "new"}")
 
-        if (id == null || id == "new") return
+        if (id.isNullOrBlank() || id == "new") return
 
         typingJob?.cancel()
 
@@ -201,16 +242,16 @@ class ChatViewModel @Inject constructor(
                     val activeId = currentConversationId.value
                     val receiverId = targetReceiverId
 
-                    if (activeId != null && msg.conversationId == activeId) {
+                    if (!activeId.isNullOrBlank() && activeId != "new" && msg.conversationId == activeId) {
                         addMessageToList(msg)
                         markAsRead()
                     }
-                    // BUG FIX: Transición de "new" a ID real
-                    else if (activeId == "new" && receiverId != null) {
+                    // Transición de "new" o vacío a ID real
+                    else if ((activeId == null || activeId == "new" || activeId.isBlank()) && receiverId != null) {
                         if (msg.senderId == receiverId || msg.receiverId == receiverId) {
                             Log.d(
-                                "ChatViewModel",
-                                "Switching from 'new' to real ID: ${msg.conversationId}"
+                                TAG,
+                                "Switching to real ID: ${msg.conversationId}"
                             )
                             currentConversationId.value = msg.conversationId
                             addMessageToList(msg)

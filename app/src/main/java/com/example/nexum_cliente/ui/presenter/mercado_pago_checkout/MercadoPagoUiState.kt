@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.ui.presenter.mercado_pago_checkout
 
+import com.example.nexum_cliente.data.contract.remote.payload.res.ContractRes
 import com.example.nexum_cliente.data.mercado_pago.remote.payload.req.CreatePreferenceRequest
 
 data class MercadoPagoUiState(
@@ -10,17 +11,28 @@ data class MercadoPagoUiState(
     val preferenceId: String? = null,
     val error: String? = null,
     val paymentResult: PaymentResult? = null,
-    val initPoint: String? = null
+    val initPoint: String? = null,
+    val jobApplicationId: Long? = null,
+    val agreedAmount: Double? = null,
+    val isCreatingContract: Boolean = false,
+    val createdContract: ContractRes? = null,
+    val paymentType: String? = null
 ) {
     fun isValid(): Boolean {
         return title.isNotEmpty() && price.isNotEmpty() && quantity.isNotEmpty()
     }
 
     fun toReq(): CreatePreferenceRequest {
+        val extRef = if (jobApplicationId != null) {
+            val amountStr = agreedAmount?.toLong()?.toString() ?: "0"
+            "${jobApplicationId}_$amountStr"
+        } else null
+
         return CreatePreferenceRequest(
             title = title,
             quantity = quantity.toInt(),
-            unitPrice = price.toDoubleOrNull() ?: 0.0
+            unitPrice = price.toDoubleOrNull() ?: 0.0,
+            externalReference = extRef
         )
     }
 }

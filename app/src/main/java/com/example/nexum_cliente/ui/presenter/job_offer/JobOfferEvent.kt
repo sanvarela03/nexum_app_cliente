@@ -20,7 +20,7 @@ sealed class JobOfferEvent {
     data class ShowTimePicker(val show: Boolean) : JobOfferEvent()
     data class DateSelected(val dateMillis: Long) : JobOfferEvent()
 
-    data class CategoryIdChanged(val categoryId: Long) : JobOfferEvent()
+    data class CategoryIdChanged(val categoryId: Long, val categoryName: String = "") : JobOfferEvent()
     data class TimeSelected(val hour: Int, val minute: Int) : JobOfferEvent()
 
     object RequestCurrentLocation : JobOfferEvent()

@@ -11,7 +11,7 @@ import com.example.nexum_cliente.data.mercado_pago.remote.MercadoPagoApi
 import com.example.nexum_cliente.data.nearby_workers.remote.NearbyWorkersApi
 import com.example.nexum_cliente.data.profile.remote.ProfileApi
 import com.example.nexum_cliente.security.AuthInterceptor
-import com.example.protapptest.security.AuthAuthenticator
+import com.example.nexum_cliente.security.AuthAuthenticator
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -125,5 +125,43 @@ object ApiModule {
     ): NearbyWorkersApi =
         retrofit.client(okHttpClient).build().create(NearbyWorkersApi::class.java)
 
+    @Provides
+    @Singleton
+    fun provideContractApi(
+        retrofit: Retrofit.Builder,
+        okHttpClient: OkHttpClient
+    ): com.example.nexum_cliente.data.contract.remote.ContractApi =
+        retrofit.client(okHttpClient).build().create(com.example.nexum_cliente.data.contract.remote.ContractApi::class.java)
 
+    @Provides
+    @Singleton
+    fun provideReviewApi(
+        retrofit: Retrofit.Builder,
+        okHttpClient: OkHttpClient
+    ): com.example.nexum_cliente.data.review.remote.ReviewApi =
+        retrofit.client(okHttpClient).build().create(com.example.nexum_cliente.data.review.remote.ReviewApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideReportApi(
+        retrofit: Retrofit.Builder,
+        okHttpClient: OkHttpClient
+    ): com.example.nexum_cliente.data.report.remote.ReportApi =
+        retrofit.client(okHttpClient).build().create(com.example.nexum_cliente.data.report.remote.ReportApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideJobApplicationApi(
+        retrofit: Retrofit.Builder,
+        okHttpClient: OkHttpClient
+    ): com.example.nexum_cliente.data.job_application.remote.JobApplicationApi =
+        retrofit.client(okHttpClient).build().create(com.example.nexum_cliente.data.job_application.remote.JobApplicationApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideUserApi(
+        retrofit: Retrofit.Builder,
+        okHttpClient: OkHttpClient
+    ): com.example.nexum_cliente.data.user.remote.UserApi =
+        retrofit.client(okHttpClient).build().create(com.example.nexum_cliente.data.user.remote.UserApi::class.java)
 }

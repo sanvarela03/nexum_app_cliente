@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.example.nexum_cliente.domain.repository.CategoryRepository
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -38,7 +39,8 @@ class JobOfferViewModel @Inject constructor(
     private val jobOfferUseCases: JobOfferUseCases,
     private val locationClient: LocationClient,
     private val mediaUploadHandler: MediaUploadHandler,
-    private val mediaManagementUseCase: MediaManagementUseCase
+    private val mediaManagementUseCase: MediaManagementUseCase,
+    private val categoryRepository: CategoryRepository
 ) : ViewModel() {
 
     companion object {
@@ -177,6 +179,9 @@ class JobOfferViewModel @Inject constructor(
             is JobOfferEvent.LatitudeChanged -> _state.update { it.copy(latitude = event.latitude) }
             is JobOfferEvent.LongitudeChanged -> _state.update { it.copy(longitude = event.longitude) }
             is JobOfferEvent.DateOptionSelected -> {
+                if (event.option == "Hoy" && !JobOfferValidator.isTodayAllowed()) {
+                    return
+                }
                 _state.update { it.copy(selectedDateOption = event.option) }
                 when (event.option) {
                     "Hoy" -> {
@@ -256,7 +261,17 @@ class JobOfferViewModel @Inject constructor(
                 }
             }
 
-            is JobOfferEvent.CategoryIdChanged -> _state.update { it.copy(categoryId = event.categoryId) }
+            is JobOfferEvent.CategoryIdChanged -> {
+                _state.update {
+                    it.copy(
+                        categoryId = event.categoryId,
+                        categoryName = if (event.categoryName.isNotBlank()) event.categoryName else it.categoryName
+                    )
+                }
+                if (event.categoryName.isBlank()) {
+                    loadCategoryName(event.categoryId)
+                }
+            }
 
             JobOfferEvent.RequestCurrentLocation -> {
                 locationClient.getCurrentLocation(object : LocationClient.LocationCallback {
@@ -319,6 +334,17 @@ class JobOfferViewModel @Inject constructor(
         calendar.timeInMillis = dateMillis
         dateFormatter.timeZone = java.util.TimeZone.getTimeZone("UTC")
         _state.update { it.copy(requestedDate = dateFormatter.format(calendar.time)) }
+    }
+
+    private fun loadCategoryName(categoryId: Long) {
+        viewModelScope.launch {
+            categoryRepository.observeCategories().collect { categories ->
+                val matched = categories.firstOrNull { it.id == categoryId }
+                if (matched != null && !matched.name.isNullOrBlank()) {
+                    _state.update { it.copy(categoryName = matched.name) }
+                }
+            }
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

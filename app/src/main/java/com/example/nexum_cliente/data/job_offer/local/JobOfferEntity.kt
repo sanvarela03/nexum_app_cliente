@@ -26,5 +26,7 @@ data class JobOfferEntity(
     val createdAt: String,
     val lat: Double,
     val lng: Double,
+    val address: String? = null,
+    val status: String = "SEARCHING",
 )
 

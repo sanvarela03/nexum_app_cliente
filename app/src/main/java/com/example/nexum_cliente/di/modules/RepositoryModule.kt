@@ -74,4 +74,24 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindNotificationRepository(notificationRepositoryImpl: NotificationRepositoryImpl): NotificationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindContractRepository(contractRepositoryImpl: com.example.nexum_cliente.data.contract.ContractRepositoryImpl): com.example.nexum_cliente.domain.repository.ContractRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindReviewRepository(reviewRepositoryImpl: com.example.nexum_cliente.data.review.ReviewRepositoryImpl): com.example.nexum_cliente.domain.repository.ReviewRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindReportRepository(reportRepositoryImpl: com.example.nexum_cliente.data.report.ReportRepositoryImpl): com.example.nexum_cliente.domain.repository.ReportRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindJobApplicationRepository(jobApplicationRepositoryImpl: com.example.nexum_cliente.data.job_application.JobApplicationRepositoryImpl): com.example.nexum_cliente.domain.repository.JobApplicationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserRepository(userRepositoryImpl: com.example.nexum_cliente.data.user.UserRepositoryImpl): com.example.nexum_cliente.domain.repository.UserRepository
 }

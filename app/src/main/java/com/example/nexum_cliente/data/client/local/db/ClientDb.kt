@@ -41,7 +41,7 @@ import com.example.nexum_cliente.data.profile.local.ProfileEntity
         NearbyWorkerEntity::class,
         NotificationEntity::class
     ],
-    version = 1
+    version = 2
 )
 abstract class ClientDb : RoomDatabase() {
     abstract val clientDao: ClientDao

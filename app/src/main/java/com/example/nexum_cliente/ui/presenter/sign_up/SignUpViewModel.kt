@@ -100,6 +100,7 @@ class SignUpViewModel @Inject constructor(
                 val phoneCodeResult = validateSignUpUseCase.executePhoneCode(event.country)
                 val phoneResult = validateSignUpUseCase.executeCellphone(state.phone, event.country)
                 state.copy(
+                    phoneCode = event.country?.phoneCode ?: "",
                     selectedCountry = event.country,
                     phoneCodeError = !phoneCodeResult.isValid,
                     phoneError = !phoneResult.isValid

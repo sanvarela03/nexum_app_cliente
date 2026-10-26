@@ -4,7 +4,7 @@ import android.util.Log
 import com.example.nexum_cliente.common.apiRequestFlow
 import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import com.example.nexum_cliente.data.job_offer.remote.payload.req.AddJobOfferReq
-import com.example.nexum_cliente.data.job_offer.remote.payload.res.NewJobOfferRes
+import com.example.nexum_cliente.data.job_offer.remote.payload.res.JobOfferRes
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,7 +20,7 @@ import javax.inject.Singleton
 class JobOfferRemoteDataSource @Inject constructor(
     private val api: JobOfferApi
 ) {
-    fun createJobOffer(req: AddJobOfferReq): Flow<ApiResponse<NewJobOfferRes>> =
+    fun createJobOffer(req: AddJobOfferReq): Flow<ApiResponse<JobOfferRes>> =
         apiRequestFlow {
             Log.d("JobOfferRemoteDataSource", "createJobOffer: $req")
             api.createJobOffer(req)
