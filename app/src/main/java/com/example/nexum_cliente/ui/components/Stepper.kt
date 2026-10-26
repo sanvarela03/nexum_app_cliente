@@ -25,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -196,7 +198,19 @@ private fun Step(
                         bottom.linkTo(circle.bottom)
                         start.linkTo(circle.end)
                     },
-                    color = innerCircleColor,
+                    color = if (isCompete) {
+                        innerCircleColor
+                    } else {
+                        lerp(
+                            innerCircleColor,
+                            if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
+                                Color.White
+                            } else {
+                                Color.Black
+                            },
+                            0.2f
+                        )
+                    },
                     thickness = 3.dp,
                 )
             }

@@ -382,7 +382,7 @@ fun ConsultedJobOfferCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.outlinedCardColors(
-            containerColor = Color(0xFFF8FAFC)
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
         )
     ) {
         Column(
@@ -412,7 +412,7 @@ fun ConsultedJobOfferCard(
                     text = "${jobOffer.uuid.take(8)}...",
                     fontWeight = FontWeight.Light,
                     fontSize = 11.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -425,7 +425,7 @@ fun ConsultedJobOfferCard(
                     text = jobOffer.title.capitalizeFirstLetter(),
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    color = Color(0xFF1E293B),
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
@@ -448,7 +448,7 @@ fun ConsultedJobOfferCard(
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFF475569)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 if (jobOffer.categoryName.isNotBlank()) {
@@ -469,7 +469,7 @@ fun ConsultedJobOfferCard(
                 }
             }
 
-            HorizontalDivider(color = Color(0xFFE2E8F0), thickness = 0.8.dp)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.8.dp)
 
             // Fecha solicitada
             if (jobOffer.requestedDate.isNotBlank()) {
@@ -486,7 +486,7 @@ fun ConsultedJobOfferCard(
                     Text(
                         text = runCatching { jobOffer.requestedDate.toLocalDateTime().formatToReadableDate() }.getOrDefault(jobOffer.requestedDate),
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF334155)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -507,7 +507,7 @@ fun ConsultedJobOfferCard(
                     Text(
                         text = locationText,
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF334155),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
