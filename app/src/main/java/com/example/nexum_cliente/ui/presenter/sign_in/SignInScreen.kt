@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.ui.presenter.sign_in
 
+import android.content.res.Configuration
 import android.util.Log
 import android.view.Gravity
 import android.widget.Toast
@@ -18,12 +19,12 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -90,7 +91,6 @@ fun SignInScreen(
 }
 
 @Composable
-@Preview(showBackground = true, showSystemUi = true)
 private fun SignInScreenContent(
     state: SignInState = SignInState(),
     emailChanged: (String) -> Unit = {},
@@ -99,7 +99,11 @@ private fun SignInScreenContent(
     onForgotPasswordClicked: () -> Unit = {},
     go: () -> Unit = {}
 ) {
-    Nexum_clienteTheme() {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -150,9 +154,9 @@ private fun SignInScreenContent(
                     isEnabled = state.isButtonEnabled,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
-                        disabledContainerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = Color.White,
-                        disabledContentColor = MaterialTheme.colorScheme.secondary
+                        disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                     ),
                     onButtonClicked = {
                         onLoginButtonClicked()
@@ -169,6 +173,25 @@ private fun SignInScreenContent(
     }
 }
 
+@Preview(
+    name = "Sign in - Light",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Preview(
+    name = "Sign in - Dark",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+private fun SignInScreenPreview() {
+    Nexum_clienteTheme {
+        SignInScreenContent()
+    }
+}
+
 
 @Composable
 private fun ForgotPasswordText(
@@ -181,7 +204,7 @@ private fun ForgotPasswordText(
             fontSize = 14.sp,
             textAlign = TextAlign.Right,
             textDecoration = TextDecoration.Underline,
-            color = Color(0xFF828282)
+            color = MaterialTheme.colorScheme.primary
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -200,7 +223,12 @@ private fun SignUpText(go: () -> Unit) {
 
     val annotatedString = buildAnnotatedString {
         append(initTxt)
-        withStyle(style = SpanStyle(color = Color(0xFF828282))) {
+        withStyle(
+            style = SpanStyle(
+                color = MaterialTheme.colorScheme.primary,
+                textDecoration = TextDecoration.Underline
+            )
+        ) {
             pushStringAnnotation(tag = signUpTxt, annotation = signUpTxt)
             append(signUpTxt)
         }
@@ -211,7 +239,7 @@ private fun SignUpText(go: () -> Unit) {
         style = TextStyle(
             fontSize = 14.sp,
             textAlign = TextAlign.Center,
-            color = Color(0xFF000000)
+            color = MaterialTheme.colorScheme.onBackground
         ),
         modifier = Modifier
             .fillMaxWidth()

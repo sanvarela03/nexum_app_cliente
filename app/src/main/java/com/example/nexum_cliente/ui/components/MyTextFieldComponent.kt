@@ -9,7 +9,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,12 +18,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusEvent
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.nexum_cliente.ui.theme.componentShapes
+import com.example.nexum_cliente.ui.theme.surfaceTextFieldColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,24 +46,20 @@ fun MyTextFieldComponent(
     // El error solo se muestra si el estado es de error Y el usuario ha modificado el campo.
     val isActuallyError = errorStatus && hasBeenModified
     
-    // El verde solo se muestra si NO hay error, el usuario ha interactuado y NO tiene el foco.
+    // Resaltamos el borde si el campo es válido, fue modificado y no tiene el foco.
     val shouldShowSuccess = !errorStatus && hasBeenModified && !isFocused
 
     val unfocusedBorderColor = if (shouldShowSuccess) {
-        Color.Green 
+        MaterialTheme.colorScheme.onSurfaceVariant
     } else {
-        Color(0xFFE6E6E6)
+        MaterialTheme.colorScheme.outline
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = textValue,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Blue,
+            colors = surfaceTextFieldColors(
                 unfocusedBorderColor = unfocusedBorderColor,
-                errorBorderColor = Color.Red,
-                unfocusedLabelColor = Color(0xFF9EA1A5),
-                unfocusedLeadingIconColor = Color(0xFF9EA1A5),
             ),
             shape = RoundedCornerShape(8.dp),
             modifier = modifier.onFocusEvent {
@@ -94,7 +89,7 @@ fun MyTextFieldComponent(
         if (isActuallyError && !errorMessage.isNullOrBlank()) {
             Text(
                 text = errorMessage,
-                color = Color.Red,
+                color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.padding(start = 8.dp, top = 4.dp)
             )

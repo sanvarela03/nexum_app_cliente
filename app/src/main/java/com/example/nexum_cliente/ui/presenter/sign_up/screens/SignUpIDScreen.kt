@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.ui.presenter.sign_up.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,11 +10,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -21,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,7 +61,6 @@ fun SignUpIDScreen(
 }
 
 @Composable
-@Preview(showBackground = true, showSystemUi = true)
 private fun SignUpIDScreenContent(
     state: SignUpState = SignUpState(),
     onDocumentNumberChanged: (String) -> Unit = {},
@@ -66,7 +68,11 @@ private fun SignUpIDScreenContent(
     onNext: () -> Unit = {},
     enableNextButton: Boolean = false
 ) {
-    Nexum_clienteTheme() {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -123,6 +129,25 @@ private fun SignUpIDScreenContent(
     }
 }
 
+@Preview(
+    name = "ID - Light",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Preview(
+    name = "ID - Dark",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+private fun SignUpIDScreenPreview() {
+    Nexum_clienteTheme {
+        SignUpIDScreenContent()
+    }
+}
+
 @Composable
 private fun TosAndPolicyText(go: () -> Unit) {
     val initTxt =
@@ -132,12 +157,12 @@ private fun TosAndPolicyText(go: () -> Unit) {
 
     val annotatedString = buildAnnotatedString {
         append(initTxt)
-        withStyle(style = SpanStyle(color = Color(0xFF828282))) {
+        withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
             pushStringAnnotation(tag = signUpTxt, annotation = signUpTxt)
             append(signUpTxt)
         }
         append(" y ")
-        withStyle(style = SpanStyle(color = Color(0xFF828282))) {
+        withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
             pushStringAnnotation(tag = policyTxt, annotation = policyTxt)
             append(policyTxt)
         }
@@ -148,7 +173,7 @@ private fun TosAndPolicyText(go: () -> Unit) {
         style = TextStyle(
             fontSize = 14.sp,
             textAlign = TextAlign.Start,
-            color = Color(0xFF000000)
+            color = MaterialTheme.colorScheme.onBackground
         ),
         modifier = Modifier
             .fillMaxWidth()

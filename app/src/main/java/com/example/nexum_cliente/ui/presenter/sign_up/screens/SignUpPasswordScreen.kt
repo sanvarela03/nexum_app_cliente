@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.ui.presenter.sign_up.screens
 
+import android.content.res.Configuration
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -58,7 +61,6 @@ fun SignUpPasswordScreen(
 }
 
 @Composable
-@Preview(showBackground = true, showSystemUi = true)
 private fun SignUpPasswordScreenContent(
     state: SignUpState = SignUpState(),
     onPasswordChanged: (String) -> Unit = {},
@@ -67,7 +69,11 @@ private fun SignUpPasswordScreenContent(
     onNext: () -> Unit = {},
     enableNextButton: Boolean = false,
 ) {
-    Nexum_clienteTheme() {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -138,5 +144,24 @@ private fun SignUpPasswordScreenContent(
                 enableNextButton = enableNextButton
             )
         }
+    }
+}
+
+@Preview(
+    name = "Password - Light",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Preview(
+    name = "Password - Dark",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+private fun SignUpPasswordScreenPreview() {
+    Nexum_clienteTheme {
+        SignUpPasswordScreenContent()
     }
 }

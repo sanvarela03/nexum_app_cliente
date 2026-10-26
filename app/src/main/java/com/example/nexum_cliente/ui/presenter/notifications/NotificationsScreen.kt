@@ -2,7 +2,11 @@ package com.example.nexum_cliente.ui.presenter.notifications
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +25,7 @@ import androidx.compose.material3.CardDefaults.outlinedCardColors
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -67,7 +72,8 @@ fun NotificationsScreen(
 
 
 @Composable
-@Preview(showBackground = true)
+@Preview(name = "Notifications - Light", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Notifications - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 fun NotificationsScreenContentPreview() {
     Nexum_clienteTheme {
         NotificationsScreenContent(
@@ -96,7 +102,10 @@ private fun NotificationsScreenContent(
     onClick: (String) -> Unit = {}
 ) {
     Column(
-        modifier = Modifier.padding(10.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         LazyColumn {
@@ -129,7 +138,11 @@ private fun NotificationItem(
         }
 
         OutlinedCard(
-            colors = outlinedCardColors(containerColor = Color.White),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            colors = outlinedCardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
@@ -230,7 +243,7 @@ private fun NotificationItem(
                     }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = notification.body, fontSize = 14.sp, color = Color.DarkGray)
+                Text(text = notification.body, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(6.dp))
                 Row {
                     Spacer(modifier = Modifier.weight(1f))
@@ -238,6 +251,7 @@ private fun NotificationItem(
                         fontStyle = FontStyle.Italic,
                         fontWeight = FontWeight.Light,
                         text = notification.createdAt,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp,
                         color = Color.Gray
                     )

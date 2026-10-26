@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.ui.presenter.sign_up.screens
 
+import android.content.res.Configuration
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
@@ -8,12 +9,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -66,7 +68,6 @@ fun SignUpCityScreen(
 }
 
 @Composable
-@Preview(showBackground = true, showSystemUi = true)
 private fun SignUpCityScreenContent(
     state: SignUpState = SignUpState(
         marketLocations = listOf(
@@ -93,9 +94,11 @@ private fun SignUpCityScreenContent(
     enableNextButton: Boolean = false,
 ) {
     val cities = state.marketLocations.filter { it.countryCode == state.selectedCountry?.code }
-    Nexum_clienteTheme() {
-
-
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -118,7 +121,7 @@ private fun SignUpCityScreenContent(
                 "Selecciona la ciudad en la que quieres solicitar nuestros servicios.",
                 fontWeight = FontWeight.Medium,
                 fontSize = 14.sp,
-                color = Color(0xFF858191),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Start
             )
             Spacer(modifier = Modifier.height(35.dp))
@@ -141,5 +144,24 @@ private fun SignUpCityScreenContent(
                 enableNextButton = enableNextButton
             )
         }
+    }
+}
+
+@Preview(
+    name = "City - Light",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Preview(
+    name = "City - Dark",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+private fun SignUpCityScreenPreview() {
+    Nexum_clienteTheme {
+        SignUpCityScreenContent()
     }
 }

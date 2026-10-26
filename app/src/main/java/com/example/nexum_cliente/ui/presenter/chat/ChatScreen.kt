@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.ui.presenter.chat
 
+import android.content.res.Configuration
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -37,7 +38,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -53,9 +53,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -69,6 +69,7 @@ import com.example.nexum_cliente.domain.model.Message
 import com.example.nexum_cliente.domain.model.MessageStatus
 import com.example.nexum_cliente.domain.model.Profile
 import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
+import com.example.nexum_cliente.ui.theme.surfaceTextFieldColors
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -200,15 +201,19 @@ private fun ChatScreenContent(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground,
         contentWindowInsets = WindowInsets(0),
         topBar = {
             Surface(
                 shadowElevation = 4.dp,
-                color = Color.White
+                color = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
             ) {
                 CenterAlignedTopAppBar(
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color.Transparent,
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                         titleContentColor = MaterialTheme.colorScheme.onSurface,
                     ),
                     title = {
@@ -257,10 +262,10 @@ private fun ChatScreenContent(
                                     },
                                     style = MaterialTheme.typography.bodySmall,
                                     color = when (connectionState) {
-                                        ConnectionState.CONNECTED -> Color(0xFF4CAF50)
-                                        ConnectionState.RECONNECTING, ConnectionState.CONNECTING -> Color(0xFFFF9800)
-                                        ConnectionState.ERROR -> Color.Red
-                                        else -> Color.Gray
+                                        ConnectionState.CONNECTED -> MaterialTheme.colorScheme.primary
+                                        ConnectionState.RECONNECTING, ConnectionState.CONNECTING -> MaterialTheme.colorScheme.tertiary
+                                        ConnectionState.ERROR -> MaterialTheme.colorScheme.error
+                                        else -> MaterialTheme.colorScheme.onSurfaceVariant
                                     }
                                 )
                             }
@@ -352,6 +357,28 @@ private fun ChatScreenContent(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(name = "Chat - Light", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Chat - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ChatScreenPreview() {
+    Nexum_clienteTheme {
+        ChatScreenContent(
+            messages = emptyList(),
+            profile = null,
+            uiState = ChatUiState.Loading,
+            connectionState = ConnectionState.CONNECTED,
+            currentUserId = "1",
+            receiverId = "2",
+            isReceiverTyping = false,
+            onNavigateBack = {},
+            onSendMessage = {},
+            onTyping = {},
+            onRetry = {}
+        )
+    }
+}
+
 @Composable
 private fun ChatInputBar(
     text: String,
@@ -363,7 +390,8 @@ private fun ChatInputBar(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shadowElevation = 8.dp,
-        color = Color.White
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface
     ) {
         Row(
             modifier = Modifier
@@ -378,10 +406,7 @@ private fun ChatInputBar(
                 placeholder = { Text("Escribe un mensaje...") },
                 shape = RoundedCornerShape(24.dp),
                 maxLines = 4,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = Color.LightGray
-                )
+                colors = surfaceTextFieldColors()
             )
             Spacer(Modifier.width(8.dp))
             IconButton(
@@ -389,12 +414,16 @@ private fun ChatInputBar(
                 enabled = enabled && text.isNotBlank(),
                 modifier = Modifier
                     .clip(CircleShape)
-                    .background(if (enabled && text.isNotBlank()) MaterialTheme.colorScheme.primary else Color.LightGray)
+                    .background(
+                        if (enabled && text.isNotBlank()) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                    )
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Send,
                     contentDescription = "Enviar",
-                    tint = Color.White
+                    tint = if (enabled && text.isNotBlank()) MaterialTheme.colorScheme.onPrimary
+                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                 )
             }
         }
@@ -405,8 +434,8 @@ private fun ChatInputBar(
 @Composable
 private fun MessageItem(message: Message, isFromMe: Boolean) {
     val alignment = if (isFromMe) Alignment.End else Alignment.Start
-    val bubbleColor = if (isFromMe) MaterialTheme.colorScheme.primary else Color(0xFFF1F0F0)
-    val textColor = if (isFromMe) Color.White else Color.Black
+    val bubbleColor = if (isFromMe) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    val textColor = if (isFromMe) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -435,7 +464,7 @@ private fun MessageItem(message: Message, isFromMe: Boolean) {
         ) {
             Text(
                 text = formatMessageTime(message.timestamp),
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Light
             )
@@ -447,7 +476,8 @@ private fun MessageItem(message: Message, isFromMe: Boolean) {
                     MessageStatus.DELIVERED -> Icons.Default.DoneAll
                     MessageStatus.READ -> Icons.Default.DoneAll
                 }
-                val iconTint = if (message.status == MessageStatus.READ) Color(0xFF2196F3) else Color.Gray // Blue for read, Gray for sent/delivered
+                val iconTint = if (message.status == MessageStatus.READ) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.onSurfaceVariant
                 
                 Icon(
                     imageVector = icon,
@@ -494,14 +524,14 @@ private fun DateHeader(date: LocalDate) {
         contentAlignment = Alignment.Center
     ) {
         Surface(
-            color = Color.LightGray.copy(alpha = 0.3f),
+            color = MaterialTheme.colorScheme.surfaceVariant,
             shape = CircleShape
         ) {
             Text(
                 text = dateText,
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.DarkGray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -514,7 +544,7 @@ private fun ErrorMessage(message: String, onRetry: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = message, color = Color.Red)
+        Text(text = message, color = MaterialTheme.colorScheme.error)
         Spacer(Modifier.height(8.dp))
         Button(onClick = onRetry) {
             Text("Reintentar")

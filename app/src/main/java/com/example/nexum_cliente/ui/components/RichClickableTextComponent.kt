@@ -1,9 +1,9 @@
 package com.example.nexum_cliente.ui.components
 
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -60,13 +60,13 @@ fun RichClickableText(
     style: TextStyle = TextStyle(
         fontSize = 14.sp,
         textAlign = TextAlign.Start,
-        color = Color(0xFF000000)
+        color = MaterialTheme.colorScheme.onBackground
     ),
     defaultTextStyle: SpanStyle = SpanStyle(
         color = style.color
     ),
     defaultLinkStyle: SpanStyle = SpanStyle(
-        color = Color(0xFF828282),
+        color = MaterialTheme.colorScheme.primary,
         textDecoration = TextDecoration.None,
         fontWeight = FontWeight.Normal
     ),

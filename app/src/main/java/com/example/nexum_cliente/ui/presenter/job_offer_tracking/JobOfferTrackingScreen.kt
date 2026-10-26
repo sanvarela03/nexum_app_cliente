@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.ui.presenter.job_offer_tracking
 
+import android.content.res.Configuration
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
@@ -37,10 +38,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -48,15 +52,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.nexum_cliente.common.capitalizeFirstLetter
 import com.example.nexum_cliente.common.formatToReadableDate
 import com.example.nexum_cliente.common.toLocalDateTime
+import com.example.nexum_cliente.domain.model.JobApplication
 import com.example.nexum_cliente.domain.model.JobOffer
 import com.example.nexum_cliente.domain.model.NearbyWorker
 import com.example.nexum_cliente.ui.components.Stepper
 import com.example.nexum_cliente.ui.presenter.job_applications.JobApplicationItem
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
+import com.example.nexum_cliente.ui.theme.stepperColors
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JobOfferTrackingScreen(
     jobOfferId: String,
@@ -66,6 +72,30 @@ fun JobOfferTrackingScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    JobOfferTrackingScreenContent(
+        state = state,
+        onNavigateBack = onNavigateBack,
+        onNavigateToCheckout = onNavigateToCheckout,
+        onRefresh = { viewModel.onEvent(JobOfferTrackingEvent.Refresh) },
+        onSelectApplication = { application: JobApplication ->
+            viewModel.onEvent(JobOfferTrackingEvent.SelectApplication(application))
+        },
+        onDismissApplication = {
+            viewModel.onEvent(JobOfferTrackingEvent.DismissApplicationDetail)
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun JobOfferTrackingScreenContent(
+    state: JobOfferTrackingState,
+    onNavigateBack: () -> Unit,
+    onNavigateToCheckout: (jobApplicationId: Long, agreedAmount: Double) -> Unit,
+    onRefresh: () -> Unit = { },
+    onSelectApplication: (JobApplication) -> Unit = {},
+    onDismissApplication: () -> Unit = {},
+) {
     BackHandler(onBack = onNavigateBack)
 
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = state.isRefreshing)
@@ -93,16 +123,18 @@ fun JobOfferTrackingScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = Color.Black
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         },
-        containerColor = Color.White
+        containerColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
     ) { paddingValues ->
         SwipeRefresh(
             state = swipeRefreshState,
-            onRefresh = { viewModel.onEvent(JobOfferTrackingEvent.Refresh) },
+            onRefresh = { onRefresh() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
@@ -119,8 +151,9 @@ fun JobOfferTrackingScreen(
                 Stepper(
                     numberOfSteps = 4,
                     currentStep = currentStep,
-                    selectedColor = Color(0xFF009963),
-                    unSelectedColor = Color(0xFFE6E6E6)
+                    selectedColor = MaterialTheme.stepperColors.selected,
+                    unSelectedColor = MaterialTheme.stepperColors.unselected,
+                    selectedContentColor = MaterialTheme.stepperColors.onSelected
                 )
 
                 Spacer(modifier = Modifier.height(14.dp))
@@ -242,7 +275,7 @@ fun JobOfferTrackingScreen(
                                 jobApplication = application,
                                 isAssigned = isAssigned,
                                 onClick = {
-                                    viewModel.onEvent(JobOfferTrackingEvent.SelectApplication(application))
+                                    onSelectApplication(application)
                                 },
                                 onAccept = {
                                     val id = application.jobApplicationId.toLongOrNull() ?: 0L
@@ -316,9 +349,7 @@ fun JobOfferTrackingScreen(
                     val amount = selectedApp.totalCost
                     onNavigateToCheckout(id, amount)
                 },
-                onDismiss = {
-                    viewModel.onEvent(JobOfferTrackingEvent.DismissApplicationDetail)
-                }
+                onDismiss = onDismissApplication
             )
         }
     }
@@ -487,13 +518,27 @@ fun ConsultedJobOfferCard(
     }
 }
 
+@Preview(name = "Tracking - Light", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Tracking - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun JobOfferTrackingScreenPreview() {
+    Nexum_clienteTheme {
+        JobOfferTrackingScreenContent(
+            state = JobOfferTrackingState(),
+            onNavigateBack = {},
+            onNavigateToCheckout = { _, _ -> }
+        )
+    }
+}
+
 @Composable
 fun WorkerItem(worker: NearbyWorker) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
-        color = Color(0xFFF9F9F9),
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
         shape = MaterialTheme.shapes.medium
     ) {
         Row(
@@ -516,7 +561,7 @@ fun WorkerItem(worker: NearbyWorker) {
                     text = "${worker.firstName} ${worker.lastName}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(2.dp))
@@ -524,7 +569,7 @@ fun WorkerItem(worker: NearbyWorker) {
                 Text(
                     text = if (worker.bio.isNotBlank() && worker.bio != "null") worker.bio else "Trabajador disponible",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.DarkGray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1
                 )
             }
@@ -540,12 +585,12 @@ fun WorkerItem(worker: NearbyWorker) {
                     },
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF009963)
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     text = "Distancia",
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

@@ -11,16 +11,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.nexum_cliente.ui.theme.componentShapes
+import com.example.nexum_cliente.ui.theme.surfaceTextFieldColors
 
 /**
  * @author Santiago Varela Daza
@@ -51,13 +50,7 @@ fun MyTextFieldComponent2(
     Column(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = textValue,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Blue,        // cuando está enfocado
-                unfocusedBorderColor = Color(0xFFE6E6E6), // cuando no está enfocado
-                errorBorderColor = Color.Red,
-                unfocusedLabelColor = Color(0xFFE6E6E6),
-                unfocusedLeadingIconColor = Color(0xFFE6E6E6),
-            ),
+            colors = surfaceTextFieldColors(),
             shape = RoundedCornerShape(8.dp),
             modifier = modifier,
             label = {
@@ -80,7 +73,7 @@ fun MyTextFieldComponent2(
         if (shouldShowError && !errorMessage.isNullOrBlank()) {
             Text(
                 text = errorMessage,
-                color = Color.Red,
+                color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.padding(start = 8.dp, top = 4.dp)
             )

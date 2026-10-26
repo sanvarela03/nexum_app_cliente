@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -41,6 +41,7 @@ fun WheelPicker(
     itemHeight: Dp = 36.dp,
     visibleCount: Int = 5
 ) {
+    val textColor = LocalContentColor.current
     val state = rememberLazyListState(
         initialFirstVisibleItemIndex = initialIndex.coerceIn(0, items.lastIndex.coerceAtLeast(0))
     )
@@ -97,7 +98,7 @@ fun WheelPicker(
                         text = item,
                         fontSize = size,
                         fontWeight = weight,
-                        color = Color.Black.copy(alpha = alpha)
+                        color = textColor.copy(alpha = textColor.alpha * alpha)
                     )
                 }
             }
