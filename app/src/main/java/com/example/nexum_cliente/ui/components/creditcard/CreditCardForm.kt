@@ -24,6 +24,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.nexum_cliente.ui.theme.surfaceTextFieldColors
 
 // ---------------------------------------------------------------------------
 // Validation helpers
@@ -97,6 +98,7 @@ fun CreditCardForm(
         val cardNumberError = cardNumberDirty && !isCardNumberValid(state.cardNumber)
         OutlinedTextField(
             value = state.cardNumber,
+            colors = surfaceTextFieldColors(),
             onValueChange = { input ->
                 val digits = input.filter { it.isDigit() }.take(16)
                 cardNumberDirty = true
@@ -114,7 +116,7 @@ fun CreditCardForm(
                     Text(
                         text = typeLabel,
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(end = 12.dp)
                     )
                 }
@@ -141,6 +143,7 @@ fun CreditCardForm(
         val cardHolderError = cardHolderNameDirty && !isCardHolderNameValid(state.cardHolderName)
         OutlinedTextField(
             value = state.cardHolderName,
+            colors = surfaceTextFieldColors(),
             onValueChange = { input ->
                 cardHolderNameDirty = true
                 onStateChange(state.copy(cardHolderName = input.take(26)))
@@ -173,6 +176,7 @@ fun CreditCardForm(
             val expiryError = expirationDateDirty && !isExpirationDateValid(state.expirationDate)
             OutlinedTextField(
                 value = state.expirationDate,
+                colors = surfaceTextFieldColors(),
                 onValueChange = { input ->
                     val digits = input.filter { it.isDigit() }.take(4)
                     expirationDateDirty = true
@@ -201,6 +205,7 @@ fun CreditCardForm(
             val cvvError = cvvDirty && !isCvvValid(state.cvv)
             OutlinedTextField(
                 value = state.cvv,
+                colors = surfaceTextFieldColors(),
                 onValueChange = { input ->
                     val digits = input.filter { it.isDigit() }.take(4)
                     cvvDirty = true

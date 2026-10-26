@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,7 +23,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.nexum_cliente.common.capitalizeFirstLetter
 import java.util.Calendar
@@ -109,7 +109,7 @@ fun DateOfBirthPicker(
         onDayChanged(selectedDay)
     }
 
-    val borderColor = Color(0xFFE6E6E6)
+    val borderColor = MaterialTheme.colorScheme.outline
 
     Box(
         modifier = modifier
@@ -124,7 +124,7 @@ fun DateOfBirthPicker(
                 .fillMaxWidth()
                 .height(36.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFFF2F2F2))
+                .background(MaterialTheme.colorScheme.surface)
         )
 
         Row(

@@ -24,12 +24,12 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
@@ -70,12 +70,12 @@ fun MultiplePhotoPickerComponent(
                     .defaultMinSize(100.dp, 100.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = IconButtonColors(
-                    contentColor = Color(0xFFE6E6E6),
-                    containerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    disabledContentColor = Color.Black,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                    disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                 ),
-                border = BorderStroke(1.dp, Color(0xFFE6E6E6)),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
 
                 onClick = {
                     photoPickerLauncher.launch(
@@ -130,12 +130,12 @@ fun ImagePreview(
                     .padding(3.dp)
                     .clip(RoundedCornerShape(50))
                     .size(24.dp)
-                    .background(Color.Black.copy(alpha = 0.6f))
+                    .background(MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.9f))
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Remove",
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.inverseOnSurface,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -177,12 +177,12 @@ fun ImagePreview(
                     .padding(3.dp)
                     .clip(RoundedCornerShape(50))
                     .size(24.dp)
-                    .background(Color.Black.copy(alpha = 0.6f))
+                    .background(MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.9f))
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Remove",
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.inverseOnSurface,
                     modifier = Modifier.size(16.dp)
                 )
             }

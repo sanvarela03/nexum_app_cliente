@@ -23,7 +23,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.graphics.Color
 
 /**
  * @author Ernesto Bastidas Pulido
@@ -61,8 +60,9 @@ fun PagerNavigationComponent(
             contentPadding = PaddingValues(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
-                disabledContainerColor = MaterialTheme.colorScheme.surface,
-                contentColor = Color.White
+                disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
             ),
             enabled = enableNextButton
         ) {

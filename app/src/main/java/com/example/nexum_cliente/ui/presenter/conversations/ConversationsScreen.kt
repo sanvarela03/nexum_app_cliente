@@ -43,7 +43,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,6 +56,7 @@ import com.example.nexum_cliente.domain.model.Conversation
 import com.example.nexum_cliente.domain.model.Profile
 import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
 import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import java.time.Instant
 import java.time.LocalDateTime
@@ -149,10 +149,13 @@ private fun ConversationsScreenContent(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
                 title = {
@@ -190,7 +193,15 @@ private fun ConversationsScreenContent(
         SwipeRefresh(
             state = rememberSwipeRefreshState(isRefreshing),
             onRefresh = onRefresh,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier.padding(paddingValues),
+            indicator = { refreshState, trigger ->
+                SwipeRefreshIndicator(
+                    state = refreshState,
+                    refreshTriggerDistance = trigger,
+                    backgroundColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.primary
+                )
+            }
         ) {
             when (uiState) {
                 is ConversationsUiState.Loading -> {
@@ -255,6 +266,9 @@ private fun NewChatDialog(
     onUserSelected: (Profile) -> Unit
 ) {
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurface,
         onDismissRequest = onDismiss,
         title = { Text("Nueva Conversación") },
         text = {
@@ -316,7 +330,7 @@ private fun ErrorMessage(message: String, onRetry: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = message, color = Color.Red)
+        Text(text = message, color = MaterialTheme.colorScheme.error)
         Spacer(Modifier.height(8.dp))
         Button(onClick = onRetry) { Text("Reintentar") }
     }
@@ -342,7 +356,8 @@ private fun ConversationItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        color = Color.Transparent
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
     ) {
         Row(
             modifier = Modifier
@@ -384,7 +399,7 @@ private fun ConversationItem(
                         Text(
                             text = formatDate(it),
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -393,7 +408,8 @@ private fun ConversationItem(
                     Text(
                         text = conversation.lastMessageContent ?: "No hay mensajes",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = if (conversation.unreadCount > 0) Color.Black else Color.Gray,
+                        color = if (conversation.unreadCount > 0) MaterialTheme.colorScheme.onBackground
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
@@ -407,7 +423,7 @@ private fun ConversationItem(
                             Box(contentAlignment = Alignment.Center) {
                                 Text(
                                     text = conversation.unreadCount.toString(),
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     style = MaterialTheme.typography.labelSmall
                                 )
                             }
@@ -450,7 +466,8 @@ private fun formatDate(timestamp: String): String {
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-@Preview(showBackground = true)
+@Preview(name = "Conversations - Light", showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Conversations - Dark", showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun ConversationsScreenPreview() {
     val currentUserId = "1"

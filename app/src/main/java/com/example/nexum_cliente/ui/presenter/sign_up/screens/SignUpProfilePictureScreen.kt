@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.ui.presenter.sign_up.screens
 
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 
@@ -45,7 +46,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -119,7 +119,6 @@ fun SignUpProfilePictureScreen(
 }
 
 @Composable
-@Preview(showBackground = true, showSystemUi = true)
 private fun SignUpProfilePictureScreenContent(
     state: SignUpState = SignUpState(),
     username: String = "",
@@ -129,8 +128,11 @@ private fun SignUpProfilePictureScreenContent(
     onAcceptAndNavigate: () -> Unit = {}
 ) {
     val insets = WindowInsets.navigationBars.asPaddingValues()
-    Nexum_clienteTheme() {
-
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -163,7 +165,7 @@ private fun SignUpProfilePictureScreenContent(
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit profile",
-                        tint = Color.Black,
+                        tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.align(Alignment.CenterEnd)
                     )
                 }
@@ -189,14 +191,14 @@ private fun SignUpProfilePictureScreenContent(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .clip(CircleShape)
-                                .background(Color(0xFFBDBDBD)), // gray placeholder
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 modifier = Modifier.size(80.dp),
                                 contentDescription = "Default avatar",
-                                tint = Color.White
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -217,7 +219,7 @@ private fun SignUpProfilePictureScreenContent(
                     Icon(
                         imageVector = Icons.Default.Email,
                         contentDescription = "Email icon",
-                        tint = Color.Black
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(modifier = Modifier.width(8.dp)) // space between icon and text
                     Text(text = state.email)
@@ -226,7 +228,7 @@ private fun SignUpProfilePictureScreenContent(
                     Icon(
                         imageVector = Icons.Default.Phone,
                         contentDescription = "Phone icon",
-                        tint = Color.Black
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(modifier = Modifier.width(8.dp)) // space between icon and text
                     Text(text = "${state.phoneCode} ${state.phone}")
@@ -235,7 +237,7 @@ private fun SignUpProfilePictureScreenContent(
                     Icon(
                         painter = painterResource(R.drawable.vector),
                         contentDescription = "ID icon",
-                        tint = Color.Black
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(modifier = Modifier.width(8.dp)) // space between icon and text
                     Text(text = state.documentNumber)
@@ -249,7 +251,7 @@ private fun SignUpProfilePictureScreenContent(
                 Icon(
                     imageVector = Icons.Default.Place,
                     contentDescription = "Location icon",
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
                 Spacer(modifier = Modifier.width(5.dp))
                 state.selectedMarketLocation?.let {
@@ -263,9 +265,9 @@ private fun SignUpProfilePictureScreenContent(
                 isLoading = state.isSigningUp,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    disabledContainerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = Color.White,
-                    disabledContentColor = MaterialTheme.colorScheme.secondary
+                    disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                 ),
                 isEnabled = state.isProfilePictureValid && !state.isSigningUp
             ) {
@@ -278,6 +280,25 @@ private fun SignUpProfilePictureScreenContent(
                 onAccept = onAcceptAndNavigate
             )
         }
+    }
+}
+
+@Preview(
+    name = "Profile picture - Light",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Preview(
+    name = "Profile picture - Dark",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+private fun SignUpProfilePictureScreenPreview() {
+    Nexum_clienteTheme {
+        SignUpProfilePictureScreenContent()
     }
 }
 
@@ -295,7 +316,8 @@ private fun BoxScope.EditProfilePictureButton(
     )
     Surface(
         shape = CircleShape,
-        color = Color.Gray,
+        color = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
         modifier = Modifier
@@ -315,7 +337,7 @@ private fun BoxScope.EditProfilePictureButton(
             Icon(
                 imageVector = Icons.Outlined.AddAPhoto,
                 contentDescription = "Change photo",
-                tint = Color.Black
+                tint = MaterialTheme.colorScheme.onPrimary
             )
         }
     }

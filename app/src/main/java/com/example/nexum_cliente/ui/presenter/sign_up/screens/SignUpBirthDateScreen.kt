@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.ui.presenter.sign_up.screens
 
+import android.content.res.Configuration
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -66,7 +68,6 @@ fun SignUpBirthDateScreen(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-@Preview(showBackground = true, showSystemUi = true)
 private fun SignUpBirthDateScreenContent(
     state: SignUpState = SignUpState(),
     onDayChanged: (Int) -> Unit = {},
@@ -76,9 +77,11 @@ private fun SignUpBirthDateScreenContent(
     onBack: () -> Unit = {},
     enableNextButton: Boolean = false,
 ) {
-    Nexum_clienteTheme() {
-
-
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -139,7 +142,7 @@ private fun SignUpBirthDateScreenContent(
                     Text("Seleccionado: ")
                     Text(
                         "${date}",
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.onBackground,
                     )
                 }
             }
@@ -155,5 +158,25 @@ private fun SignUpBirthDateScreenContent(
                 enableNextButton = enableNextButton
             )
         }
+    }
+}
+
+@Preview(
+    name = "Birth date - Light",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Preview(
+    name = "Birth date - Dark",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+private fun SignUpBirthDateScreenPreview() {
+    Nexum_clienteTheme {
+        SignUpBirthDateScreenContent()
     }
 }

@@ -36,6 +36,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -50,7 +51,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -71,6 +71,7 @@ import com.example.nexum_cliente.ui.components.Stepper
 import com.example.nexum_cliente.ui.components.TimePickerDialog
 import com.example.nexum_cliente.ui.presenter.map.MapScreen
 import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
+import com.example.nexum_cliente.ui.theme.stepperColors
 import com.example.nexum_cliente.utils.validator.JobOfferValidator
 import com.google.android.gms.maps.model.LatLng
 
@@ -177,10 +178,11 @@ fun JobOfferScreen(
 private fun DatePickerDialogContent(
     initialDateMillis: Long? = null,
     colors: DatePickerColors = DatePickerDefaults.colors(
-        containerColor = Color.White,
-        titleContentColor = Color.Black,
-        headlineContentColor = Color.Black,
+        containerColor = MaterialTheme.colorScheme.surface,
+        titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        headlineContentColor = MaterialTheme.colorScheme.onSurface,
         selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+        selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
     ),
     onDismissRequest: () -> Unit,
     onConfirm: (Long) -> Unit,
@@ -203,10 +205,7 @@ private fun DatePickerDialogContent(
     )
 
     DatePickerDialog(
-        colors = DatePickerDefaults.colors(
-            containerColor = Color.White,
-            titleContentColor = Color.Black
-        ),
+        colors = colors,
         onDismissRequest = {
             onDismissRequest()
         },
@@ -233,7 +232,8 @@ private fun DatePickerDialogContent(
 
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(name = "Date picker - Light", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Date picker - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun DatePickerDialogContentPreview() {
     Nexum_clienteTheme {
@@ -252,12 +252,18 @@ fun TimePickerDialogContent(
     initialMinute: Int,
     colors: TimePickerColors = TimePickerDefaults.colors(
         clockDialColor = MaterialTheme.colorScheme.surface,
-        clockDialUnselectedContentColor = Color.Black,
-        containerColor = Color.White,
-        periodSelectorSelectedContainerColor = MaterialTheme.colorScheme.surface,
-        periodSelectorUnselectedContainerColor = Color.White,
-        timeSelectorSelectedContainerColor = Color.LightGray,
-        timeSelectorUnselectedContainerColor = Color.White,
+        clockDialUnselectedContentColor = MaterialTheme.colorScheme.onSurface,
+        clockDialSelectedContentColor = MaterialTheme.colorScheme.onPrimary,
+        selectorColor = MaterialTheme.colorScheme.primary,
+        containerColor = MaterialTheme.colorScheme.surface,
+        periodSelectorSelectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+        periodSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        periodSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surface,
+        periodSelectorUnselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        timeSelectorSelectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+        timeSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        timeSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+        timeSelectorUnselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
     ),
     onDismissRequest: () -> Unit = {},
     onConfirm: (Int, Int) -> Unit = { _, _ -> }
@@ -290,7 +296,7 @@ fun TimePickerDialogContent(
             if (!validationResult.isValid) {
                 Text(
                     text = validationResult.errorMessage,
-                    color = Color.Red,
+                    color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -312,7 +318,11 @@ fun JobOfferScreenContent(
     isValid: Boolean = false,
     currentTimeMillis: Long = 0L
 ) {
-    Nexum_clienteTheme {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -320,8 +330,9 @@ fun JobOfferScreenContent(
             Stepper(
                 numberOfSteps = 4,
                 currentStep = 2,
-                selectedColor = Color(0xFF009963),
-                unSelectedColor = Color(0xFFE6E6E6),
+                selectedColor = MaterialTheme.stepperColors.selected,
+                unSelectedColor = MaterialTheme.stepperColors.unselected,
+                selectedContentColor = MaterialTheme.stepperColors.onSelected,
                 modifier = Modifier.padding(5.dp)
             )
 
@@ -493,7 +504,7 @@ fun JobOfferScreenContent(
                         text = "${state.requestedDate} ${state.requestedTime}",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Light,
-                        color = if (isTimeValid) Color(0xFF009963) else Color.Red
+                        color = if (isTimeValid) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                     )
                 }
                 ButtonComponent(
@@ -501,9 +512,9 @@ fun JobOfferScreenContent(
                     isEnabled = isValid,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
-                        disabledContainerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = Color.White,
-                        disabledContentColor = MaterialTheme.colorScheme.secondary
+                        disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                     ),
                     onButtonClicked = {
                         onSubmit()
@@ -567,7 +578,8 @@ private fun MapDialog(viewModel: JobOfferViewModel) {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(name = "Time picker - Light", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Time picker - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun TimePickerDialogPreview() {
     Nexum_clienteTheme {
@@ -576,7 +588,8 @@ fun TimePickerDialogPreview() {
 }
 
 
-@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Job offer - Light", showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Job offer - Dark", showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun JobOfferScreenPreview() {
     Nexum_clienteTheme {

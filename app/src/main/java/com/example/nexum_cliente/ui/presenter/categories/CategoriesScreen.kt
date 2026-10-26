@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.util.Log
 import android.view.Gravity
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -49,7 +49,9 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.example.nexum_cliente.data.category.local.CategoryEntity
 import com.example.nexum_cliente.ui.components.FilterChipComponent
 import com.example.nexum_cliente.ui.navigation.rutes.JobOfferRoutes
+import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
 import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import timber.log.Timber
 
@@ -60,36 +62,60 @@ import timber.log.Timber
  * @since 8/4/2025
  * @version 1.1
  */
-@OptIn(ExperimentalGlideComposeApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun CategoriesScreen(
     viewModel: CategoriesViewModel = hiltViewModel(),
     navController: NavController
 ) {
     val state = viewModel.state
-    val configuration = LocalConfiguration.current
-    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-    val categories = state.categories
-
-    val swipeRefreshState = rememberSwipeRefreshState(
-        isRefreshing = viewModel.state.isRefreshing
-    )
-
     var selectedServiceType by rememberSaveable { mutableStateOf("Todos") }
-    val options = listOf("Todos", "24 horas", "Remodelación", "Construcción")
-    val filteredCategories = categoryEntityList(selectedServiceType, categories)
 
     ErrorMsg(
         state = state,
         onClearError = { viewModel.onEvent(CategoriesEvent.ClearError) }
     )
 
-    Timber.tag("CategoriesScreen").d("isRefreshing: ${viewModel.state.isRefreshing}")
+    Timber.tag("CategoriesScreen").d("isRefreshing: ${state.isRefreshing}")
+
+    CategoriesScreenContent(
+        state = state,
+        selectedServiceType = selectedServiceType,
+        onServiceTypeSelected = { selectedServiceType = it },
+        onRefresh = { viewModel.onEvent(CategoriesEvent.Refresh) },
+        onCategoryClicked = { category ->
+            navController.navigate(JobOfferRoutes.JobOfferScreen(categoryId = category.id))
+        }
+    )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun CategoriesScreenContent(
+    state: CategoriesState,
+    selectedServiceType: String,
+    onServiceTypeSelected: (String) -> Unit,
+    onRefresh: () -> Unit,
+    onCategoryClicked: (CategoryEntity) -> Unit
+) {
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = state.isRefreshing)
+    val options = listOf("Todos", "24 horas", "Remodelación", "Construcción")
+    val filteredCategories = categoryEntityList(selectedServiceType, state.categories)
 
     SwipeRefresh(
         state = swipeRefreshState,
-        onRefresh = {
-            viewModel.onEvent(CategoriesEvent.Refresh)
+        onRefresh = onRefresh,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        indicator = { refreshState, trigger ->
+            SwipeRefreshIndicator(
+                state = refreshState,
+                refreshTriggerDistance = trigger,
+                backgroundColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
+            )
         }
     ) {
         Column(
@@ -101,6 +127,7 @@ fun CategoriesScreen(
             Spacer(modifier = Modifier.height(30.dp))
             Text(
                 text = "¿Qué servicio necesitas?",
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Left,
@@ -118,7 +145,7 @@ fun CategoriesScreen(
                     FilterChipComponent(
                         text = option,
                         isSelected = selectedServiceType == option,
-                        onClick = { selectedServiceType = option },
+                        onClick = { onServiceTypeSelected(option) },
                         modifier = Modifier.defaultMinSize(minHeight = 24.dp),
                     )
                 }
@@ -127,7 +154,11 @@ fun CategoriesScreen(
                 columns = if (isPortrait) GridCells.Fixed(3) else GridCells.Fixed(4),
                 modifier = Modifier
                     .padding(horizontal = 10.dp, vertical = 10.dp)
-                    .border(1.dp, color = Color(0xFFD9D9D9), shape = RoundedCornerShape(12.dp))
+                    .border(
+                        1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        shape = RoundedCornerShape(12.dp)
+                    )
                     .fillMaxSize(),
             ) {
                 items(filteredCategories.size) { index ->
@@ -135,7 +166,7 @@ fun CategoriesScreen(
                     val url =
                         if (category.imageUrl != null && !category.imageUrl.contains("NA") && !category.imageUrl.isEmpty()) category.imageUrl else "https://http.cat/images/102.jpg"
                     CategoryItem(url, category) {
-                        navController.navigate(JobOfferRoutes.JobOfferScreen(categoryId = category.id))
+                        onCategoryClicked(category)
                     }
                 }
             }
@@ -144,7 +175,21 @@ fun CategoriesScreen(
 }
 
 
+@Preview(name = "Categories - Light", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Categories - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
+private fun CategoriesScreenPreview() {
+    Nexum_clienteTheme {
+        CategoriesScreenContent(
+            state = CategoriesState(),
+            selectedServiceType = "Todos",
+            onServiceTypeSelected = {},
+            onRefresh = {},
+            onCategoryClicked = {}
+        )
+    }
+}
+
 private fun categoryEntityList(
     selectedServiceType: String,
     categories: List<CategoryEntity>
@@ -212,6 +257,7 @@ private fun CategoryItem(
         ) {
             Text(
                 text = category.name ?: "NA",
+                color = MaterialTheme.colorScheme.onBackground,
                 fontWeight = FontWeight.Light,
                 textAlign = TextAlign.Center
             )
