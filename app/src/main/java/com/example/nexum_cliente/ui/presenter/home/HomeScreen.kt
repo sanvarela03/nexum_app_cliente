@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -30,7 +31,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -177,7 +177,11 @@ private fun HomeScreenContent(
         drawerState = drawerState,
         gesturesEnabled = drawerState.isOpen, // Solo habilitado cuando está abierto para cerrarlo sin colisionar con mapas al estar cerrado
         drawerContent = {
-            ModalDrawerSheet(modifier = Modifier.width(200.dp)) {
+            ModalDrawerSheet(
+                modifier = Modifier.width(200.dp),
+                drawerContainerColor = MaterialTheme.colorScheme.surface,
+                drawerContentColor = MaterialTheme.colorScheme.onSurface
+            ) {
                 NavigationDrawerHeader(
                     value = listOfNotNull(state.client?.firstName, state.client?.lastName)
                         .filter { it.isNotBlank() }
@@ -194,9 +198,9 @@ private fun HomeScreenContent(
         }
     ) {
         Scaffold(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
+            modifier = Modifier.fillMaxSize(),
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground,
             contentWindowInsets = WindowInsets.safeDrawing,
             topBar = {
                 if (showBars) {
@@ -222,13 +226,14 @@ private fun HomeScreenContent(
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White)
                     .padding(contentPadding)
                     // Consumimos el padding para que el chat no lo duplique
-                    .consumeWindowInsets(contentPadding)
+                    .consumeWindowInsets(contentPadding),
+                color = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.onBackground
             ) {
                 NavHost(
-                    modifier = Modifier.background(Color.White),
+                    modifier = Modifier.background(MaterialTheme.colorScheme.background),
                     navController = navController,
                     startDestination = Graph.Home,
                     builder = homeGraph

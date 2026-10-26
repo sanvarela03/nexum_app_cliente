@@ -24,6 +24,6 @@ fun NexumLogo() {
         modifier = Modifier
             .size(140.dp),
         contentDescription = "Logo",
-        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
     )
 }

@@ -10,9 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.nexum_cliente.common.capitalizeFirstLetter
@@ -38,7 +38,7 @@ fun CitiesComponent(
             .fillMaxWidth()
             .heightIn(max = maxHeight)      // <- cap height
             .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, Color(0xFFE6E6E6), RoundedCornerShape(12.dp)),
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp)),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(8.dp)
     ) {

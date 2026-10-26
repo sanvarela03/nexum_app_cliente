@@ -47,6 +47,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -82,6 +83,7 @@ import com.example.nexum_cliente.ui.components.Stepper
 import com.example.nexum_cliente.ui.components.TimePickerDialog
 import com.example.nexum_cliente.ui.presenter.map.MapScreen
 import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
+import com.example.nexum_cliente.ui.theme.stepperColors
 import com.example.nexum_cliente.utils.validator.JobOfferValidator
 import com.google.android.gms.maps.model.LatLng
 
@@ -192,10 +194,11 @@ fun JobOfferScreen(
 private fun DatePickerDialogContent(
     initialDateMillis: Long? = null,
     colors: DatePickerColors = DatePickerDefaults.colors(
-        containerColor = Color.White,
-        titleContentColor = Color.Black,
-        headlineContentColor = Color.Black,
+        containerColor = MaterialTheme.colorScheme.surface,
+        titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        headlineContentColor = MaterialTheme.colorScheme.onSurface,
         selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+        selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
     ),
     onDismissRequest: () -> Unit,
     onConfirm: (Long) -> Unit,
@@ -218,10 +221,7 @@ private fun DatePickerDialogContent(
     )
 
     DatePickerDialog(
-        colors = DatePickerDefaults.colors(
-            containerColor = Color.White,
-            titleContentColor = Color.Black
-        ),
+        colors = colors,
         onDismissRequest = {
             onDismissRequest()
         },
@@ -248,7 +248,8 @@ private fun DatePickerDialogContent(
 
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(name = "Date picker - Light", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Date picker - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun DatePickerDialogContentPreview() {
     Nexum_clienteTheme {
@@ -267,12 +268,18 @@ fun TimePickerDialogContent(
     initialMinute: Int,
     colors: TimePickerColors = TimePickerDefaults.colors(
         clockDialColor = MaterialTheme.colorScheme.surface,
-        clockDialUnselectedContentColor = Color.Black,
-        containerColor = Color.White,
-        periodSelectorSelectedContainerColor = MaterialTheme.colorScheme.surface,
-        periodSelectorUnselectedContainerColor = Color.White,
-        timeSelectorSelectedContainerColor = Color.LightGray,
-        timeSelectorUnselectedContainerColor = Color.White,
+        clockDialUnselectedContentColor = MaterialTheme.colorScheme.onSurface,
+        clockDialSelectedContentColor = MaterialTheme.colorScheme.onPrimary,
+        selectorColor = MaterialTheme.colorScheme.primary,
+        containerColor = MaterialTheme.colorScheme.surface,
+        periodSelectorSelectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+        periodSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        periodSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surface,
+        periodSelectorUnselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        timeSelectorSelectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+        timeSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        timeSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+        timeSelectorUnselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
     ),
     onDismissRequest: () -> Unit = {},
     onConfirm: (Int, Int) -> Unit = { _, _ -> }
@@ -305,7 +312,7 @@ fun TimePickerDialogContent(
             if (!validationResult.isValid) {
                 Text(
                     text = validationResult.errorMessage,
-                    color = Color.Red,
+                    color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -328,7 +335,11 @@ fun JobOfferScreenContent(
     isValid: Boolean = false,
     currentTimeMillis: Long = 0L
 ) {
-    Nexum_clienteTheme {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -392,218 +403,226 @@ fun JobOfferScreenContent(
                     )
                 )
             },
-            containerColor = Color.White
-        ) { paddingValues ->
+        ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
+                modifier = Modifier.fillMaxSize()
             ) {
                 // Stepper fijo en la parte superior
                 Stepper(
                     numberOfSteps = 4,
                     currentStep = 2,
-                    selectedColor = Color(0xFF009963),
-                    unSelectedColor = Color(0xFFE6E6E6),
+                    selectedColor = MaterialTheme.stepperColors.selected,
+                    unSelectedColor = MaterialTheme.stepperColors.unselected,
+                    selectedContentColor = MaterialTheme.stepperColors.onSelected,
                     modifier = Modifier.padding(5.dp)
                 )
 
-            // Contenido con scroll
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(start = 16.dp, end = 16.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text("Agregar dirección", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                MyTextFieldComponent2(
-                    labelValue = "Dirección",
-                    textValue = state.address,
-                    errorStatus = !state.addressValidation.isValid,
-                    errorMessage = state.addressValidation.errorMessage,
-                    leadingIcon = {
-                        IconButton(onClick = onMyLocationClick) {
-                            Icon(
-                                imageVector = Icons.Default.MyLocation,
-                                contentDescription = "Ubicación actual",
-                                tint = MaterialTheme.colorScheme.secondary
-                            )
-                        }
-                    },
-                    trailingIcon = {
-                        IconButton(onClick = onShowMapDialog) {
-                            Icon(
-                                painter = painterResource(R.drawable.distance),
-                                contentDescription = "Abrir mapa"
-                            )
-                        }
-                    },
-                    onTextSelected = {
-                        onEvent(JobOfferEvent.AddressChanged(it))
-                    }
-                )
-
-                Text("Detalle de la solicitud", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                MyTextFieldComponent(
-                    labelValue = "Titulo",
-                    textValue = state.title ?: "",
-                    trailingIcon = Icons.Default.Edit,
-                    errorStatus = !state.titleValidation.isValid,
-                    errorMessage = state.titleValidation.errorMessage,
-                    onTextSelected = {
-                        onEvent(JobOfferEvent.TitleChanged(it))
-                    }
-                )
-                MyTextFieldComponent(
-                    labelValue = "Descripción",
-                    textValue = state.description,
-                    trailingIcon = Icons.AutoMirrored.Filled.Assignment,
-                    errorStatus = !state.descriptionValidation.isValid,
-                    errorMessage = state.descriptionValidation.errorMessage,
-                    onTextSelected = {
-                        onEvent(JobOfferEvent.DescriptionChanged(it))
-                    }
-                )
-                Text("Agregar evidencia", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-
-                MultiplePhotoPickerComponent(
-                    selectedImages = state.images,
-                    onAddImage = { uris ->
-                        // Disparar un upload por cada URI seleccionada
-                        uris.forEach { uri ->
-                            onEvent(JobOfferEvent.ImageUriAdded(uri))
-                        }
-                    },
-                    onRemoveImage = { index ->
-                        // Borrar de Firebase y del estado usando la URL remota
-                        val url = state.imageUrls.getOrNull(index)
-                        if (url != null) {
-                            onEvent(JobOfferEvent.ImageUrlRemoved(url))
-                        } else {
-                            // Fallback: si aún no terminó de subir, solo quitar la URI local
-                            onEvent(JobOfferEvent.RemoveImage(index))
-                        }
-                    }
-                )
-                Text("Fecha", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                val dateOptions = listOf("Hoy", "3 dias", "1 semana", "Elegir")
-                FlowRow(
+                // Contenido con scroll
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .wrapContentWidth()
-                        .defaultMinSize(minHeight = 20.dp)
-                        .padding(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                        .weight(1f)
+                        .padding(start = 16.dp, end = 16.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    dateOptions.forEach { option ->
-                        val isEnabled = remember(option, currentTimeMillis) {
-                            when (option) {
-                                "Hoy" -> JobOfferValidator.isTodayAllowed()
-                                else -> true
+                    Text("Agregar dirección", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    MyTextFieldComponent2(
+                        labelValue = "Dirección",
+                        textValue = state.address,
+                        errorStatus = !state.addressValidation.isValid,
+                        errorMessage = state.addressValidation.errorMessage,
+                        leadingIcon = {
+                            IconButton(onClick = onMyLocationClick) {
+                                Icon(
+                                    imageVector = Icons.Default.MyLocation,
+                                    contentDescription = "Ubicación actual",
+                                    tint = MaterialTheme.colorScheme.secondary
+                                )
                             }
-                        }
-                        FilterChipComponent2(
-                            text = option,
-                            isSelected = state.selectedDateOption == option,
-                            enabled = isEnabled,
-                            onClick = { onEvent(JobOfferEvent.DateOptionSelected(option)) }
-                        )
-                    }
-                }
-
-                Text("Hora", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                val timeOptions = listOf("Mañana", "Tarde", "Noche", "Elegir")
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentWidth()
-                        .defaultMinSize(minHeight = 20.dp)
-                        .padding(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    timeOptions.forEach { option ->
-                        val isEnabled = remember(state.requestedDate, option, currentTimeMillis) {
-                            when (option) {
-                                "Mañana" -> JobOfferValidator.validateTime(
-                                    10,
-                                    0,
-                                    state.requestedDate
-                                ).isValid
-
-                                "Tarde" -> JobOfferValidator.validateTime(
-                                    18,
-                                    0,
-                                    state.requestedDate
-                                ).isValid
-
-                                "Noche" -> JobOfferValidator.validateTime(
-                                    22,
-                                    0,
-                                    state.requestedDate
-                                ).isValid
-
-                                else -> true
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = onShowMapDialog) {
+                                Icon(
+                                    painter = painterResource(R.drawable.distance),
+                                    contentDescription = "Abrir mapa"
+                                )
                             }
+                        },
+                        onTextSelected = {
+                            onEvent(JobOfferEvent.AddressChanged(it))
                         }
-                        FilterChipComponent2(
-                            text = option,
-                            isSelected = state.selectedTimeOption == option,
-                            enabled = isEnabled,
-                            onClick = { onEvent(JobOfferEvent.TimeOptionSelected(option)) }
-                        )
-                    }
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Fecha seleccionada: ", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-
-                    val isTimeValid =
-                        remember(state.requestedDate, state.requestedTime, currentTimeMillis) {
-                            try {
-                                val timeFormatter =
-                                    java.text.SimpleDateFormat("hh:mm a", java.util.Locale.ENGLISH)
-                                val date = timeFormatter.parse(state.requestedTime)
-                                val cal = java.util.Calendar.getInstance().apply {
-                                    if (date != null) time = date
-                                }
-                                JobOfferValidator.validateTime(
-                                    cal.get(java.util.Calendar.HOUR_OF_DAY),
-                                    cal.get(java.util.Calendar.MINUTE),
-                                    state.requestedDate
-                                ).isValid
-                            } catch (e: Exception) {
-                                false
-                            }
-                        }
-
-                    Text(
-                        text = "${state.requestedDate} ${state.requestedTime}",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Light,
-                        color = if (isTimeValid) Color(0xFF009963) else Color.Red
                     )
-                }
-                ButtonComponent(
-                    value = "Publicar",
-                    isEnabled = isValid,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        disabledContainerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = Color.White,
-                        disabledContentColor = MaterialTheme.colorScheme.secondary
-                    ),
-                    onButtonClicked = {
-                        onSubmit()
+
+                    Text("Detalle de la solicitud", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    MyTextFieldComponent(
+                        labelValue = "Titulo",
+                        textValue = state.title ?: "",
+                        trailingIcon = Icons.Default.Edit,
+                        errorStatus = !state.titleValidation.isValid,
+                        errorMessage = state.titleValidation.errorMessage,
+                        onTextSelected = {
+                            onEvent(JobOfferEvent.TitleChanged(it))
+                        }
+                    )
+                    MyTextFieldComponent(
+                        labelValue = "Descripción",
+                        textValue = state.description,
+                        trailingIcon = Icons.AutoMirrored.Filled.Assignment,
+                        errorStatus = !state.descriptionValidation.isValid,
+                        errorMessage = state.descriptionValidation.errorMessage,
+                        onTextSelected = {
+                            onEvent(JobOfferEvent.DescriptionChanged(it))
+                        }
+                    )
+                    Text("Agregar evidencia", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+
+                    MultiplePhotoPickerComponent(
+                        selectedImages = state.images,
+                        onAddImage = { uris ->
+                            // Disparar un upload por cada URI seleccionada
+                            uris.forEach { uri ->
+                                onEvent(JobOfferEvent.ImageUriAdded(uri))
+                            }
+                        },
+                        onRemoveImage = { index ->
+                            // Borrar de Firebase y del estado usando la URL remota
+                            val url = state.imageUrls.getOrNull(index)
+                            if (url != null) {
+                                onEvent(JobOfferEvent.ImageUrlRemoved(url))
+                            } else {
+                                // Fallback: si aún no terminó de subir, solo quitar la URI local
+                                onEvent(JobOfferEvent.RemoveImage(index))
+                            }
+                        }
+                    )
+                    Text("Fecha", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    val dateOptions = listOf("Hoy", "3 dias", "1 semana", "Elegir")
+                    FlowRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth()
+                            .defaultMinSize(minHeight = 20.dp)
+                            .padding(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(
+                            4.dp,
+                            Alignment.CenterHorizontally
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        dateOptions.forEach { option ->
+                            val isEnabled = remember(option, currentTimeMillis) {
+                                when (option) {
+                                    "Hoy" -> JobOfferValidator.isTodayAllowed()
+                                    else -> true
+                                }
+                            }
+                            FilterChipComponent2(
+                                text = option,
+                                isSelected = state.selectedDateOption == option,
+                                enabled = isEnabled,
+                                onClick = { onEvent(JobOfferEvent.DateOptionSelected(option)) }
+                            )
+                        }
                     }
-                )
-                // Espacio extra al final para que el botón no quede pegado al borde inferior
-                androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
+
+                    Text("Hora", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    val timeOptions = listOf("Mañana", "Tarde", "Noche", "Elegir")
+                    FlowRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth()
+                            .defaultMinSize(minHeight = 20.dp)
+                            .padding(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(
+                            4.dp,
+                            Alignment.CenterHorizontally
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        timeOptions.forEach { option ->
+                            val isEnabled =
+                                remember(state.requestedDate, option, currentTimeMillis) {
+                                    when (option) {
+                                        "Mañana" -> JobOfferValidator.validateTime(
+                                            10,
+                                            0,
+                                            state.requestedDate
+                                        ).isValid
+
+                                        "Tarde" -> JobOfferValidator.validateTime(
+                                            18,
+                                            0,
+                                            state.requestedDate
+                                        ).isValid
+
+                                        "Noche" -> JobOfferValidator.validateTime(
+                                            22,
+                                            0,
+                                            state.requestedDate
+                                        ).isValid
+
+                                        else -> true
+                                    }
+                                }
+                            FilterChipComponent2(
+                                text = option,
+                                isSelected = state.selectedTimeOption == option,
+                                enabled = isEnabled,
+                                onClick = { onEvent(JobOfferEvent.TimeOptionSelected(option)) }
+                            )
+                        }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Fecha seleccionada: ", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+
+                        val isTimeValid =
+                            remember(state.requestedDate, state.requestedTime, currentTimeMillis) {
+                                try {
+                                    val timeFormatter =
+                                        java.text.SimpleDateFormat(
+                                            "hh:mm a",
+                                            java.util.Locale.ENGLISH
+                                        )
+                                    val date = timeFormatter.parse(state.requestedTime)
+                                    val cal = java.util.Calendar.getInstance().apply {
+                                        if (date != null) time = date
+                                    }
+                                    JobOfferValidator.validateTime(
+                                        cal.get(java.util.Calendar.HOUR_OF_DAY),
+                                        cal.get(java.util.Calendar.MINUTE),
+                                        state.requestedDate
+                                    ).isValid
+                                } catch (e: Exception) {
+                                    false
+                                }
+                            }
+
+                        Text(
+                            text = "${state.requestedDate} ${state.requestedTime}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Light,
+                            color = if (isTimeValid) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                        )
+                    }
+                    ButtonComponent(
+                        value = "Publicar",
+                        isEnabled = isValid,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        ),
+                        onButtonClicked = {
+                            onSubmit()
+                        }
+                    )
+                    // Espacio extra al final para que el botón no quede pegado al borde inferior
+                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
+                }
             }
         }
-    }
         MyDialog2(
             title = "Oferta de trabajo publicada",
             show = state.isJobOfferSubmitted,
@@ -658,7 +677,8 @@ private fun MapDialog(viewModel: JobOfferViewModel) {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(name = "Time picker - Light", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Time picker - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun TimePickerDialogPreview() {
     Nexum_clienteTheme {
@@ -667,7 +687,8 @@ fun TimePickerDialogPreview() {
 }
 
 
-@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Job offer - Light", showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Job offer - Dark", showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun JobOfferScreenPreview() {
     Nexum_clienteTheme {

@@ -8,31 +8,76 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color.Black,
-    secondary = PurpleGrey80,
-    tertiary = Color.Gray,
-    surface = DisablePrimary,
+    primary = Color.White,
+    onPrimary = Color.Black,
+    primaryContainer = Color(0xFF383838),
+    onPrimaryContainer = Color.White,
+    inversePrimary = Color.Black,
+    secondary = Color(0xFFCACACA),
+    onSecondary = Color(0xFF202020),
+    secondaryContainer = Color(0xFF383838),
+    onSecondaryContainer = Color.White,
+    tertiary = Color(0xFFBDBDBD),
+    onTertiary = Color.Black,
+    tertiaryContainer = Color(0xFF383838),
+    onTertiaryContainer = Color.White,
+    background = Color(0xFF121212),
+    onBackground = Color.White,
+    surface = Color(0xFF1C1C1C),
+    onSurface = Color(0xFFE6E6E6),
+    surfaceVariant = Color(0xFF454545),
+    onSurfaceVariant = Color(0xFFCACACA),
+    surfaceTint = Color.White,
+    inverseSurface = Color(0xFFE6E6E6),
+    inverseOnSurface = Color(0xFF1C1C1C),
+    outline = Color(0xFF8F8F8F),
+    outlineVariant = Color(0xFF454545),
+    surfaceDim = Color(0xFF121212),
+    surfaceBright = Color(0xFF383838),
+    surfaceContainerLowest = Color(0xFF0D0D0D),
+    surfaceContainerLow = Color(0xFF1C1C1C),
+    surfaceContainer = Color(0xFF202020),
+    surfaceContainerHigh = Color(0xFF2A2A2A),
+    surfaceContainerHighest = Color(0xFF353535),
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = Color.Black,
-    secondary = PurpleGrey40,
-    tertiary = Color.Gray,
-    surface = DisablePrimary,
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
     onPrimary = Color.White,
+    primaryContainer = Color(0xFFE0E0E0),
+    onPrimaryContainer = Color.Black,
+    inversePrimary = Color.White,
+    secondary = Color(0xFF555555),
     onSecondary = Color.White,
+    secondaryContainer = Color(0xFFE0E0E0),
+    onSecondaryContainer = Color.Black,
+    tertiary = Color.Gray,
     onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    tertiaryContainer = Color(0xFFE0E0E0),
+    onTertiaryContainer = Color.Black,
+    background = Color(0xFFFAFAFA),
+    onBackground = Color.Black,
+    surface = Color(0xFFE5E5E5),
+    onSurface = Color.Black,
+    surfaceVariant = Color(0xFFDADADA),
+    onSurfaceVariant = Color.Black,
+    surfaceTint = Color.Black,
+    inverseSurface = Color(0xFF303030),
+    inverseOnSurface = Color.White,
+    outline = Color(0xFF757575),
+    outlineVariant = Color(0xFFBDBDBD),
+    surfaceDim = Color(0xFFD6D6D6),
+    surfaceBright = Color(0xFFFAFAFA),
+    surfaceContainerLowest = Color.White,
+    surfaceContainerLow = Color(0xFFF0F0F0),
+    surfaceContainer = Color(0xFFEAEAEA),
+    surfaceContainerHigh = Color(0xFFE5E5E5),
+    surfaceContainerHighest = Color(0xFFDADADA),
 )
 
 @Composable
@@ -52,9 +97,21 @@ fun Nexum_clienteTheme(
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    val stepperColors = if (darkTheme) {
+        StepperColors(
+            selected = colorScheme.primary,
+            unselected = colorScheme.surfaceVariant,
+            onSelected = colorScheme.onPrimary
+        )
+    } else {
+        LightStepperColors
+    }
+
+    CompositionLocalProvider(LocalStepperColors provides stepperColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

@@ -12,8 +12,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -26,6 +30,7 @@ import com.example.nexum_cliente.app.CustomerApp
 import com.example.nexum_cliente.data.local.AppDatabase
 import com.example.nexum_cliente.ui.global_viewmodels.AuthViewModel
 import com.example.nexum_cliente.ui.presenter.mercado_pago_checkout.MercadoPagoViewModel
+import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import javax.inject.Provider
@@ -70,11 +75,19 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(destination) { }
             Log.d("MainActivity", "userAuthState: $userAuthState")
 
-            CustomerApp(
-                userAuthState = userAuthState,
-                startDestination = destination,
-                initialIntent = currentIntent
-            )
+            Nexum_clienteTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground
+                ) {
+                    CustomerApp(
+                        userAuthState = userAuthState,
+                        startDestination = destination,
+                        initialIntent = currentIntent
+                    )
+                }
+            }
         }
 //        appDatabaseProvider.get()
     }

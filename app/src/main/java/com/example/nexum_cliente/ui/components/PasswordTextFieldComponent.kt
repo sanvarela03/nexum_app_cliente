@@ -12,13 +12,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
@@ -26,6 +24,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.nexum_cliente.ui.theme.surfaceTextFieldColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,13 +43,7 @@ fun PasswordTextFieldComponent(
         modifier = Modifier
             .fillMaxWidth(),
         label = { Text(text = labelValue) },
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color.Blue,        // cuando está enfocado
-            unfocusedBorderColor = Color(0xFFE6E6E6), // cuando no está enfocado
-            errorBorderColor = Color.Red,
-            unfocusedLabelColor = Color(0xFFE6E6E6),
-            unfocusedLeadingIconColor = Color(0xFFE6E6E6)
-        ),
+        colors = surfaceTextFieldColors(),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password,
             imeAction = ImeAction.Done
@@ -107,13 +100,7 @@ fun PasswordTextFieldComponent(
         modifier = Modifier
             .fillMaxWidth(),
         label = { Text(text = labelValue) },
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color.Blue,        // cuando está enfocado
-            unfocusedBorderColor = Color(0xFFE6E6E6), // cuando no está enfocado
-            errorBorderColor = Color.Red,
-            unfocusedLabelColor = Color(0xFFE6E6E6),
-            unfocusedLeadingIconColor = Color(0xFFE6E6E6)
-        ),
+        colors = surfaceTextFieldColors(),
         keyboardOptions = keyboardOptions,
         shape = RoundedCornerShape(8.dp),
         singleLine = true,

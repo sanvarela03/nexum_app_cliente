@@ -1,7 +1,10 @@
 package com.example.nexum_cliente.ui.presenter.requests
 
+import android.content.res.Configuration
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,6 +18,12 @@ import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -33,7 +42,11 @@ import com.example.nexum_cliente.common.formatToReadableDate
 import com.example.nexum_cliente.common.toLocalDateTime
 import com.example.nexum_cliente.domain.model.JobOffer
 import com.example.nexum_cliente.ui.components.Stepper
+import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
+import com.example.nexum_cliente.ui.theme.stepperColors
+import com.example.nexum_cliente.ui.components.Stepper
 import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 /**
@@ -72,7 +85,18 @@ private fun RequestsScreenContent(
     )
     SwipeRefresh(
         state = swipeRefreshState,
-        onRefresh = { onRefresh() }
+        onRefresh = { onRefresh() },
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        indicator = { refreshState, trigger ->
+            SwipeRefreshIndicator(
+                state = refreshState,
+                refreshTriggerDistance = trigger,
+                backgroundColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
+            )
+        }
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Barra de opciones de ordenamiento
@@ -93,7 +117,7 @@ private fun RequestsScreenContent(
                             modifier = Modifier.fillParentMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator()
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                         }
                     }
                 } else if (state.jobOffers.isEmpty()) {
@@ -104,6 +128,7 @@ private fun RequestsScreenContent(
                         ) {
                             Text(
                                 text = "No tienes solicitudes activas",
+                                color = MaterialTheme.colorScheme.onBackground,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -148,7 +173,13 @@ private fun SortBar(
                 onClick = { onSortChange(RequestsSortType.DATE_DESC) },
                 label = { Text("Más reciente", fontSize = 12.sp) },
                 leadingIcon = if (currentSort == RequestsSortType.DATE_DESC) {
-                    { Icon(Icons.Default.ArrowDownward, contentDescription = null, modifier = Modifier.size(14.dp)) }
+                    {
+                        Icon(
+                            Icons.Default.ArrowDownward,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
                 } else null,
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -162,7 +193,13 @@ private fun SortBar(
                 onClick = { onSortChange(RequestsSortType.DATE_ASC) },
                 label = { Text("Más antigua", fontSize = 12.sp) },
                 leadingIcon = if (currentSort == RequestsSortType.DATE_ASC) {
-                    { Icon(Icons.Default.ArrowUpward, contentDescription = null, modifier = Modifier.size(14.dp)) }
+                    {
+                        Icon(
+                            Icons.Default.ArrowUpward,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
                 } else null,
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -176,7 +213,13 @@ private fun SortBar(
                 onClick = { onSortChange(RequestsSortType.STATUS) },
                 label = { Text("Por estado", fontSize = 12.sp) },
                 leadingIcon = if (currentSort == RequestsSortType.STATUS) {
-                    { Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(14.dp)) }
+                    {
+                        Icon(
+                            Icons.Default.FilterList,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
                 } else null,
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -220,6 +263,11 @@ private fun JobOfferItem(
     }
 
     OutlinedCard(
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
         modifier = Modifier
             .padding(horizontal = 8.dp, vertical = 6.dp)
             .fillMaxWidth()
@@ -234,8 +282,9 @@ private fun JobOfferItem(
             Stepper(
                 numberOfSteps = 4,
                 currentStep = currentStep,
-                selectedColor = Color(0xFF009963),
-                unSelectedColor = Color(0xFFE6E6E6)
+                selectedColor = MaterialTheme.stepperColors.selected,
+                unSelectedColor = MaterialTheme.stepperColors.unselected,
+                selectedContentColor = MaterialTheme.stepperColors.onSelected
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -261,9 +310,9 @@ private fun JobOfferItem(
 
                 Text(
                     text = "${jobOffer.uuid.take(8)}...",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Light,
                     fontSize = 11.sp,
-                    color = Color.Gray
                 )
             }
 
@@ -274,6 +323,7 @@ private fun JobOfferItem(
             ) {
                 Text(
                     text = jobOffer.title.capitalizeFirstLetter(),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
                     fontSize = MaterialTheme.typography.titleMedium.fontSize,
                     modifier = Modifier.weight(1f)
@@ -282,7 +332,7 @@ private fun JobOfferItem(
                     text = "#${jobOffer.id}",
                     fontWeight = FontWeight.Medium,
                     fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -293,6 +343,7 @@ private fun JobOfferItem(
             ) {
                 Text(
                     text = jobOffer.description.capitalizeFirstLetter(),
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -306,7 +357,7 @@ private fun JobOfferItem(
                     Text(
                         text = jobOffer.categoryName,
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }
@@ -320,12 +371,13 @@ private fun JobOfferItem(
                 Icon(
                     imageVector = Icons.Default.EditCalendar,
                     contentDescription = "Fecha solicitada",
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(18.dp)
                 )
                 Text(
                     text = runCatching { jobOffer.requestedDate.toLocalDateTime().formatToReadableDate() }.getOrDefault(jobOffer.requestedDate),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -338,12 +390,13 @@ private fun JobOfferItem(
                 Icon(
                     imageVector = Icons.Default.LocationOn,
                     contentDescription = "Ubicación",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = locationText,
                     style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
@@ -359,7 +412,7 @@ private fun JobOfferItem(
                     text = "Creada: ${runCatching { jobOffer.createdAt.formatIsoDate() }.getOrDefault(jobOffer.createdAt)}",
                     fontWeight = FontWeight.Light,
                     fontSize = 11.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -368,22 +421,32 @@ private fun JobOfferItem(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(
+    name = "Requests - Light",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Preview(
+    name = "Requests - Dark",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 fun RequestsScreenContentPreview() {
-    RequestsScreenContent(
-        state = RequestsState(
-            jobOffers = listOf(
-                JobOffer(
-                    title = "TEST1",
-                    address = "Cl. 1 # 2-86, Choachí",
-                    status = "ASSIGNED"
-                ),
-                JobOffer(
-                    title = "Título 2",
-                    status = "SEARCHING"
+    Nexum_clienteTheme {
+        RequestsScreenContent(
+            state = RequestsState(
+                jobOffers = listOf(
+                    JobOffer(
+                        title = "TEST1",
+                    ),
+                    JobOffer(
+                        title = "Título 2",
+                    )
                 )
-            )
-        ),
-        onRefresh = {}
-    )
+            ),
+            onRefresh = {}
+        )
+    }
 }
