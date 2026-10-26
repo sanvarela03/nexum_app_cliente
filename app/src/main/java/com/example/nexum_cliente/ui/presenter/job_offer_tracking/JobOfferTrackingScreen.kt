@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.ui.presenter.job_offer_tracking
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,10 +32,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -44,8 +45,9 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.signature.ObjectKey
 import com.example.nexum_cliente.domain.model.NearbyWorker
 import com.example.nexum_cliente.ui.components.Stepper
+import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
+import com.example.nexum_cliente.ui.theme.stepperColors
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JobOfferTrackingScreen(
     jobOfferId: String,
@@ -54,6 +56,20 @@ fun JobOfferTrackingScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    JobOfferTrackingScreenContent(
+        state = state,
+        jobOfferId = jobOfferId,
+        onNavigateBack = onNavigateBack
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun JobOfferTrackingScreenContent(
+    state: JobOfferTrackingState,
+    jobOfferId: String,
+    onNavigateBack: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -64,12 +80,14 @@ fun JobOfferTrackingScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = Color.Black
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         },
-        containerColor = Color.White
+        containerColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -84,8 +102,9 @@ fun JobOfferTrackingScreen(
             Stepper(
                 numberOfSteps = 4,
                 currentStep = 3,
-                selectedColor = Color(0xFF009963),
-                unSelectedColor = Color(0xFFE6E6E6)
+                selectedColor = MaterialTheme.stepperColors.selected,
+                unSelectedColor = MaterialTheme.stepperColors.unselected,
+                selectedContentColor = MaterialTheme.stepperColors.onSelected
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -102,7 +121,7 @@ fun JobOfferTrackingScreen(
             Text(
                 text = "Tu oferta de trabajo ($jobOfferId) ha sido publicada. Estamos notificando a los trabajadores cercanos. Pronto recibirás cotizaciones aquí.",
                 fontSize = 16.sp,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -127,7 +146,7 @@ fun JobOfferTrackingScreen(
                     text = "¡Hemos notificado a ${state.workers.size} trabajadores cerca de ti!",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFF009963),
+                    color = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.Center
                 )
                 
@@ -147,11 +166,24 @@ fun JobOfferTrackingScreen(
             Text(
                 text = "Puedes volver atrás o revisar esta vista desde 'Mis Solicitudes'.",
                 fontSize = 14.sp,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
         }
+    }
+}
+
+@Preview(name = "Tracking - Light", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Tracking - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun JobOfferTrackingScreenPreview() {
+    Nexum_clienteTheme {
+        JobOfferTrackingScreenContent(
+            state = JobOfferTrackingState(),
+            jobOfferId = "NEXUM-123",
+            onNavigateBack = {}
+        )
     }
 }
 
@@ -167,7 +199,8 @@ fun WorkerItem(worker: NearbyWorker) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        color = Color(0xFFF9F9F9),
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
         shape = MaterialTheme.shapes.medium
     ) {
         Row(
@@ -200,7 +233,7 @@ fun WorkerItem(worker: NearbyWorker) {
                     text = "${worker.firstName} ${worker.lastName}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -208,7 +241,7 @@ fun WorkerItem(worker: NearbyWorker) {
                 Text(
                     text = if (worker.bio.isNotBlank() && worker.bio != "null") worker.bio else "Trabajador disponible",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.DarkGray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1
                 )
             }
@@ -224,12 +257,12 @@ fun WorkerItem(worker: NearbyWorker) {
                     },
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF009963)
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     text = "Distancia",
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

@@ -18,17 +18,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -127,7 +128,6 @@ private fun TosDialog(
 }
 
 @Composable
-@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
 private fun SignUpScreenContent(
     state: SignUpState = SignUpState(),
     emailChanged: (String) -> Unit = {},
@@ -136,7 +136,11 @@ private fun SignUpScreenContent(
     onPolicyClicked: () -> Unit = {},
     onSignInTextClicked: () -> Unit = {},
 ) {
-    Nexum_clienteTheme {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -177,9 +181,9 @@ private fun SignUpScreenContent(
                     isEnabled = state.isValidToContinue,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
-                        disabledContainerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = Color.White,
-                        disabledContentColor = MaterialTheme.colorScheme.secondary
+                        disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                     )
                 ) {
                     onContinueButtonClicked()
@@ -198,6 +202,25 @@ private fun SignUpScreenContent(
     }
 }
 
+@Preview(
+    name = "Sign up - Light",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Preview(
+    name = "Sign up - Dark",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+private fun SignUpScreenPreview() {
+    Nexum_clienteTheme {
+        SignUpScreenContent()
+    }
+}
+
 
 @Composable
 private fun TosAndPolicyText(
@@ -210,12 +233,12 @@ private fun TosAndPolicyText(
 
     val annotatedString = buildAnnotatedString {
         append(initTxt)
-        withStyle(style = SpanStyle(color = Color(0xFF828282))) {
+        withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
             pushStringAnnotation(tag = tosTxt, annotation = tosTxt)
             append(tosTxt)
         }
         append(" y ")
-        withStyle(style = SpanStyle(color = Color(0xFF828282))) {
+        withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
             pushStringAnnotation(tag = policyTxt, annotation = policyTxt)
             append(policyTxt)
         }
@@ -226,7 +249,7 @@ private fun TosAndPolicyText(
         style = TextStyle(
             fontSize = 14.sp,
             textAlign = TextAlign.Center,
-            color = Color(0xFF000000)
+            color = MaterialTheme.colorScheme.onBackground
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -252,7 +275,7 @@ private fun SignInText(go: () -> Unit) {
 
     val annotatedString = buildAnnotatedString {
         append(initTxt)
-        withStyle(style = SpanStyle(color = Color(0xFF828282))) {
+        withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
             pushStringAnnotation(tag = signUpTxt, annotation = signUpTxt)
             append(signUpTxt)
         }
@@ -263,7 +286,7 @@ private fun SignInText(go: () -> Unit) {
         style = TextStyle(
             fontSize = 14.sp,
             textAlign = TextAlign.Center,
-            color = Color(0xFF000000)
+            color = MaterialTheme.colorScheme.onBackground
         ),
         modifier = Modifier
             .fillMaxWidth()

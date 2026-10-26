@@ -10,10 +10,10 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,7 +25,7 @@ fun ButtonComponent(
     isEnabled: Boolean = true,
     colors: ButtonColors = ButtonDefaults.buttonColors(
         containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = Color.White
+        contentColor = MaterialTheme.colorScheme.onPrimary
     ),
     onButtonClicked: () -> Unit = {},
 ) {
@@ -42,7 +42,7 @@ fun ButtonComponent(
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(24.dp),
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = LocalContentColor.current,
                 strokeWidth = 2.dp
             )
         } else {
