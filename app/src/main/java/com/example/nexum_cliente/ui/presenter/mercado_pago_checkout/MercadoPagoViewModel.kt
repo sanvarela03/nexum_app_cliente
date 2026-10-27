@@ -31,6 +31,44 @@ class MercadoPagoViewModel @Inject constructor(
             jobApplicationId = jobApplicationId,
             agreedAmount = agreedAmount
         )
+        checkExistingContract(jobApplicationId)
+    }
+
+    fun checkExistingContract(jobApplicationId: Long) {
+        viewModelScope.launch {
+            state = state.copy(isCheckingExistingContract = true)
+            contractUseCases.getMyContracts()
+                .catch { e ->
+                    Log.e(TAG, "Error checking existing contracts:", e)
+                    state = state.copy(isCheckingExistingContract = false)
+                }
+                .collect { r ->
+                    when (r) {
+                        ApiResponse.Loading -> {
+                            state = state.copy(isCheckingExistingContract = true)
+                        }
+                        is ApiResponse.Success -> {
+                            val existing = r.data.find { it.jobApplicationId == jobApplicationId }
+                            if (existing != null) {
+                                Log.d(TAG, "Existing contract found for jobAppId=$jobApplicationId: contractId=${existing.id}")
+                                state = state.copy(
+                                    hasExistingContract = true,
+                                    createdContract = existing,
+                                    isCheckingExistingContract = false
+                                )
+                            } else {
+                                state = state.copy(isCheckingExistingContract = false)
+                            }
+                        }
+                        is ApiResponse.Error -> {
+                            state = state.copy(isCheckingExistingContract = false)
+                        }
+                        is ApiResponse.Failure -> {
+                            state = state.copy(isCheckingExistingContract = false)
+                        }
+                    }
+                }
+        }
     }
 
     fun onEvent(event: MercadoPagoEvent) {
@@ -114,13 +152,17 @@ class MercadoPagoViewModel @Inject constructor(
                 paymentResult = paymentResult,
                 paymentType = paymentTypeParam
             )
-            if (paymentResult is PaymentResult.Success) {
+            if (paymentResult is PaymentResult.Success && !state.isContractEstablished && !state.isCreatingContract) {
                 createContract()
             }
         }
     }
 
     fun createContract() {
+        if (state.isCreatingContract || state.hasExistingContract || (state.createdContract != null && state.createdContract!!.id > 0)) {
+            Log.w(TAG, "createContract BLOCKED: contract already exists or is being created!")
+            return
+        }
         val appId = state.jobApplicationId
         val amount = state.agreedAmount ?: 0.0
         val paymentId = when (val res = state.paymentResult) {
@@ -201,7 +243,11 @@ class MercadoPagoViewModel @Inject constructor(
 
 
     fun createPreference() {
-        Log.d(TAG, "CLICK!")
+        Log.d(TAG, "CLICK createPreference")
+        if (state.isLoading || state.isCreatingContract || state.isCheckingExistingContract || state.isPaymentOrContractDone) {
+            Log.w(TAG, "createPreference BLOCKED: already processing, contract exists, or payment completed!")
+            return
+        }
         viewModelScope.launch {
             mercadoPagoUseCases.createPreference(state.toReq())
                 .catch { e ->

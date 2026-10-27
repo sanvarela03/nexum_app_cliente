@@ -2,8 +2,10 @@ package com.example.nexum_cliente.ui.presenter.mercado_pago_checkout
 
 import android.net.Uri
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,11 +19,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -49,6 +55,11 @@ fun MercadoPagoCheckout(
 ) {
     val context = LocalContext.current
     val state = viewModel.state
+
+    // Interceptar Back del sistema si ya se pagó o existe contrato para no volver a la pantalla previa
+    BackHandler(enabled = state.isPaymentOrContractDone) {
+        onContractCreated(state.createdContract?.id ?: -1L)
+    }
 
     LaunchedEffect(jobApplicationId, agreedAmount) {
         if (jobApplicationId != null && agreedAmount != null) {
@@ -197,6 +208,47 @@ fun MercadoPagoCheckout(
             )
         }
 
+        if (state.isContractEstablished) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                shape = RoundedCornerShape(12.dp),
+                color = Color(0xFFE8F5E9),
+                border = BorderStroke(1.dp, Color(0xFF00A650).copy(alpha = 0.5f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = Color(0xFF00A650),
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "Propuesta Ya Contratada",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = Color(0xFF1E293B)
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = state.createdContract?.id?.let { "Esta propuesta ya cuenta con el contrato formalizado #$it. No se requiere ningún pago adicional." }
+                                ?: "Esta propuesta ya ha sido formalizada en un contrato. No se requiere ningún pago adicional.",
+                            fontSize = 12.sp,
+                            color = Color(0xFF475569),
+                            lineHeight = 16.sp
+                        )
+                    }
+                }
+            }
+        }
+
         Spacer(modifier = Modifier.weight(1f))
 
         // Disclaimer
@@ -223,42 +275,111 @@ fun MercadoPagoCheckout(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             TextButton(
-                onClick = onCancel,
+                onClick = {
+                    if (state.isPaymentOrContractDone) {
+                        onContractCreated(state.createdContract?.id ?: -1L)
+                    } else {
+                        onCancel()
+                    }
+                },
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Cancelar",
-                    color = Color.LightGray,
+                    text = if (state.isPaymentOrContractDone) "Volver" else "Cancelar",
+                    color = Color.Gray,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
             }
 
-            Button(
-                onClick = { viewModel.createPreference() },
-                enabled = !state.isLoading,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    disabledContainerColor = Color.DarkGray
-                ),
-                shape = RoundedCornerShape(4.dp), // Casi rectangular
-                modifier = Modifier
-                    .weight(1.2f)
-                    .height(56.dp)
-            ) {
-                if (state.isLoading) {
+            if (state.isContractEstablished) {
+                Button(
+                    onClick = { onContractCreated(state.createdContract?.id ?: -1L) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF00A650)
+                    ),
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier
+                        .weight(1.3f)
+                        .height(56.dp)
+                ) {
+                    Text(
+                        text = "Ver Contrato",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+            } else if (state.isPaymentSuccess && state.isCreatingContract) {
+                Button(
+                    onClick = { },
+                    enabled = false,
+                    colors = ButtonDefaults.buttonColors(
+                        disabledContainerColor = Color.DarkGray
+                    ),
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier
+                        .weight(1.3f)
+                        .height(56.dp)
+                ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
                         color = Color.White,
                         strokeWidth = 2.dp
                     )
-                } else {
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Proceder al pago",
+                        text = "Formalizando...",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 14.sp
                     )
+                }
+            } else if (state.isPaymentSuccess && state.createdContract == null) {
+                Button(
+                    onClick = { viewModel.createContract() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF00A650)
+                    ),
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier
+                        .weight(1.3f)
+                        .height(56.dp)
+                ) {
+                    Text(
+                        text = "Formalizar Contrato",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp
+                    )
+                }
+            } else {
+                Button(
+                    onClick = { viewModel.createPreference() },
+                    enabled = !state.isLoading && !state.isCheckingExistingContract,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        disabledContainerColor = Color.DarkGray
+                    ),
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier
+                        .weight(1.3f)
+                        .height(56.dp)
+                ) {
+                    if (state.isLoading || state.isCheckingExistingContract) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            text = "Proceder al pago",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
         }

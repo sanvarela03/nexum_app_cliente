@@ -7,6 +7,7 @@ import com.example.nexum_cliente.data.global_payload.res.ApiResponse
 import com.example.nexum_cliente.domain.model.JobApplication
 import com.example.nexum_cliente.domain.use_cases.job_application.JobApplicationUseCases
 import com.example.nexum_cliente.domain.use_cases.job_offer.JobOfferUseCases
+import com.example.nexum_cliente.domain.use_cases.contract.ContractUseCases
 import com.example.nexum_cliente.domain.use_cases.nearby_workers.NearbyWorkersUseCases
 import com.example.nexum_cliente.domain.use_cases.review.ReviewUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,6 +15,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -25,6 +27,7 @@ class JobOfferTrackingViewModel @Inject constructor(
     private val jobOfferUseCases: JobOfferUseCases,
     private val jobApplicationUseCases: JobApplicationUseCases,
     private val reviewUseCases: ReviewUseCases,
+    private val contractUseCases: ContractUseCases,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -36,6 +39,7 @@ class JobOfferTrackingViewModel @Inject constructor(
     private var pollingJob: Job? = null
 
     init {
+        checkExistingContracts()
         if (jobOfferUuid != null) {
             observeOffer(jobOfferUuid)
             loadOfferAndWorkers(jobOfferUuid)
@@ -65,6 +69,7 @@ class JobOfferTrackingViewModel @Inject constructor(
     fun onEvent(event: JobOfferTrackingEvent) {
         when (event) {
             is JobOfferTrackingEvent.Refresh -> {
+                checkExistingContracts()
                 val identifier = jobOfferUuid ?: jobOfferId?.toString()
                 if (identifier != null) {
                     fetchApplications(identifier)
@@ -172,6 +177,32 @@ class JobOfferTrackingViewModel @Inject constructor(
         }
     }
 
+    private fun checkExistingContracts() {
+        viewModelScope.launch {
+            contractUseCases.getMyContracts()
+                .catch { /* ignore */ }
+                .collect { response ->
+                    if (response is ApiResponse.Success) {
+                        val contracts = response.data
+                        val offerId = jobOfferId
+                        val appIds = _state.value.applications.mapNotNull { it.jobApplicationId.toLongOrNull() }
+                        val matching = contracts.find { contract ->
+                            (offerId != null && contract.jobOfferId == offerId) ||
+                            (contract.jobApplicationId in appIds)
+                        }
+                        if (matching != null) {
+                            _state.update {
+                                it.copy(
+                                    hasExistingContract = true,
+                                    existingContractId = matching.id
+                                )
+                            }
+                        }
+                    }
+                }
+        }
+    }
+
     private fun fetchApplications(identifier: String) {
         viewModelScope.launch {
             jobApplicationUseCases.getJobApplicationsByOffer(identifier).collect { response ->
@@ -183,6 +214,7 @@ class JobOfferTrackingViewModel @Inject constructor(
                                 isRefreshing = false
                             )
                         }
+                        checkExistingContracts()
                     }
                     is ApiResponse.Error -> {
                         _state.update { it.copy(isRefreshing = false) }

@@ -108,15 +108,28 @@ class JobOfferViewModel @Inject constructor(
             }
 
             is JobOfferEvent.TitleChanged -> _state.update { it.copy(title = event.title) }
-            is JobOfferEvent.AddImage -> _state.update { it.copy(images = it.images + event.images) }
+            is JobOfferEvent.AddImage -> {
+                val current = _state.value.images
+                val remaining = (_state.value.maxImages - current.size).coerceAtLeast(0)
+                val toAdd = event.images.take(remaining)
+                if (event.images.size > remaining) {
+                    _state.update { it.copy(errorMessage = "Solo puedes agregar hasta ${_state.value.maxImages} imágenes.") }
+                }
+                _state.update { it.copy(images = current + toAdd) }
+            }
             is JobOfferEvent.RemoveImage -> _state.update {
-                it.copy(images = it.images.toMutableList().apply { removeAt(event.index) })
+                it.copy(images = it.images.toMutableList().apply { 
+                    if (event.index in indices) removeAt(event.index) 
+                })
             }
 
             // --- Eventos de subida real a Firebase ---
             is JobOfferEvent.ImageUriAdded -> {
-                // Bloquear si ya se alcanzó el límite
-                if (_state.value.imageUrls.size >= MAX_JOB_OFFER_IMAGES) return
+                // Bloquear si ya se alcanzó el límite considerando imágenes en preview/proceso
+                if (_state.value.images.size >= _state.value.maxImages) {
+                    _state.update { it.copy(errorMessage = "Has alcanzado el límite de ${_state.value.maxImages} imágenes.") }
+                    return
+                }
 
                 // Verificar si esta URI ya fue subida antes (evitar duplicados en Firebase)
                 val cachedUrl = uploadedUriCache[event.uri]
@@ -140,10 +153,10 @@ class JobOfferViewModel @Inject constructor(
                         onEvent(JobOfferEvent.ImageUrlUploaded(url))
                     },
                     onError = {
-                        // Revertir el preview local y decrementar contador si falla
+                        // Revertir el preview local de esta uri y decrementar contador si falla
                         _state.update {
                             it.copy(
-                                images = it.images.dropLast(1),
+                                images = it.images.filter { uri -> uri != event.uri },
                                 uploadingCount = (it.uploadingCount - 1).coerceAtLeast(0),
                                 errorMessage = "Error al subir imagen"
                             )

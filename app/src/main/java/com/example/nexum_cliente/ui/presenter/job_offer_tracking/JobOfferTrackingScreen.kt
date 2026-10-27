@@ -71,15 +71,15 @@ fun JobOfferTrackingScreen(
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = state.isRefreshing)
 
     val offerStatus = state.jobOffer?.status?.uppercase()
-    val isAssigned = offerStatus in listOf("ASSIGNED", "IN_PROGRESS", "COMPLETED")
+    val isAssigned = offerStatus in listOf("ASSIGNED", "IN_PROGRESS", "COMPLETED") || state.hasExistingContract
 
     // Progreso del stepper sincronizado con el estado real de la oferta
-    val currentStep = when (offerStatus) {
-        "PENDING" -> 1
-        "SEARCHING" -> if (state.applications.isNotEmpty()) 3 else 2
-        "QUOTED" -> 3
-        "ASSIGNED", "IN_PROGRESS" -> 4
-        "COMPLETED" -> 5
+    val currentStep = when {
+        offerStatus == "COMPLETED" -> 5
+        offerStatus in listOf("ASSIGNED", "IN_PROGRESS") || state.hasExistingContract -> 4
+        offerStatus == "PENDING" -> 1
+        offerStatus == "SEARCHING" -> if (state.applications.isNotEmpty()) 3 else 2
+        offerStatus == "QUOTED" -> 3
         else -> if (state.applications.isNotEmpty()) 3 else 2
     }
 

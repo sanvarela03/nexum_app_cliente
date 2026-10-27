@@ -13,5 +13,7 @@ data class JobOfferTrackingState(
     val isRefreshing: Boolean = false,
     val selectedApplication: JobApplication? = null,
     val workerReviews: List<ReviewRes> = emptyList(),
-    val isLoadingReviews: Boolean = false
+    val isLoadingReviews: Boolean = false,
+    val hasExistingContract: Boolean = false,
+    val existingContractId: Long? = null
 )

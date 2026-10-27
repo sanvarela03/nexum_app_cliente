@@ -163,7 +163,9 @@ fun NavGraphBuilder.homeGraph(
                             jobApplicationId = jobAppId,
                             agreedAmount = amount
                         )
-                    )
+                    ) {
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -177,7 +179,9 @@ fun NavGraphBuilder.homeGraph(
                             jobApplicationId = jobAppId,
                             agreedAmount = amount
                         )
-                    )
+                    ) {
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -190,7 +194,8 @@ fun NavGraphBuilder.homeGraph(
                 onCancel = { navController.navigateUp() },
                 onContractCreated = { contractId ->
                     navController.navigate(DrawerRoutes.ContractsScreen) {
-                        popUpTo<JobOfferRoutes.JobApplicationsScreen> { inclusive = true }
+                        popUpTo(HomeRoutes.CategoriesScreen) { inclusive = false }
+                        launchSingleTop = true
                     }
                 }
             )

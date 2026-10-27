@@ -3,7 +3,19 @@ package com.example.nexum_cliente.ui.presenter.requests
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -14,7 +26,14 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -33,6 +52,7 @@ import com.example.nexum_cliente.common.formatToReadableDate
 import com.example.nexum_cliente.common.toLocalDateTime
 import com.example.nexum_cliente.domain.model.JobOffer
 import com.example.nexum_cliente.ui.components.Stepper
+import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
@@ -148,7 +168,13 @@ private fun SortBar(
                 onClick = { onSortChange(RequestsSortType.DATE_DESC) },
                 label = { Text("Más reciente", fontSize = 12.sp) },
                 leadingIcon = if (currentSort == RequestsSortType.DATE_DESC) {
-                    { Icon(Icons.Default.ArrowDownward, contentDescription = null, modifier = Modifier.size(14.dp)) }
+                    {
+                        Icon(
+                            Icons.Default.ArrowDownward,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
                 } else null,
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -162,7 +188,13 @@ private fun SortBar(
                 onClick = { onSortChange(RequestsSortType.DATE_ASC) },
                 label = { Text("Más antigua", fontSize = 12.sp) },
                 leadingIcon = if (currentSort == RequestsSortType.DATE_ASC) {
-                    { Icon(Icons.Default.ArrowUpward, contentDescription = null, modifier = Modifier.size(14.dp)) }
+                    {
+                        Icon(
+                            Icons.Default.ArrowUpward,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
                 } else null,
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -176,7 +208,13 @@ private fun SortBar(
                 onClick = { onSortChange(RequestsSortType.STATUS) },
                 label = { Text("Por estado", fontSize = 12.sp) },
                 leadingIcon = if (currentSort == RequestsSortType.STATUS) {
-                    { Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(14.dp)) }
+                    {
+                        Icon(
+                            Icons.Default.FilterList,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
                 } else null,
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -185,6 +223,17 @@ private fun SortBar(
             )
         }
     }
+}
+
+
+@Composable
+@Preview(showBackground = true, showSystemUi = true)
+fun JobOfferItemPreview() {
+//    Nexum_clienteTheme() {
+        JobOfferItem(
+            jobOffer = JobOffer(),
+        )
+//    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -324,7 +373,9 @@ private fun JobOfferItem(
                     modifier = Modifier.size(18.dp)
                 )
                 Text(
-                    text = runCatching { jobOffer.requestedDate.toLocalDateTime().formatToReadableDate() }.getOrDefault(jobOffer.requestedDate),
+                    text = runCatching {
+                        jobOffer.requestedDate.toLocalDateTime().formatToReadableDate()
+                    }.getOrDefault(jobOffer.requestedDate),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -356,7 +407,11 @@ private fun JobOfferItem(
                 horizontalArrangement = Arrangement.End
             ) {
                 Text(
-                    text = "Creada: ${runCatching { jobOffer.createdAt.formatIsoDate() }.getOrDefault(jobOffer.createdAt)}",
+                    text = "Creada: ${
+                        runCatching { jobOffer.createdAt.formatIsoDate() }.getOrDefault(
+                            jobOffer.createdAt
+                        )
+                    }",
                     fontWeight = FontWeight.Light,
                     fontSize = 11.sp,
                     color = Color.Gray

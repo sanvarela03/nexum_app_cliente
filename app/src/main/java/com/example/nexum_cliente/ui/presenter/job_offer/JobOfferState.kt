@@ -16,6 +16,7 @@ data class JobOfferState(
     val images: List<Uri> = emptyList(),          // URIs locales para preview
     val imageUrls: List<String> = emptyList(),    // URLs remotas subidas a Firebase
     val uploadingCount: Int = 0,                  // Contador de uploads en progreso
+    val maxImages: Int = MAX_JOB_OFFER_IMAGES,    // Límite configurable de imágenes de evidencia
     val requestedDate: String = "",
     val requestedTime: String = "",
     val selectedDateOption: String = "",
@@ -39,7 +40,7 @@ data class JobOfferState(
         get() = JobOfferValidator.validateAddress(address)
 
     val imagesValidation: ValidationResult
-        get() = JobOfferValidator.validateImages(imageUrls)
+        get() = JobOfferValidator.validateImages(images.ifEmpty { imageUrls }, maxImages)
 
     val dateValidation: ValidationResult
         get() = JobOfferValidator.validateDate(requestedDate)
@@ -58,15 +59,19 @@ data class JobOfferState(
                 latitude != 0.0 &&
                 longitude != 0.0
 
+    /** Cantidad actual de imágenes cargadas o en progreso */
+    val imageCount: Int
+        get() = images.size
+
     /** true si hay alguna imagen subiendo en este momento */
     val isUploadingImage: Boolean
         get() = uploadingCount > 0
 
-    /** true cuando ya se alcanzó el límite: la UI debe ocultar el botón de añadir foto */
+    /** true cuando ya se alcanzó el límite: la UI debe bloquear o indicar límite alcanzado */
     val isAtImageLimit: Boolean
-        get() = imageUrls.size >= MAX_JOB_OFFER_IMAGES
+        get() = images.size >= maxImages
 
     /** Muestra cuántos slots quedan, útil para un contador "3/5" en la UI */
     val remainingImageSlots: Int
-        get() = (MAX_JOB_OFFER_IMAGES - imageUrls.size).coerceAtLeast(0)
+        get() = (maxImages - images.size).coerceAtLeast(0)
 }

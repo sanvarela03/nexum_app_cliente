@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.nexum_cliente.domain.use_cases.contract.ContractUseCases
 import com.example.nexum_cliente.domain.use_cases.job_application.JobApplicationUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class JobApplicationsViewModel @Inject constructor(
     private val useCases: JobApplicationUseCases,
+    private val contractUseCases: ContractUseCases,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val jobOfferId: String? = savedStateHandle.get<String>("jobOfferId")
@@ -32,11 +34,25 @@ class JobApplicationsViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     init {
+        checkExistingContracts()
         if (jobOfferId != null) {
             observeJobApplications(jobOfferId)
             fetchJobApplicationsFromRemote(jobOfferId)
         } else {
             _state.update { it.copy(error = "ID de oferta inválido") }
+        }
+    }
+
+    private fun checkExistingContracts() {
+        viewModelScope.launch {
+            contractUseCases.getMyContracts()
+                .catch { /* ignore */ }
+                .collect { response ->
+                    if (response is com.example.nexum_cliente.data.global_payload.res.ApiResponse.Success) {
+                        val ids = response.data.map { it.jobApplicationId }.toSet()
+                        _state.update { it.copy(existingContractApplicationIds = ids) }
+                    }
+                }
         }
     }
 

@@ -16,8 +16,19 @@ data class MercadoPagoUiState(
     val agreedAmount: Double? = null,
     val isCreatingContract: Boolean = false,
     val createdContract: ContractRes? = null,
+    val hasExistingContract: Boolean = false,
+    val isCheckingExistingContract: Boolean = false,
     val paymentType: String? = null
 ) {
+    val isContractEstablished: Boolean
+        get() = createdContract != null || hasExistingContract
+
+    val isPaymentSuccess: Boolean
+        get() = paymentResult is PaymentResult.Success
+
+    val isPaymentOrContractDone: Boolean
+        get() = isContractEstablished || isPaymentSuccess
+
     fun isValid(): Boolean {
         return title.isNotEmpty() && price.isNotEmpty() && quantity.isNotEmpty()
     }

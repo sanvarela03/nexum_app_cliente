@@ -165,8 +165,11 @@ private fun JobApplicationsScreenContent(
                         )
                     }
                     items(jobApplications) { application ->
+                        val appId = application.jobApplicationId.toLongOrNull() ?: -1L
+                        val isAssigned = state.existingContractApplicationIds.contains(appId)
                         JobApplicationItem(
                             jobApplication = application,
+                            isAssigned = isAssigned,
                             onAccept = {
                                 onAcceptApplication(application)
                             }

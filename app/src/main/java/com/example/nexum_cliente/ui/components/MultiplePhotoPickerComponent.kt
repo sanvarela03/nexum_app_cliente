@@ -35,63 +35,114 @@ import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Text
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.example.nexum_cliente.common.MAX_JOB_OFFER_IMAGES
+
 @OptIn(ExperimentalGlideComposeApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun MultiplePhotoPickerComponent(
     selectedImages: List<Uri> = emptyList(),
+    maxImages: Int = MAX_JOB_OFFER_IMAGES,
     onAddImage: (List<Uri>) -> Unit,
-    onRemoveImage: (Int) -> Unit
+    onRemoveImage: (Int) -> Unit,
+    onLimitExceeded: (() -> Unit)? = null,
+    modifier: Modifier = Modifier
 ) {
-    Log.d("PhotoPickerComponent", "selectedImages: $selectedImages")
-    val photoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickMultipleVisualMedia(),
+    val remainingSlots = (maxImages - selectedImages.size).coerceAtLeast(0)
+    val isLimitReached = selectedImages.size >= maxImages
+
+    // Launcher para selección múltiple (cuando quedan 2 o más espacios)
+    val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(
+            maxItems = if (remainingSlots > 1) remainingSlots else 2
+        ),
         onResult = { uris ->
-            uris?.let {
-                if (it.isNotEmpty()) {
-                    onAddImage(it)
+            if (!uris.isNullOrEmpty()) {
+                val toAdd = uris.take(remainingSlots)
+                if (uris.size > remainingSlots) {
+                    onLimitExceeded?.invoke()
+                }
+                onAddImage(toAdd)
+            }
+        }
+    )
+
+    // Launcher para selección única (cuando queda exactamente 1 espacio)
+    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            uri?.let {
+                if (remainingSlots > 0) {
+                    onAddImage(listOf(it))
+                } else {
+                    onLimitExceeded?.invoke()
                 }
             }
         }
     )
+
     Column(
-        modifier = Modifier
-            .fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.Start
     ) {
         FlowRow(
-            modifier =
-            Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(2.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            OutlinedIconButton(
-                modifier = Modifier
-                    .defaultMinSize(100.dp, 100.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = IconButtonColors(
-                    contentColor = Color(0xFFE6E6E6),
-                    containerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    disabledContentColor = Color.Black,
-                ),
-                border = BorderStroke(1.dp, Color(0xFFE6E6E6)),
-
-                onClick = {
-                    photoPickerLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                    )
-                }) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "Add Photo",
-                    modifier = Modifier
-                        .size(40.dp),
-                )
+            // Botón para agregar imagen (se oculta cuando se alcanza el límite máximo)
+            if (!isLimitReached) {
+                OutlinedIconButton(
+                    modifier = Modifier.size(100.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = IconButtonColors(
+                        contentColor = Color(0xFF009963),
+                        containerColor = Color(0xFFF9FBF9),
+                        disabledContainerColor = Color(0xFFF5F5F5),
+                        disabledContentColor = Color(0xFFBDBDBD),
+                    ),
+                    border = BorderStroke(1.5.dp, Color(0xFF009963).copy(alpha = 0.5f)),
+                    onClick = {
+                        if (remainingSlots > 1) {
+                            multiplePhotoPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        } else if (remainingSlots == 1) {
+                            singlePhotoPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        } else {
+                            onLimitExceeded?.invoke()
+                        }
+                    }
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Agregar foto",
+                            tint = Color(0xFF009963),
+                            modifier = Modifier.size(32.dp),
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "${selectedImages.size}/$maxImages",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF009963)
+                        )
+                    }
+                }
             }
 
             if (selectedImages.isNotEmpty()) {
-                selectedImages.forEachIndexed() { index, uri ->
+                selectedImages.forEachIndexed { index, uri ->
                     ImagePreview(
                         uri = uri,
                         onRemoveImage = onRemoveImage,

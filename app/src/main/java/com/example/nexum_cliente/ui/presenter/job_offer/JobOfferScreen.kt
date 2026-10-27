@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -31,9 +32,26 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.filled.AcUnit
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.CarRepair
+import androidx.compose.material.icons.filled.Carpenter
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.CleaningServices
+import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FormatPaint
+import androidx.compose.material.icons.filled.Handyman
+import androidx.compose.material.icons.filled.HomeRepairService
+import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Plumbing
+import androidx.compose.material.icons.filled.Yard
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import com.example.nexum_cliente.common.MAX_JOB_OFFER_IMAGES
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
@@ -118,6 +136,12 @@ fun JobOfferScreen(
         viewModel.onEvent(JobOfferEvent.CategoryIdChanged(categoryId, categoryName))
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(state.errorMessage) {
+        if (state.errorMessage.isNotBlank()) {
+            Toast.makeText(context, state.errorMessage, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     // El indicador de validez ahora viene directamente del estado
     val isFormValid = state.isFormValid
@@ -328,27 +352,18 @@ fun JobOfferScreenContent(
     isValid: Boolean = false,
     currentTimeMillis: Long = 0L
 ) {
+    val context = LocalContext.current
     Nexum_clienteTheme {
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = {
-                        Column {
-                            Text(
-                                text = "Nueva Solicitud",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black
-                            )
-                            if (state.categoryName.isNotBlank()) {
-                                Text(
-                                    text = state.categoryName,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color(0xFF009963)
-                                )
-                            }
-                        }
+                        Text(
+                            text = "Nueva Solicitud",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
                     },
                     navigationIcon = {
                         IconButton(onClick = onNavigateBack) {
@@ -361,30 +376,10 @@ fun JobOfferScreenContent(
                     },
                     actions = {
                         if (state.categoryName.isNotBlank()) {
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = Color(0xFFE8F5E9),
-                                border = BorderStroke(1.dp, Color(0xFF009963).copy(alpha = 0.3f)),
+                            CategoryBadge(
+                                categoryName = state.categoryName,
                                 modifier = Modifier.padding(end = 12.dp)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(6.dp)
-                                            .background(Color(0xFF009963), shape = CircleShape)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = state.categoryName,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF009963)
-                                    )
-                                }
-                            }
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -466,27 +461,85 @@ fun JobOfferScreenContent(
                         onEvent(JobOfferEvent.DescriptionChanged(it))
                     }
                 )
-                Text("Agregar evidencia", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                // Sección de Evidencia con Indicador y Validaciones
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Agregar evidencia",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    EvidenceCounterBadge(
+                        currentCount = state.images.size,
+                        maxImages = state.maxImages
+                    )
+                }
+
+                val evidenceHelperText = when {
+                    state.isAtImageLimit -> "Has alcanzado el límite máximo de ${state.maxImages} imágenes."
+                    state.images.isNotEmpty() -> "Puedes subir hasta ${state.remainingImageSlots} imagen(es) más (máximo ${state.maxImages})."
+                    else -> "Sube fotos como evidencia del trabajo requerido (máximo ${state.maxImages} imágenes)."
+                }
+                Text(
+                    text = evidenceHelperText,
+                    fontSize = 12.sp,
+                    color = if (state.isAtImageLimit) Color(0xFFE65100) else Color(0xFF757575)
+                )
+
+                if (state.isUploadingImage) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(vertical = 2.dp)
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(14.dp),
+                            strokeWidth = 2.dp,
+                            color = Color(0xFF009963)
+                        )
+                        Text(
+                            text = "Subiendo imagen(es) a la nube (${state.uploadingCount} pendiente${if (state.uploadingCount > 1) "s" else ""})...",
+                            fontSize = 12.sp,
+                            color = Color(0xFF009963)
+                        )
+                    }
+                }
 
                 MultiplePhotoPickerComponent(
                     selectedImages = state.images,
+                    maxImages = state.maxImages,
                     onAddImage = { uris ->
-                        // Disparar un upload por cada URI seleccionada
                         uris.forEach { uri ->
                             onEvent(JobOfferEvent.ImageUriAdded(uri))
                         }
                     },
                     onRemoveImage = { index ->
-                        // Borrar de Firebase y del estado usando la URL remota
                         val url = state.imageUrls.getOrNull(index)
                         if (url != null) {
                             onEvent(JobOfferEvent.ImageUrlRemoved(url))
-                        } else {
-                            // Fallback: si aún no terminó de subir, solo quitar la URI local
-                            onEvent(JobOfferEvent.RemoveImage(index))
                         }
+                        onEvent(JobOfferEvent.RemoveImage(index))
+                    },
+                    onLimitExceeded = {
+                        Toast.makeText(
+                            context,
+                            "Solo puedes subir un máximo de ${state.maxImages} imágenes.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 )
+
+                if (!state.imagesValidation.isValid && state.images.isNotEmpty()) {
+                    Text(
+                        text = state.imagesValidation.errorMessage,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+                }
                 Text("Fecha", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 val dateOptions = listOf("Hoy", "3 dias", "1 semana", "Elegir")
                 FlowRow(
@@ -655,6 +708,113 @@ private fun MapDialog(viewModel: JobOfferViewModel) {
         },
         modifier = Modifier.width(360.dp)
     )
+}
+
+@Composable
+fun CategoryBadge(
+    categoryName: String,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = Color(0xFFE8F5E9),
+        border = BorderStroke(1.dp, Color(0xFF009963).copy(alpha = 0.3f)),
+        modifier = modifier
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        ) {
+            Icon(
+                imageVector = getCategoryIcon(categoryName),
+                contentDescription = categoryName,
+                tint = Color(0xFF009963),
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = categoryName,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF009963)
+            )
+        }
+    }
+}
+
+/**
+ * Mapea el nombre de la categoría a su respectivo icono vector de Compose Material
+ */
+fun getCategoryIcon(categoryName: String): ImageVector {
+    val normalized = categoryName.trim().lowercase()
+    return when {
+        normalized.contains("electri") || normalized.contains("luz") || normalized.contains("cable") -> Icons.Default.Bolt
+        normalized.contains("plom") || normalized.contains("fontan") || normalized.contains("agua") || normalized.contains("tub") || normalized.contains("grifo") -> Icons.Default.Plumbing
+        normalized.contains("cerraj") || normalized.contains("llav") || normalized.contains("candado") || normalized.contains("cerrad") -> Icons.Default.Key
+        normalized.contains("carpin") || normalized.contains("mader") || normalized.contains("muebl") -> Icons.Default.Carpenter
+        normalized.contains("pint") -> Icons.Default.FormatPaint
+        normalized.contains("limp") || normalized.contains("aseo") || normalized.contains("desinfec") -> Icons.Default.CleaningServices
+        normalized.contains("constr") || normalized.contains("albañ") || normalized.contains("remodel") -> Icons.Default.Construction
+        normalized.contains("jard") || normalized.contains("plant") || normalized.contains("pasto") || normalized.contains("cesped") -> Icons.Default.Yard
+        normalized.contains("aire") || normalized.contains("clima") || normalized.contains("refrig") -> Icons.Default.AcUnit
+        normalized.contains("mecan") || normalized.contains("auto") || normalized.contains("vehic") || normalized.contains("moto") -> Icons.Default.CarRepair
+        normalized.contains("electro") || normalized.contains("tecn") || normalized.contains("comput") -> Icons.Default.HomeRepairService
+        else -> Icons.Default.Handyman
+    }
+}
+
+@Composable
+fun EvidenceCounterBadge(
+    currentCount: Int,
+    maxImages: Int = MAX_JOB_OFFER_IMAGES,
+    modifier: Modifier = Modifier
+) {
+    val isLimitReached = currentCount >= maxImages
+    val hasImages = currentCount > 0
+
+    val backgroundColor = when {
+        isLimitReached -> Color(0xFFFFF3E0) // Cálido cuando llega al límite
+        hasImages -> Color(0xFFE8F5E9)      // Verde claro de la app cuando tiene fotos
+        else -> Color(0xFFF5F5F5)           // Gris neutro cuando está vacío
+    }
+
+    val contentColor = when {
+        isLimitReached -> Color(0xFFE65100) // Ámbar/Naranja
+        hasImages -> Color(0xFF009963)      // Verde Nexum
+        else -> Color(0xFF757575)           // Gris suave
+    }
+
+    val borderColor = when {
+        isLimitReached -> Color(0xFFFFB74D)
+        hasImages -> Color(0xFF009963).copy(alpha = 0.4f)
+        else -> Color(0xFFE0E0E0)
+    }
+
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        color = backgroundColor,
+        border = BorderStroke(1.dp, borderColor)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                imageVector = if (isLimitReached) Icons.Default.CheckCircle else Icons.Default.PhotoCamera,
+                contentDescription = null,
+                tint = contentColor,
+                modifier = Modifier.size(14.dp)
+            )
+            Text(
+                text = if (isLimitReached) "$currentCount / $maxImages (Máx)" else "$currentCount / $maxImages",
+                color = contentColor,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

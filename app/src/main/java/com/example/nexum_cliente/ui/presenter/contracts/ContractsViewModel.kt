@@ -283,6 +283,10 @@ class ContractsViewModel @Inject constructor(
     }
 
     private fun payLabor(contract: ContractRes, paymentMethod: String) {
+        if (state.isPayingLabor) {
+            Log.w(TAG, "payLabor BLOCKED: already processing labor payment!")
+            return
+        }
         viewModelScope.launch {
             state = state.copy(isPayingLabor = true)
             val amount = contract.agreedAmount

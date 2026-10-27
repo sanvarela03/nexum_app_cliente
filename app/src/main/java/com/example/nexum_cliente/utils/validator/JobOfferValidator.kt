@@ -108,12 +108,12 @@ object JobOfferValidator {
         }
     }
 
-    fun validateImages(images: List<Any>): ValidationResult {
+    fun validateImages(images: List<Any>, maxImages: Int = MAX_JOB_OFFER_IMAGES): ValidationResult {
         return when {
             images.isEmpty() ->
-                ValidationResult(false, "Debes subir al menos una imagen.")
-            images.size > MAX_JOB_OFFER_IMAGES ->
-                ValidationResult(false, "No puedes subir más de $MAX_JOB_OFFER_IMAGES imágenes.")
+                ValidationResult(false, "Debes subir al menos una imagen de evidencia.")
+            images.size > maxImages ->
+                ValidationResult(false, "No puedes subir más de $maxImages imágenes.")
             else ->
                 ValidationResult(true)
         }
