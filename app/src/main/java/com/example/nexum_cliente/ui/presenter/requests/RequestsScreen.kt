@@ -248,17 +248,6 @@ private fun SortBar(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-@Preview(showBackground = true, showSystemUi = true)
-fun JobOfferItemPreview() {
-//    Nexum_clienteTheme() {
-        JobOfferItem(
-            jobOffer = JobOffer(),
-        )
-//    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
 private fun JobOfferItem(
     jobOffer: JobOffer,
     onClick: () -> Unit = {}
@@ -470,9 +459,11 @@ fun RequestsScreenContentPreview() {
             state = RequestsState(
                 jobOffers = listOf(
                     JobOffer(
+                        id = 1L,
                         title = "TEST1",
                     ),
                     JobOffer(
+                        id = 2L,
                         title = "Título 2",
                     )
                 )

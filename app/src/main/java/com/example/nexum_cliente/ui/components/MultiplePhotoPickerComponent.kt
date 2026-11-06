@@ -100,7 +100,7 @@ fun MultiplePhotoPickerComponent(
                     modifier = Modifier.size(100.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = IconButtonColors(
-                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.primary,
                         containerColor = MaterialTheme.colorScheme.surface,
                         disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
                         disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
@@ -127,7 +127,7 @@ fun MultiplePhotoPickerComponent(
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Agregar foto",
-                            tint = Color(0xFF009963),
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(32.dp),
                         )
                         Spacer(modifier = Modifier.height(2.dp))
@@ -135,7 +135,7 @@ fun MultiplePhotoPickerComponent(
                             text = "${selectedImages.size}/$maxImages",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF009963)
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
