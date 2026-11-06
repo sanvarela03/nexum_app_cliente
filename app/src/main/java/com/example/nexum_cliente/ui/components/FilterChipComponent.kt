@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -38,7 +39,7 @@ fun FilterChipComponent(
 ) {
     FilterChip(
         onClick = onClick,
-        border = if (!isSelected) BorderStroke(1.dp, Color(0xFFD6D6D6)) else BorderStroke(
+        border = if (!isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.outline) else BorderStroke(
             0.dp,
             Color.Transparent
         ),
@@ -52,13 +53,15 @@ fun FilterChipComponent(
                     fontSize = fontSize,
                     fontWeight = fontWeight,
                     textAlign = TextAlign.Center,
-                    color = if (isSelected) Color.White else Color.Black,
                 )
             }
         },
         selected = isSelected,
         colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = Color.Black,
+            containerColor = MaterialTheme.colorScheme.surface,
+            labelColor = MaterialTheme.colorScheme.onSurface,
+            selectedContainerColor = MaterialTheme.colorScheme.primary,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
         ),
         modifier = modifier // <--- ajusta al contenido
     )
@@ -81,7 +84,10 @@ fun FilterChipComponent2(
     FilterChip(
         onClick = onClick,
         enabled = enabled,
-        border = if (!isSelected) BorderStroke(1.dp, Color(0xFFD6D6D6)) else BorderStroke(
+        border = if (!isSelected) BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline.copy(alpha = if (enabled) 1f else 0.12f)
+        ) else BorderStroke(
             0.dp,
             Color.Transparent
         ),
@@ -96,15 +102,18 @@ fun FilterChipComponent2(
                     fontSize = fontSize,
                     fontWeight = fontWeight,
                     textAlign = TextAlign.Center,
-                    color = if (isSelected) Color.White else if (enabled) Color.Black else Color.Gray,
                 )
             }
         },
         selected = isSelected,
         colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = Color.Black,
-            disabledContainerColor = Color(0xFFF2F2F2),
-            disabledLabelColor = Color.Gray
+            containerColor = MaterialTheme.colorScheme.surface,
+            labelColor = MaterialTheme.colorScheme.onSurface,
+            selectedContainerColor = MaterialTheme.colorScheme.primary,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+            disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+            disabledSelectedContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+            disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
         ),
         modifier = modifier // <--- ajusta al contenido
     )

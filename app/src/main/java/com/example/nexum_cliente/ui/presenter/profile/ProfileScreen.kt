@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.ui.presenter.profile
 
+import android.content.res.Configuration
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -22,15 +23,17 @@ import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -46,6 +49,7 @@ import com.example.nexum_cliente.common.formatToReadableDate
 import com.example.nexum_cliente.common.toLocalDateTime
 import com.example.nexum_cliente.domain.model.Client
 import com.example.nexum_cliente.ui.presenter.home.HomeViewModel
+import com.example.nexum_cliente.ui.theme.Nexum_clienteTheme
 
 
 /**
@@ -64,7 +68,9 @@ fun ProfileScreen(
     val state = homeViewModel.state
     val client: Client? = state.client
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -80,7 +86,6 @@ fun ProfileScreen(
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-@Preview(showBackground = true, showSystemUi = true)
 fun ProfileScreenContent(
     client: Client? = Client(
         id = 132131,
@@ -100,6 +105,10 @@ fun ProfileScreenContent(
     )
 ) {
     ElevatedCard(
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
@@ -129,14 +138,14 @@ fun ProfileScreenContent(
                     modifier = Modifier
                         .size(100.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFBDBDBD)), // gray placeholder
+                        .background(MaterialTheme.colorScheme.secondaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Person,
                         modifier = Modifier.size(80.dp),
                         contentDescription = "Default avatar",
-                        tint = Color.White
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
             }
@@ -215,21 +224,46 @@ private fun InLineItem(
             if (icon != null) {
                 Icon(
                     imageVector = icon,
-                    contentDescription = "Edit Profile"
+                    contentDescription = "Edit Profile",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } else if (painter != null) {
                 Icon(
                     painter = painter,
                     contentDescription = "Edit Profile",
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
         Column(
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            Text("${name}", fontWeight = FontWeight.ExtraLight)
-            Text("${value}", fontWeight = FontWeight.Bold)
+            Text(
+                "${name}",
+                fontWeight = FontWeight.ExtraLight,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                "${value}",
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(name = "Profile - Light", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Profile - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ProfileScreenPreview() {
+    Nexum_clienteTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ) {
+            ProfileScreenContent()
         }
     }
 }

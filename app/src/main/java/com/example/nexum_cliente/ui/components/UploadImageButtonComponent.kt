@@ -12,6 +12,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,7 +46,10 @@ fun UploadImageButtonComponent(
     OutlinedButton(
         modifier = Modifier
             .fillMaxWidth(),
-        border = BorderStroke(width = 1.dp, color = Color(0xFFD9D9D9)),
+        border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outline),
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ),
         onClick = {
             onClick()
         },
@@ -70,7 +75,7 @@ fun UploadImageButtonComponent(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
                     textAlign = TextAlign.Start,
-                    color = Color(0xFF000000)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             )
             Spacer(modifier = Modifier.weight(1f))

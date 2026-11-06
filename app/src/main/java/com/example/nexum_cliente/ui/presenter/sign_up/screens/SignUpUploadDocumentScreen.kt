@@ -1,5 +1,6 @@
 package com.example.nexum_cliente.ui.presenter.sign_up.screens
 
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -20,17 +21,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,7 +81,6 @@ fun SignUpUploadDocumentScreen(
 }
 
 @Composable
-@Preview(showBackground = true, showSystemUi = true)
 private fun SignUpUploadDocumentScreenContent(
     state: SignUpState = SignUpState(),
     go: (Any) -> Unit = {},
@@ -109,7 +111,11 @@ private fun SignUpUploadDocumentScreenContent(
             }
         }
     )
-    Nexum_clienteTheme() {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -138,15 +144,16 @@ private fun SignUpUploadDocumentScreenContent(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
                     textAlign = TextAlign.Start,
-                    color = Color(0xFF000000)
+                    color = MaterialTheme.colorScheme.onBackground
                 ),
                 defaultTextStyle = SpanStyle(
-                    color = Color(0xFF858191),
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Light
                 ),
                 defaultLinkStyle = SpanStyle(
-                    color = Color(0xFF858191),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    textDecoration = TextDecoration.Underline,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -155,7 +162,7 @@ private fun SignUpUploadDocumentScreenContent(
             UploadImageButtonComponent(
                 text = "Frente del documento",
                 leadingIcon = painterResource(R.drawable.vector),
-                leadingIconTint = Color.Black, // 👈 add this param inside your component
+                leadingIconTint = MaterialTheme.colorScheme.onBackground,
                 trailingIcon = Icons.AutoMirrored.Filled.ArrowForwardIos,
             ) {
                 frontPhotoPickerLauncher.launch(
@@ -166,7 +173,7 @@ private fun SignUpUploadDocumentScreenContent(
             UploadImageButtonComponent(
                 text = "Reverso del documento",
                 leadingIcon = painterResource(R.drawable.vector_back),
-                leadingIconTint = Color.Black, // 👈
+                leadingIconTint = MaterialTheme.colorScheme.onBackground,
                 trailingIcon = Icons.AutoMirrored.Filled.ArrowForwardIos,
             ) {
                 backPhotoPickerLauncher.launch(
@@ -183,7 +190,7 @@ private fun SignUpUploadDocumentScreenContent(
                         .size(130.dp)
                         .padding(5.dp)
                         .dashedBorder(
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.outline,
                             shape = RoundedCornerShape(8.dp),
                             strokeWidth = 3.dp,
                             dashLength = 10.dp,
@@ -201,7 +208,7 @@ private fun SignUpUploadDocumentScreenContent(
                     )
                 }
                 VerticalDivider(
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.outline,
                     thickness = 2.dp,
                     modifier = Modifier
                         .padding(horizontal = 8.dp) // margin left and right
@@ -212,7 +219,7 @@ private fun SignUpUploadDocumentScreenContent(
                         .size(130.dp)
                         .padding(5.dp)
                         .dashedBorder(
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.outline,
                             shape = RoundedCornerShape(8.dp),
                             strokeWidth = 3.dp,
                             dashLength = 10.dp,
@@ -244,5 +251,24 @@ private fun SignUpUploadDocumentScreenContent(
                 enableNextButton = enableNextButton
             )
         }
+    }
+}
+
+@Preview(
+    name = "Upload document - Light",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Preview(
+    name = "Upload document - Dark",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+private fun SignUpUploadDocumentScreenPreview() {
+    Nexum_clienteTheme {
+        SignUpUploadDocumentScreenContent()
     }
 }

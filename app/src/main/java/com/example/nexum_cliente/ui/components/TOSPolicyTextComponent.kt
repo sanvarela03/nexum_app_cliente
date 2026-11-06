@@ -1,9 +1,9 @@
 package com.example.nexum_cliente.ui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -28,14 +28,14 @@ fun TosAndPolicyText(
     textStyle: TextStyle = TextStyle(
         fontSize = 14.sp,
         textAlign = TextAlign.Center,
-        color = Color(0xFF000000)
+        color = MaterialTheme.colorScheme.onBackground
     ),
     defaultTextStyle: SpanStyle = SpanStyle(
-        color = Color(0xFF000000),
+        color = MaterialTheme.colorScheme.onBackground,
         fontWeight = FontWeight.Light
     ),
     defaultLinkStyle: SpanStyle = SpanStyle(
-        color = Color(0xFF828282),
+        color = MaterialTheme.colorScheme.primary,
         textDecoration = TextDecoration.None,
         fontWeight = FontWeight.Normal
     ),

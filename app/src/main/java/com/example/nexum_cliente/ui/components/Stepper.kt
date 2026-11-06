@@ -16,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,9 +49,10 @@ fun Stepper(
     numberOfSteps: Int,
     currentStep: Int,
     stepDescriptionList: List<String> = List(numberOfSteps) { "" },
-    unSelectedColor: Color = Color.LightGray,
+    unSelectedColor: Color = MaterialTheme.colorScheme.surfaceVariant,
     selectedColor: Color? = null,
-    isRainbow: Boolean = false
+    isRainbow: Boolean = false,
+    selectedContentColor: Color? = null
 ) {
 
     val descriptionList = MutableList(numberOfSteps) { "" }
@@ -73,6 +77,7 @@ fun Stepper(
                 stepDescription = descriptionList[step - 1],
                 unSelectedColor = unSelectedColor,
                 selectedColor = selectedColor,
+                selectedContentColor = selectedContentColor,
             )
         }
     }
@@ -89,6 +94,7 @@ private fun Step(
     stepDescription: String,
     unSelectedColor: Color,
     selectedColor: Color?,
+    selectedContentColor: Color?,
 ) {
 
     val rainBowColor = Brush.linearGradient(
@@ -111,7 +117,7 @@ private fun Step(
     { if (it || isCurrent) selectedColor ?: MaterialTheme.colorScheme.primary else unSelectedColor }
 
     val color by transition.animateColor(label = "color")
-    { if (it || isCurrent) selectedColor ?: MaterialTheme.colorScheme.primary else Color.Gray }
+    { if (it || isCurrent) selectedColor ?: MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant }
 
     val borderStroke: BorderStroke = if (isRainbow) {
         BorderStroke(0.dp, rainBowColor)
@@ -144,7 +150,7 @@ private fun Step(
                     Icon(
                         imageVector = Icons.Default.Done, "done",
                         modifier = modifier.padding(4.dp),
-                        tint = Color.White
+                        tint = selectedContentColor ?: contentColorFor(innerCircleColor)
                     )
                 else
                     Text(
@@ -192,7 +198,19 @@ private fun Step(
                         bottom.linkTo(circle.bottom)
                         start.linkTo(circle.end)
                     },
-                    color = innerCircleColor,
+                    color = if (isCompete) {
+                        innerCircleColor
+                    } else {
+                        lerp(
+                            innerCircleColor,
+                            if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
+                                Color.White
+                            } else {
+                                Color.Black
+                            },
+                            0.2f
+                        )
+                    },
                     thickness = 3.dp,
                 )
             }

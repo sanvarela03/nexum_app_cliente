@@ -3,11 +3,11 @@ package com.example.nexum_cliente.ui.components
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -22,7 +22,9 @@ fun SignUpSuccessDialog(
 ) {
     if (show) {
         AlertDialog(
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             title = {
                 Text(
                     text = "Registro exitoso",
@@ -42,7 +44,7 @@ fun SignUpSuccessDialog(
                 TextButton(onClick = onAccept) {
                     Text(
                         text = "Aceptar",
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             },

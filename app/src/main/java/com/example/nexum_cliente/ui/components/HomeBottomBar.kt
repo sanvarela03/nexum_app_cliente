@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -29,6 +31,8 @@ fun HomeBottomBar(
     navigateTo: (HomeRoutes) -> Unit
 ) {
     NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier
             // Cambiado de safeDrawing a navigationBars para que NO suba con el teclado
             .windowInsetsPadding(
@@ -43,6 +47,13 @@ fun HomeBottomBar(
 
             NavigationBarItem(
                 selected = selected,
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                    indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
                 onClick = { navigateTo(navItem.route) },
                 icon = {
                     val icon = if (selected) {

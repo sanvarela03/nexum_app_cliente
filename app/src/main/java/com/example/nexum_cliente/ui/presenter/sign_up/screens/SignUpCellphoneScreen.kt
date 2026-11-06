@@ -36,13 +36,13 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -93,7 +93,6 @@ fun SignUpCellphoneScreen(
 }
 
 @Composable
-@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
 fun SignUpCellphoneScreenContent(
     state: SignUpState = SignUpState(),
     cellphoneChanged: (String) -> Unit = {},
@@ -102,7 +101,11 @@ fun SignUpCellphoneScreenContent(
     onNext: () -> Unit = {},
     enableNextButton: Boolean = false,
 ) {
-    Nexum_clienteTheme() {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -182,6 +185,25 @@ fun SignUpCellphoneScreenContent(
     }
 }
 
+@Preview(
+    name = "Cellphone - Light",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Preview(
+    name = "Cellphone - Dark",
+    showBackground = true,
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+private fun SignUpCellphoneScreenPreview() {
+    Nexum_clienteTheme {
+        SignUpCellphoneScreenContent()
+    }
+}
+
 @Composable
 private fun PhoneCodePicker(
     state: SignUpState,
@@ -198,7 +220,8 @@ private fun PhoneCodePicker(
             .height(60.dp)
             .border(
                 1.dp,
-                if (state.phoneCodeError) Color.Red else Color(0xFFE6E6E6),
+                if (state.phoneCodeError) MaterialTheme.colorScheme.error
+                else MaterialTheme.colorScheme.outline,
                 RoundedCornerShape(12.dp)
             )
             .clip(RoundedCornerShape(12.dp))
@@ -218,7 +241,7 @@ private fun PhoneCodePicker(
             Text(
                 text = displayText,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
                     .padding(horizontal = 5.dp)
                     .weight(1f),
@@ -229,7 +252,7 @@ private fun PhoneCodePicker(
             )
             DropdownMenu(
                 expanded = expanded,
-                modifier = Modifier.background(Color.White),
+                modifier = Modifier.background(MaterialTheme.colorScheme.surface),
                 onDismissRequest = { expanded = false }
             ) {
                 countries.forEach { country ->

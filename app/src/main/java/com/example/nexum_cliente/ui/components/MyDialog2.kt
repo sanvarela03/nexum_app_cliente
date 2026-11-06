@@ -3,11 +3,11 @@ package com.example.nexum_cliente.ui.components
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -27,7 +27,9 @@ fun MyDialog2(
 ) {
     if (show) {
         AlertDialog(
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             title = {
                 Text(
                     text = title,
@@ -44,13 +46,13 @@ fun MyDialog2(
                 TextButton(onClick = { onDismiss() }) {
                     Text(
                         text = dismissTxt,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             },
             confirmButton = {
                 TextButton(onClick = { onConfirm() }) {
-                    Text(text = confirmTxt, color = Color.Black)
+                    Text(text = confirmTxt, color = MaterialTheme.colorScheme.primary)
                 }
             },
             modifier = modifier.width(500.dp),
